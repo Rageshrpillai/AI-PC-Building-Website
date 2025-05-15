@@ -1,0 +1,90 @@
+[
+  {
+    "id": "cpu-001",
+    "name": "Intel Core i7-13700K",
+    "brand": "Intel",
+    "price": 380.99,
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=i7-13700K",
+    "description": "13th Gen Desktop Processor with 16 Cores (8P+8E) & 24 Threads, up to 5.4 GHz, unlocked.",
+    "category": "cpu",
+    "specs": {
+      "cores": "16 (8P+8E)",
+      "threads": "24",
+      "baseClock": "3.4 GHz",
+      "boostClock": "5.4 GHz",
+      "socket": "LGA1700",
+      "tdp": "125W",
+      "integratedGraphics": "Intel UHD Graphics 770"
+    },
+    "rating": {
+      "rate": 4.8,
+      "count": 285
+    }
+  },
+  {
+    "id": "cpu-002",
+    "name": "AMD Ryzen 7 7800X3D",
+    "brand": "AMD",
+    "price": 449.0,
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Ryzen+7+7800X3D",
+    "description": "8-Core, 16-Thread AM5 Desktop Processor with AMD 3D V-Cache technology for ultimate gaming performance.",
+    "category": "cpu",
+    "specs": {
+      "cores": "8",
+      "threads": "16",
+      "baseClock": "4.2 GHz",
+      "boostClock": "5.0 GHz",
+      "socket": "AM5",
+      "tdp": "120W",
+      "integratedGraphics": "AMD Radeon Graphics (2 CUs)"
+    },
+    "rating": {
+      "rate": 4.9,
+      "count": 310
+    }
+  },
+  {
+    "id": "cpu-003",
+    "name": "Intel Core i5-13600K",
+    "brand": "Intel",
+    "price": 319.99,
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=i5-13600K",
+    "description": "13th Gen Desktop Processor with 14 Cores (6P+8E) & 20 Threads, up to 5.1 GHz, unlocked.",
+    "category": "cpu",
+    "specs": {
+      "cores": "14 (6P+8E)",
+      "threads": "20",
+      "baseClock": "3.5 GHz",
+      "boostClock": "5.1 GHz",
+      "socket": "LGA1700",
+      "tdp": "125W",
+      "integratedGraphics": "Intel UHD Graphics 770"
+    },
+    "rating": {
+      "rate": 4.7,
+      "count": 215
+    }
+  },
+  {
+    "id": "cpu-004",
+    "name": "AMD Ryzen 5 7600X",
+    "brand": "AMD",
+    "price": 249.0,
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Ryzen+5+7600X",
+    "description": "6-Core, 12-Thread AM5 Desktop Processor, up to 5.3 GHz boost.",
+    "category": "cpu",
+    "specs": {
+      "cores": "6",
+      "threads": "12",
+      "baseClock": "4.7 GHz",
+      "boostClock": "5.3 GHz",
+      "socket": "AM5",
+      "tdp": "105W",
+      "integratedGraphics": "AMD Radeon Graphics (2 CUs)"
+    },
+    "rating": {
+      "rate": 4.6,
+      "count": 180
+    }
+  }
+]
