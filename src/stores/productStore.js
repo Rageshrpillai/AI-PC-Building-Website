@@ -80,15 +80,24 @@ const useProductStore = create(
 
       // Component Selection Actions
       selectComponent: (categoryName, component) => {
-        set((state) => ({
-          selectedComponents: {
-            ...state.selectedComponents,
-            [categoryName]: component
-          }
-        }));
+        console.log('[ProductStore] Selecting component:', {
+          categoryName,
+          component
+        });
+        set((state) => {
+          const newState = {
+            selectedComponents: {
+              ...state.selectedComponents,
+              [categoryName]: component
+            }
+          };
+          console.log('[ProductStore] New state:', newState);
+          return newState;
+        });
       },
 
       removeComponent: (categoryName) => {
+        console.log('[ProductStore] Removing component:', categoryName);
         set((state) => {
           const newSelectedComponents = { ...state.selectedComponents };
           delete newSelectedComponents[categoryName];
@@ -97,6 +106,7 @@ const useProductStore = create(
       },
 
       clearAllComponents: () => {
+        console.log('[ProductStore] Clearing all components');
         set({ selectedComponents: {} });
       },
 

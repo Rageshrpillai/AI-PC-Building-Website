@@ -146,18 +146,15 @@ export default function SpecsPage() {
   const handleSelectPartForBuild = useCallback(
     (part) => {
       if (selectingFor && part) {
+        console.log('[Spec] Selecting part:', part);
+        console.log('[Spec] For category:', selectingFor);
+        
         const state = {
-          newlySelectedPartId: part.id,
-          targetCategoryName: selectingFor,
-          origin: originPage
+          selectedComponent: part,
+          categoryName: selectingFor
         };
         
-        // Ensure we're using the correct navigation state format
-        if (originPage === "/build") {
-          state.selectedComponent = part;
-          state.categoryName = selectingFor;
-        }
-        
+        console.log('[Spec] Navigating with state:', state);
         navigate(originPage, { state });
       }
     },

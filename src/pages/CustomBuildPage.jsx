@@ -47,10 +47,17 @@ export default function CustomBuildPage() {
   const selectedMotherboardFromStore = selectedComponents["Motherboard"];
 
   // Local State
-  const [buildName, setBuildName] = useState("My Custom Build");
-  const [buildDescription, setBuildDescription] = useState(
-    "A collection of selected components for a custom PC build."
-  );
+  const [buildName, setBuildName] = useState("");
+  const [buildDescription, setBuildDescription] = useState("");
+
+  // Set default values only if they haven't been set
+  useEffect(() => {
+    if (!buildName) setBuildName("My Custom Build");
+    if (!buildDescription)
+      setBuildDescription(
+        "A collection of selected components for a custom PC build."
+      );
+  }, []);
   const [totalPrice, setTotalPrice] = useState(0);
   const [isProcessingSelection, setIsProcessingSelection] = useState(false);
   const [processingError, setProcessingError] = useState(null);
@@ -151,39 +158,44 @@ export default function CustomBuildPage() {
     const handleDeepLink = async () => {
       try {
         const queryParams = new URLSearchParams(location.search);
-        const partsParam = queryParams.get('parts');
-        
+        const partsParam = queryParams.get("parts");
+
         if (partsParam && hasFetchedInitialData && allProducts?.length > 0) {
           setIsProcessingSelection(true);
           setProcessingError(null);
-          
-          const partIds = partsParam.split(',').filter(Boolean);
+
+          const partIds = partsParam.split(",").filter(Boolean);
           await clearAllComponents();
-          
+
           const ramParts = [];
           const otherComponents = [];
-          
+
           // First pass: separate RAM and other components
-          partIds.forEach(id => {
-            const part = allProducts.find(p => p.id === id);
+          partIds.forEach((id) => {
+            const part = allProducts.find((p) => p.id === id);
             if (part) {
-              if (part.category === 'ram') {
+              if (part.category === "ram") {
                 // Push each RAM part individually, even if identical
                 ramParts.push(part);
               } else {
-                const categoryConfig = BASE_COMPONENT_CATEGORIES.find(c => c.actualCategory === part.category);
+                const categoryConfig = BASE_COMPONENT_CATEGORIES.find(
+                  (c) => c.actualCategory === part.category
+                );
                 if (categoryConfig) {
-                  otherComponents.push({ part, categoryName: categoryConfig.name });
+                  otherComponents.push({
+                    part,
+                    categoryName: categoryConfig.name,
+                  });
                 }
               }
             }
           });
-          
+
           // Second pass: add non-RAM components first
           for (const { part, categoryName } of otherComponents) {
             await selectComponent(categoryName, part);
           }
-          
+
           // Add RAM parts to sequential slots
           for (let i = 0; i < ramParts.length; i++) {
             const slotNumber = i + 1;
@@ -194,7 +206,7 @@ export default function CustomBuildPage() {
           navigate(location.pathname, { replace: true });
         }
       } catch (error) {
-        console.error('Error processing deep link:', error);
+        console.error("Error processing deep link:", error);
         setProcessingError(error.message);
       } finally {
         setIsProcessingSelection(false);
@@ -202,7 +214,14 @@ export default function CustomBuildPage() {
     };
 
     handleDeepLink();
-  }, [location.search, hasFetchedInitialData, allProducts, clearAllComponents, selectComponent, navigate]);
+  }, [
+    location.search,
+    hasFetchedInitialData,
+    allProducts,
+    clearAllComponents,
+    selectComponent,
+    navigate,
+  ]);
 
   // Wrapper for removing a component to use the processing flag
   const handleUIRemoveComponent = useCallback(
@@ -218,39 +237,71 @@ export default function CustomBuildPage() {
   // Handler for selecting an item from either the quick pick list or the Spec page
   const handleSelectComponent = useCallback(
     (categoryOrSlotName, partToSelect) => {
-      if (isProcessingSelection) return;
-      setIsProcessingSelection(true);
+      console.log('[CustomBuildPage] handleSelectComponent called');
+      console.log('[CustomBuildPage] location.state:', location.state);
       
-      // If we received a direct part selection from state
-      if (location.state?.selectedComponent && location.state?.categoryName) {
-        selectComponent(location.state.categoryName, location.state.selectedComponent);
-        navigate(location.pathname, { replace: true, state: {} });
-      } 
-      // Handle normal selection
-      else if (categoryOrSlotName && partToSelect) {
-        selectComponent(categoryOrSlotName, partToSelect);
+      if (isProcessingSelection) {
+        console.log('[CustomBuildPage] Processing selection in progress, returning');
+        return;
       }
+      
+      setIsProcessingSelection(true);
+      console.log('[CustomBuildPage] Set processing to true');
 
-      // If we are in an upgrade context, update the local data as well
-      if (upgradeData) {
-        setUpgradeData((prev) => {
-          if (!prev) return null;
-          const newParts = prev.parts.map((p) => {
-            const partCategoryName = BASE_COMPONENT_CATEGORIES.find(
-              (c) => c.key === p.category
-            )?.name;
-            if (partCategoryName === categoryOrSlotName) {
-              return { ...p, selectedPart: partToSelect };
-            }
-            return p;
+      try {
+        // If we received a direct part selection from state
+        if (location.state?.selectedComponent && location.state?.categoryName) {
+          console.log('[CustomBuildPage] Found component in state, selecting:', {
+            category: location.state.categoryName,
+            component: location.state.selectedComponent
           });
-          return { ...prev, parts: newParts };
-        });
-      }
+          
+          selectComponent(
+            location.state.categoryName,
+            location.state.selectedComponent
+          );
+          
+          requestAnimationFrame(() => {
+            console.log('[CustomBuildPage] Clearing navigation state');
+            navigate(location.pathname, { replace: true, state: {} });
+          });
+        }
+        // Handle normal selection (from quick picks)
+        else if (categoryOrSlotName && partToSelect) {
+          console.log('[CustomBuildPage] Quick pick selection:', {
+            category: categoryOrSlotName,
+            component: partToSelect
+          });
+          selectComponent(categoryOrSlotName, partToSelect);
+        }
 
-      setTimeout(() => setIsProcessingSelection(false), 100);
+        // If we are in an upgrade context, update the local data as well
+        if (upgradeData) {
+          setUpgradeData((prev) => {
+            if (!prev) return null;
+            const newParts = prev.parts.map((p) => {
+              const partCategoryName = BASE_COMPONENT_CATEGORIES.find(
+                (c) => c.key === p.category
+              )?.name;
+              if (partCategoryName === categoryOrSlotName) {
+                return { ...p, selectedPart: partToSelect };
+              }
+              return p;
+            });
+            return { ...prev, parts: newParts };
+          });
+        }
+      } catch (error) {
+        console.error('[CustomBuildPage] Error in handleSelectComponent:', error);
+      } finally {
+        console.log('[CustomBuildPage] Selection processing complete');
+        setTimeout(() => {
+          setIsProcessingSelection(false);
+          console.log('[CustomBuildPage] Processing flag cleared');
+        }, 150);
+      }
     },
-    [selectComponent, isProcessingSelection, upgradeData, location.state, navigate]
+    [location.state, navigate, selectComponent, upgradeData]
   );
 
   // Other handlers
@@ -263,6 +314,41 @@ export default function CustomBuildPage() {
     navigate("/build", { replace: true });
   }, [clearAllComponents, navigate]);
 
+  // Effect to handle component selection from Spec page
+  useEffect(() => {
+    console.log('[CustomBuildPage] Location state changed:', location.state);
+    
+    if (location.state?.selectedComponent && location.state?.categoryName) {
+      console.log('[CustomBuildPage] Processing component selection from navigation');
+      
+      if (!isProcessingSelection) {
+        setIsProcessingSelection(true);
+        
+        try {
+          console.log('[CustomBuildPage] Selecting component:', {
+            category: location.state.categoryName,
+            component: location.state.selectedComponent
+          });
+          
+          selectComponent(
+            location.state.categoryName,
+            location.state.selectedComponent
+          );
+        } finally {
+          // Clear the navigation state
+          requestAnimationFrame(() => {
+            navigate(location.pathname, { replace: true, state: {} });
+          });
+          
+          // Reset processing flag
+          setTimeout(() => {
+            setIsProcessingSelection(false);
+          }, 150);
+        }
+      }
+    }
+  }, [location.state, navigate, selectComponent, isProcessingSelection]);
+
   // Error display
   if (processingError) {
     return (
@@ -272,8 +358,8 @@ export default function CustomBuildPage() {
     );
   }
 
-  // Loading display
-  if (!hasFetchedInitialData || isLoadingStoreProducts || isProcessingSelection) {
+  // Loading display - only show for initial load, not for component selection
+  if (!hasFetchedInitialData || isLoadingStoreProducts) {
     return (
       <div className="min-h-screen bg-[#100C16] text-white flex justify-center items-center">
         <p>Loading...</p>
@@ -294,6 +380,7 @@ export default function CustomBuildPage() {
               &lt; Back to {upgradeData ? "Upgrade Input" : "Home"}
             </Link>
           </div>
+
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
             <div className="lg:w-[calc(66.666%-1rem)]">
               {dynamicComponentCategoryObjects.map((category) => {
@@ -337,88 +424,105 @@ export default function CustomBuildPage() {
             </div>
             <div className="lg:w-[calc(33.333%-1rem)] lg:sticky top-24 self-start">
               <div className="bg-[#1A1325] p-5 rounded-lg shadow-xl">
-                <h3 className="text-2xl font-semibold text-white mb-2">
-                  {buildName}
-                </h3>
-                <p className="text-sm text-gray-400 mb-4">{buildDescription}</p>
-                {upgradeData && (
-                  <div className="mb-4 p-3 bg-purple-900/40 rounded-md">
-                    <p className="flex justify-between text-lg font-semibold">
-                      <span className="text-purple-300">
-                        Cost of New Parts:
-                      </span>
-                      <span className="text-white">
-                        ${upgradeData.totalCost.toFixed(2)}
-                      </span>
-                    </p>
-                  </div>
-                )}
-                <div className="space-y-1 mb-5 max-h-72 overflow-y-auto custom-scrollbar pr-1">
-                  <h3 className="text-sm font-semibold text-gray-200 mb-2 sticky top-0 bg-[#1A1325] py-1">
-                    SELECTED COMPONENTS
-                  </h3>
-                  {Object.keys(selectedComponents).length === 0 ? (
-                    <p className="text-xs text-gray-500 italic py-2">
-                      No components selected yet.
-                    </p>
-                  ) : (
-                    Object.entries(selectedComponents).map(
-                      ([slotName, component]) => {
-                        if (!component) return null;
-                        return (
-                          <div
-                            key={slotName}
-                            className="flex justify-between items-center text-xs py-1.5 border-b border-gray-800/50 group"
-                          >
-                            <div className="flex-grow truncate pr-2">
-                              <span className="text-gray-400 block text-[10px] uppercase tracking-wider">
-                                {slotName}
-                              </span>
-                              <span className="text-gray-200 font-medium truncate block">
-                                {component.name}
-                              </span>
-                            </div>
-                            <span className="text-gray-300 font-medium whitespace-nowrap px-2">
-                              ₹
-                              {Number(component.price)?.toLocaleString("en-IN")}
-                            </span>
-                            <button
-                              onClick={() => handleUIRemoveComponent(slotName)}
-                              className="text-red-500 hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity text-lg p-1"
-                              title={`Remove ${slotName}`}
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        );
-                      }
-                    )
+                <input
+                  type="text"
+                  value={buildName}
+                  onChange={(e) => setBuildName(e.target.value)}
+                  className="text-2xl font-semibold text-white mb-2 bg-transparent outline-none focus:outline-none w-full"
+                  placeholder="Enter Build Name"
+                />
+                <textarea
+                  value={buildDescription}
+                  onChange={(e) => setBuildDescription(e.target.value)}
+                  className="text-sm text-gray-400 mb-4 bg-transparent outline-none focus:outline-none w-full resize-none"
+                  placeholder="Enter build description"
+                  rows="2"
+                />
+
+                <div className="space-y-4">
+                  {upgradeData && (
+                    <div className="mb-4 p-3 bg-purple-900/40 rounded-md">
+                      <p className="flex justify-between text-lg font-semibold">
+                        <span className="text-purple-300">
+                          Cost of New Parts:
+                        </span>
+                        <span className="text-white">
+                          ${upgradeData.totalCost.toFixed(2)}
+                        </span>
+                      </p>
+                    </div>
                   )}
-                </div>
-                <div className="border-t border-gray-700 pt-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="text-sm text-gray-300">
-                      {upgradeData
-                        ? "Total Final Build Value:"
-                        : "Total Price:"}
-                    </span>
-                    <span className="text-2xl font-bold text-purple-400">
-                      ₹{totalPrice.toLocaleString("en-IN")}
-                    </span>
+                  <div className="space-y-1 mb-5 max-h-72 overflow-y-auto custom-scrollbar pr-1">
+                    <h3 className="text-sm font-semibold text-gray-200 mb-2 sticky top-0 bg-[#1A1325] py-1">
+                      SELECTED COMPONENTS
+                    </h3>
+                    {Object.keys(selectedComponents).length === 0 ? (
+                      <p className="text-xs text-gray-500 italic py-2">
+                        No components selected yet.
+                      </p>
+                    ) : (
+                      Object.entries(selectedComponents).map(
+                        ([slotName, component]) => {
+                          if (!component) return null;
+                          return (
+                            <div
+                              key={slotName}
+                              className="flex justify-between items-center text-xs py-1.5 border-b border-gray-800/50 group"
+                            >
+                              <div className="flex-grow truncate pr-2">
+                                <span className="text-gray-400 block text-[10px] uppercase tracking-wider">
+                                  {slotName}
+                                </span>
+                                <span className="text-gray-200 font-medium truncate block">
+                                  {component.name}
+                                </span>
+                              </div>
+                              <span className="text-gray-300 font-medium whitespace-nowrap px-2">
+                                ₹
+                                {Number(component.price)?.toLocaleString(
+                                  "en-IN"
+                                )}
+                              </span>
+                              <button
+                                onClick={() =>
+                                  handleUIRemoveComponent(slotName)
+                                }
+                                className="text-red-500 hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity text-lg p-1"
+                                title={`Remove ${slotName}`}
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          );
+                        }
+                      )
+                    )}
                   </div>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={handleCancelBuild}
-                      className="flex-1 py-2.5 px-4 rounded-md text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 transition-colors"
-                    >
-                      Clear
-                    </button>
-                    <button
-                      onClick={handleSaveBuild}
-                      className="flex-1 py-2.5 px-4 rounded-md text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 transition-colors"
-                    >
-                      Save Build
-                    </button>
+                  <div className="border-t border-gray-700 pt-4">
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="text-sm text-gray-300">
+                        {upgradeData
+                          ? "Total Final Build Value:"
+                          : "Total Price:"}
+                      </span>
+                      <span className="text-2xl font-bold text-purple-400">
+                        ₹{totalPrice.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={handleCancelBuild}
+                        className="flex-1 py-2.5 px-4 rounded-md text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 transition-colors"
+                      >
+                        Clear
+                      </button>
+                      <button
+                        onClick={handleSaveBuild}
+                        className="flex-1 py-2.5 px-4 rounded-md text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 transition-colors"
+                      >
+                        Save Build
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
