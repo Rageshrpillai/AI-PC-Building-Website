@@ -17,10 +17,10 @@ const CURRENT_RIG_CATEGORIES = [
 ];
 
 const validateRamCompatibility = (ramPart, motherboard) => {
-  if (!motherboard || !ramPart) return true;
+  if (!motherboard || !ramPart) return true; // Cannot validate if a part is missing
   const moboMemoryType = motherboard.specs?.memoryType?.toLowerCase();
   const ramMemoryType = ramPart.specs?.type?.toLowerCase();
-  if (!moboMemoryType || !ramMemoryType) return true;
+  if (!moboMemoryType || !ramMemoryType) return true; // Cannot validate if specs are missing
   return moboMemoryType === ramMemoryType;
 };
 
@@ -28,106 +28,145 @@ export default function UpgradeInputPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // FIXED: Using individual, memoized selectors for stability
-  const getProductById = useProductStore(
-    useCallback((s) => s.getProductById, [])
-  );
+  // Using Zustand store selectors
+  const getProductById = useProductStore(useCallback((s) => s.getProductById, []));
   const hasFetchedInitialData = useProductStore((s) => s.hasFetchedInitialData);
   const isLoadingStoreProducts = useProductStore((s) => s.isLoading);
+  const selectedComponents = useProductStore((s) => s.selectedComponents);
+  const selectComponent = useProductStore((s) => s.selectComponent);
+  const removeComponent = useProductStore((s) => s.removeComponent);
 
-  const [currentUserRig, setCurrentUserRig] = useState({});
   const [upgradeBudget, setUpgradeBudget] = useState("");
   const [upgradeGoals, setUpgradeGoals] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
   const selectedMotherboard = useMemo(
-    () => currentUserRig["Motherboard"],
-    [currentUserRig]
+    () => selectedComponents["motherboard"],
+    [selectedComponents]
   );
 
   const numberOfRamSlots = useMemo(
     () =>
       selectedMotherboard?.specs?.memorySlots
         ? parseInt(selectedMotherboard.specs.memorySlots, 10)
-        : 2,
+        : 2, // Default to 2 slots visually if no motherboard is selected yet
     [selectedMotherboard]
   );
 
-  // *** FIXED: Consolidated and corrected useEffect to handle selections from SpecPage ***
+  // A single, robust useEffect to handle selections returning from the Spec page
   useEffect(() => {
-    const { newlySelectedPartId, targetCategoryName, origin } =
-      location.state || {};
+    console.log('[UpgradeInputPage] Location state changed:', location.state);
+    
+    // Handle both state formats
+    const { 
+      selectedComponent,
+      categoryName,
+      newlySelectedPartId,
+      targetCategoryName
+    } = location.state || {};
 
-    if (newlySelectedPartId && targetCategoryName && origin === "/upgrade") {
-      const part = getProductById(newlySelectedPartId);
+    // Determine which format we're dealing with and extract the relevant data
+    const componentToAdd = selectedComponent || (newlySelectedPartId ? getProductById(newlySelectedPartId) : null);
+    const rawCategory = categoryName || targetCategoryName;
 
-      if (part) {
-        // Use the updater function for setState. This gives us access to the previous state (`prevRig`)
-        // without needing to include `currentUserRig` in the dependency array, which breaks the infinite loop.
-        setCurrentUserRig((prevRig) => {
-          if (part.category === "motherboard") {
-            const incompatibleRamSlots = Object.entries(prevRig)
-              .filter(
-                ([key, ramPart]) =>
-                  key.startsWith("RAM Slot") &&
-                  !validateRamCompatibility(ramPart, part)
-              )
-              .map(([key]) => key);
+    if (componentToAdd && rawCategory && !isSubmitting) {
+      console.log('[UpgradeInputPage] Processing component selection:', {
+        category: rawCategory,
+        component: componentToAdd
+      });
 
-            if (incompatibleRamSlots.length > 0) {
-              const shouldProceed = window.confirm(
-                `Warning: The selected motherboard (${
-                  part.name
-                }) is not compatible with the RAM in ${incompatibleRamSlots.join(
-                  ", "
-                )}. Incompatible RAM will be removed if you proceed. Continue?`
-              );
+      // Find the category config to get the correct key
+      const categoryConfig = CURRENT_RIG_CATEGORIES.find(
+        c => c.name === rawCategory || c.actualCategory === componentToAdd.category
+      );
 
-              if (shouldProceed) {
-                const newRig = { ...prevRig };
-                incompatibleRamSlots.forEach(
-                  (slotKey) => delete newRig[slotKey]
-                );
-                newRig[targetCategoryName] = part;
-                return newRig;
-              } else {
-                return prevRig; // User cancelled, do not change state
-              }
-            }
-          }
-          // For all other components, or for a motherboard with no conflicts:
-          return { ...prevRig, [targetCategoryName]: part };
-        });
+      if (!categoryConfig) {
+        console.error('[UpgradeInputPage] Could not find category config for:', rawCategory);
+        return;
       }
 
-      // Clear location.state to prevent this from re-running on other renders.
-      navigate("/upgrade", { replace: true, state: {} });
+      // Use the key for storage, but keep track of the display name for logging
+      const targetKey = rawCategory.startsWith('ram_slot_') ? rawCategory : categoryConfig.key;
+      const displayName = categoryConfig.name;
+      console.log('[UpgradeInputPage] Mapped category:', rawCategory, 'to key:', targetKey, '(display name:', displayName, ')');
+
+      // If selecting a motherboard, check RAM compatibility
+      if (componentToAdd.category === "motherboard") {
+        const currentSelectedComponents = useProductStore.getState().selectedComponents;
+        const incompatibleRamSlots = Object.entries(currentSelectedComponents)
+          .filter(
+            ([key, ramPart]) =>
+              key.startsWith("ram_slot_") &&
+              !validateRamCompatibility(ramPart, componentToAdd)
+          )
+          .map(([key]) => key);
+
+        if (incompatibleRamSlots.length > 0) {
+          const shouldProceed = window.confirm(
+            `Warning: The selected motherboard (${
+              componentToAdd.name
+            }) is not compatible with the RAM in ${incompatibleRamSlots.join(
+              ", "
+            )}. Incompatible RAM will be removed if you proceed. Continue?`
+          );
+
+          if (shouldProceed) {
+            // Remove incompatible RAM
+            incompatibleRamSlots.forEach(slotKey => removeComponent(slotKey));
+            // Add the new motherboard
+            selectComponent(targetKey, componentToAdd);
+          }
+        } else {
+          // No RAM compatibility issues, just add the motherboard
+          selectComponent(targetKey, componentToAdd);
+        }
+      } else {
+        // For all other components
+        selectComponent(targetKey, componentToAdd);
+      }
+
+      // Clear the navigation state after processing
+      requestAnimationFrame(() => {
+        navigate(location.pathname, { replace: true, state: {} });
+      });
     }
-    // This dependency array is now correct and stable.
-  }, [location.state, getProductById, navigate]);
+  }, [location.state, navigate, getProductById, isSubmitting, selectComponent, removeComponent]);
 
   const handleRemoveComponent = useCallback((categoryOrSlotName) => {
-    setCurrentUserRig((prevRig) => {
-      const newRig = { ...prevRig };
-      delete newRig[categoryOrSlotName];
-      if (categoryOrSlotName === "Motherboard") {
-        Object.keys(newRig).forEach((key) => {
-          if (key.startsWith("RAM Slot")) delete newRig[key];
-        });
-      }
-      return newRig;
-    });
-  }, []);
+    // If it's a RAM slot, use the slot name directly
+    if (categoryOrSlotName.startsWith('ram_slot_')) {
+      removeComponent(categoryOrSlotName);
+      return;
+    }
+
+    // Convert display name to key if needed
+    const category = CURRENT_RIG_CATEGORIES.find(c => c.name === categoryOrSlotName);
+    const key = category ? category.key : categoryOrSlotName.toLowerCase().replace(' ', '_');
+    
+    // If removing motherboard, also remove RAM
+    if (key === "motherboard") {
+      const currentSelectedComponents = useProductStore.getState().selectedComponents;
+      Object.keys(currentSelectedComponents).forEach((k) => {
+        if (k.startsWith("ram_slot_")) {
+          removeComponent(k);
+        }
+      });
+    }
+    
+    removeComponent(key);
+  }, [removeComponent]);
 
   const handlePartSelectedFromSearch = useCallback(
     (part) => {
       if (!part?.category) return;
+
       const categoryConfig = CURRENT_RIG_CATEGORIES.find(
         (c) => c.actualCategory === part.category
       );
       if (!categoryConfig) return;
 
+      // Validate RAM compatibility before adding
       if (
         part.category === "ram" &&
         selectedMotherboard &&
@@ -141,28 +180,31 @@ export default function UpgradeInputPage() {
 
       let targetSlot;
       if (categoryConfig.isMultiSlot) {
-        // Handle RAM
+        // This handles RAM
+        // Find the first available empty RAM slot
+        const currentSelectedComponents = useProductStore.getState().selectedComponents;
         for (let i = 1; i <= numberOfRamSlots; i++) {
-          const slotName = `RAM Slot ${i}`;
-          if (!currentUserRig[slotName]) {
+          const slotName = `ram_slot_${i}`;
+          if (!currentSelectedComponents[slotName]) {
             targetSlot = slotName;
             break;
           }
         }
-        if (!targetSlot) targetSlot = "RAM Slot 1";
+        if (!targetSlot) targetSlot = "ram_slot_1"; // Default to replacing the first stick if all are full
       } else {
-        targetSlot = categoryConfig.name;
+        // For all other components, the target slot is just the category key
+        targetSlot = categoryConfig.key;
       }
 
-      setCurrentUserRig((prevRig) => ({ ...prevRig, [targetSlot]: part }));
+      selectComponent(targetSlot, part);
     },
-    [currentUserRig, numberOfRamSlots, selectedMotherboard]
+    [numberOfRamSlots, selectedMotherboard, selectComponent]
   );
 
   const handleSubmitForUpgrade = useCallback(
     async (e) => {
       e.preventDefault();
-      if (Object.keys(currentUserRig).length === 0) {
+      if (Object.keys(selectedComponents).length === 0) {
         alert("Please select at least one component from your current rig.");
         return;
       }
@@ -178,13 +220,14 @@ export default function UpgradeInputPage() {
         alert("Please describe your upgrade goals.");
         return;
       }
+
       setIsSubmitting(true);
       setError(null);
       try {
         const currentUserPartsPayload = { ramIds: [] };
-        Object.entries(currentUserRig).forEach(([key, part]) => {
+        Object.entries(selectedComponents).forEach(([key, part]) => {
           if (part?.id) {
-            if (key.startsWith("RAM Slot")) {
+            if (key.startsWith("ram_slot_")) {
               currentUserPartsPayload.ramIds.push(part.id);
             } else {
               const idKey = `${part.category?.toLowerCase()}Id`;
@@ -192,6 +235,7 @@ export default function UpgradeInputPage() {
             }
           }
         });
+
         const response = await fetch("/api/buildbot", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -202,14 +246,19 @@ export default function UpgradeInputPage() {
             message: upgradeGoals,
           }),
         });
+
         const data = await response.json();
         if (!response.ok) {
           throw new Error(
             data.reply || data.error || "Failed to get suggestion."
           );
         }
+
         navigate("/build", {
-          state: { upgradeSuggestion: data, fromUpgradeFlow: true },
+          state: {
+            upgradeSuggestion: data,
+            fromUpgradeFlow: true,
+          },
         });
       } catch (err) {
         setError(err.message || "An unknown error occurred.");
@@ -218,22 +267,24 @@ export default function UpgradeInputPage() {
         setIsSubmitting(false);
       }
     },
-    [currentUserRig, upgradeBudget, upgradeGoals, navigate]
+    [selectedComponents, upgradeBudget, upgradeGoals, navigate]
   );
 
   const handleSelectClick = useCallback(
     (slotIdentifier, componentType) => {
-      navigate(
-        `/spec?category=${componentType}&selectingFor=${encodeURIComponent(
-          slotIdentifier
-        )}&origin=/upgrade`
-      );
+      // If selecting RAM, include the motherboard ID in the URL if one is selected
+      let url = `/spec?category=${componentType}&selectingFor=${encodeURIComponent(slotIdentifier)}&origin=/upgrade`;
+      
+      if (componentType === 'ram' && selectedMotherboard) {
+        url += `&motherboardId=${selectedMotherboard.id}`;
+      }
+      
+      navigate(url);
     },
-    [navigate]
+    [navigate, selectedMotherboard]
   );
 
-  // Loading and Error UI
-  if (!hasFetchedInitialData || isLoadingStoreProducts) {
+  if (!hasFetchedInitialData && isLoadingStoreProducts) {
     return (
       <div className="min-h-screen bg-[#100C16] flex flex-col justify-center items-center text-white">
         <Navabar />
@@ -259,8 +310,12 @@ export default function UpgradeInputPage() {
               recommend the best possible upgrade.
             </p>
           </div>
-          <ComponentSearch onPartSelected={handlePartSelectedFromSearch} />
-          <form onSubmit={handleSubmitForUpgrade}>
+
+          <div className="relative z-20">
+            <ComponentSearch onPartSelected={handlePartSelectedFromSearch} />
+          </div>
+
+          <form onSubmit={handleSubmitForUpgrade} className="relative z-10">
             <h2 className="text-xl font-semibold text-gray-200 mb-4">
               Your Current Components
             </h2>
@@ -270,16 +325,18 @@ export default function UpgradeInputPage() {
                   // Special handling for RAM
                   return Array.from({ length: numberOfRamSlots }).map(
                     (_, index) => {
-                      const slotName = `RAM Slot ${index + 1}`;
+                      const slotKey = `ram_slot_${index + 1}`;
+                      const slotPart = selectedComponents[slotKey];
                       return (
-                        <div key={slotName} className="flex flex-col">
+                        <div key={slotKey} className="flex flex-col">
                           <label className="text-sm font-semibold text-gray-300 mb-2">
-                            {slotName}
+                            RAM Slot {index + 1}
                           </label>
                           <SelectionCard
-                            part={currentUserRig[slotName]}
-                            onSelect={() => handleSelectClick(slotName, "ram")}
-                            onRemove={() => handleRemoveComponent(slotName)}
+                            part={slotPart}
+                            status={slotPart ? "selected" : "empty"}
+                            onSelect={() => handleSelectClick(slotKey, "ram")}
+                            onRemove={() => handleRemoveComponent(slotKey)}
                             emptySlotLabel={`Select RAM for Slot ${index + 1}`}
                             isDisabled={!selectedMotherboard}
                           />
@@ -288,6 +345,8 @@ export default function UpgradeInputPage() {
                     }
                   );
                 }
+
+                const componentPart = selectedComponents[category.key];
                 return (
                   // For single-slot categories
                   <div key={category.key} className="flex flex-col">
@@ -295,7 +354,8 @@ export default function UpgradeInputPage() {
                       {category.name}
                     </label>
                     <SelectionCard
-                      part={currentUserRig[category.name]}
+                      part={componentPart}
+                      status={componentPart ? "selected" : "empty"}
                       onSelect={() =>
                         handleSelectClick(
                           category.name,
@@ -309,6 +369,7 @@ export default function UpgradeInputPage() {
                 );
               })}
             </div>
+
             <h2 className="text-xl font-semibold text-gray-200 mb-4">
               Your Upgrade Goals
             </h2>

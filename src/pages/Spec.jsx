@@ -34,12 +34,22 @@ export default function SpecsPage() {
   const selectingFor = queryParams.get("selectingFor");
   const categoryFromUrl = queryParams.get("category");
   const originPage = queryParams.get("origin") || "/build";
+  const motherboardId = queryParams.get("motherboardId");
 
-  // --- FIXED: Use specific, stable selectors for Zustand state to prevent infinite loops ---
+  // --- Get motherboard info either from URL param or store ---
+  const getProductById = useProductStore((s) => s.getProductById);
   const storeHasFetched = useProductStore((s) => s.hasFetchedInitialData);
   const selectedMotherboardForBuild = useProductStore(
-    (s) => s.selectedComponents["Motherboard"]
+    (s) => s.selectedComponents["motherboard"]
   );
+
+  // Use motherboard from URL param if available, otherwise from store
+  const motherboardForRamCheck = useMemo(() => {
+    if (motherboardId) {
+      return getProductById(motherboardId);
+    }
+    return selectedMotherboardForBuild;
+  }, [motherboardId, selectedMotherboardForBuild, getProductById]);
 
   const [currentDisplayCategory, setCurrentDisplayCategory] = useState(
     categoryFromUrl || DEFAULT_CATEGORY_KEY
@@ -115,10 +125,10 @@ export default function SpecsPage() {
 
         if (currentDisplayCategory === "ram" && selectingFor) {
           if (
-            selectedMotherboardForBuild &&
-            selectedMotherboardForBuild.specs?.memoryType
+            motherboardForRamCheck &&
+            motherboardForRamCheck.specs?.memoryType
           ) {
-            const moboMemoryType = selectedMotherboardForBuild.specs.memoryType;
+            const moboMemoryType = motherboardForRamCheck.specs.memoryType;
             processedData = processedData.filter(
               (ram) => ram.specs?.type === moboMemoryType
             );
@@ -139,7 +149,7 @@ export default function SpecsPage() {
   }, [
     currentDisplayCategory,
     storeHasFetched,
-    selectedMotherboardForBuild,
+    motherboardForRamCheck,
     selectingFor,
   ]);
 
@@ -148,6 +158,7 @@ export default function SpecsPage() {
       if (selectingFor && part) {
         console.log('[Spec] Selecting part:', part);
         console.log('[Spec] For category:', selectingFor);
+        console.log('[Spec] Origin page:', originPage);
         
         const state = {
           selectedComponent: part,
@@ -322,7 +333,7 @@ export default function SpecsPage() {
             <p className="text-center text-gray-400">
               {currentDisplayCategory === "ram" &&
               selectingFor &&
-              !selectedMotherboardForBuild
+              !motherboardForRamCheck
                 ? "Please select a motherboard in your build to see compatible RAM."
                 : "No products found for this category or your filters."}
             </p>

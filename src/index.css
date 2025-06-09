@@ -31,3 +31,29 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+.component-carousel .swiper-button-next,
+.component-carousel .swiper-button-prev {
+  background-color: rgba(26, 19, 35, 0.5); /* bg-[#1A1323] with opacity */
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s ease-in-out;
+}
+
+.component-carousel .swiper-button-next:hover,
+.component-carousel .swiper-button-prev:hover {
+  background-color: rgba(42, 34, 58, 0.8);
+  color: #c4b5fd; /* A lighter purple */
+}
+
+.component-carousel .swiper-button-next::after,
+.component-carousel .swiper-button-prev::after {
+  font-size: 1.25rem; /* 20px */
+  font-weight: 700;
+}
+
+.swiper-slide-shadow {
+  background: rgba(0, 0, 0, 0.5) !important;
+}

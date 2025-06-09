@@ -7,7 +7,8 @@ import Home from "./pages/Home";
 import SpecsListPage from "./pages/Spec";
 import ChatPage from "./pages/Chatpage";
 import CustomBuildPage from "./pages/CustomBuildPage";
-import UpgradeInputPage from "./pages/UpgradeInputPage";
+import UpgradeInputPage from "./pages/UpgradeInputPage"; // Import the input page
+import UpgradeResultPage from "./pages/UpgradeResultPage"; // Import the new result page
 import useProductStore from "./stores/productStore";
 
 function App() {
@@ -17,7 +18,6 @@ function App() {
 
   useEffect(() => {
     if (!hasFetched && !isLoading) {
-      console.log("[App.jsx] Initializing product data fetch via store.");
       fetchAllProducts();
     }
   }, [fetchAllProducts, hasFetched, isLoading]);
@@ -31,6 +31,7 @@ function App() {
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/build" element={<CustomBuildPage />} />
           <Route path="/upgrade" element={<UpgradeInputPage />} />
+          <Route path="/upgrade-result" element={<UpgradeResultPage />} />
         </Routes>
       </div>
     </>
