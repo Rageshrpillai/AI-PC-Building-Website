@@ -1,0 +1,66 @@
+[
+  {
+    "id": "psu-001",
+    "name": "Corsair RM750x (2021) 750W 80+ Gold Fully Modular PSU",
+    "brand": "Corsair",
+    "price": 109.99,
+    "category": "psu",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Corsair+RM750x",
+    "specs": {
+      "wattage": "750W",
+      "efficiencyRating": "80+ Gold",
+      "modular": "Fully",
+      "formFactor": "ATX",
+      "fanSize": "135mm"
+    },
+    "rating": { "rate": 4.8, "count": 1500 }
+  },
+  {
+    "id": "psu-002",
+    "name": "EVGA SuperNOVA 650 G5, 650W 80+ Gold Fully Modular PSU",
+    "brand": "EVGA",
+    "price": 89.99,
+    "category": "psu",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=EVGA+650+G5",
+    "specs": {
+      "wattage": "650W",
+      "efficiencyRating": "80+ Gold",
+      "modular": "Fully",
+      "formFactor": "ATX",
+      "fanSize": "135mm"
+    },
+    "rating": { "rate": 4.7, "count": 1100 }
+  },
+  {
+    "id": "psu-003",
+    "name": "SeaSonic FOCUS GX-850, 850W 80+ Gold Fully Modular PSU",
+    "brand": "SeaSonic",
+    "price": 129.99,
+    "category": "psu",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=SeaSonic+FOCUS+850W",
+    "specs": {
+      "wattage": "850W",
+      "efficiencyRating": "80+ Gold",
+      "modular": "Fully",
+      "formFactor": "ATX",
+      "fanSize": "120mm"
+    },
+    "rating": { "rate": 4.9, "count": 950 }
+  },
+  {
+    "id": "psu-004",
+    "name": "Cooler Master MWE 550 Bronze V2, 550W 80+ Bronze PSU",
+    "brand": "Cooler Master",
+    "price": 59.99,
+    "category": "psu",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=CM+MWE+550W",
+    "specs": {
+      "wattage": "550W",
+      "efficiencyRating": "80+ Bronze",
+      "modular": "Non-Modular",
+      "formFactor": "ATX",
+      "fanSize": "120mm"
+    },
+    "rating": { "rate": 4.5, "count": 700 }
+  }
+]

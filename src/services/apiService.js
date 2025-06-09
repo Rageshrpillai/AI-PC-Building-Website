@@ -1,63 +1,129 @@
 // src/services/apiService.js
 
-/**
- * Fetches a list of products from local mock JSON files based on category.
- * @param {string} category - The category of parts to fetch (e.g., 'cpu').
- * @returns {Promise<Array<Object>>} A promise that resolves to an array of product objects.
- * @throws {Error} If the file cannot be fetched or parsed.
- */
+// This array should list all your actual JSON data filenames in /public/data/
+const ALL_CATEGORY_FILENAMES = [
+  "cpus.json",
+  "gpus.json",
+  "motherboards.json",
+  "rams.json",
+  "storages.json",
+  "psus.json",
+  "cases.json",
+  // Add any other .json file names here
+];
+
+// Helper to get a category key from filename (e.g., cpus.json -> cpu)
+const getCategoryKeyFromFile = (filename) => {
+  return filename.replace(".json", "").replace(/s$/, "");
+};
+
 export const fetchProducts = async (category = "cpu") => {
-  let fileName = "";
+  const lowerCategory = category.toLowerCase();
 
-  // Determine the filename based on the category
-  // We'll use plural for filenames as we created 'cpus.json'
-  if (category.toLowerCase() === "cpu") {
-    fileName = "cpus.json";
-  } else if (category.toLowerCase() === "gpu") {
-    fileName = "gpus.json"; // Example for when you add GPU data
+  if (lowerCategory === "all") {
+    console.log("[apiService] Fetching all components for store...");
+    try {
+      const allPromises = ALL_CATEGORY_FILENAMES.map((catFile) =>
+        fetch(`/data/${catFile}`)
+          .then(async (res) => {
+            if (!res.ok) {
+              console.warn(
+                `[apiService] Could not fetch /data/${catFile}. Status: ${res.status}`
+              );
+              return []; // Return empty for this file if fetch fails
+            }
+            try {
+              const data = await res.json();
+              // Add category to each product based on its source file
+              const categoryKey = getCategoryKeyFromFile(catFile);
+              return Array.isArray(data)
+                ? data.map((p) => ({
+                    ...p,
+                    category: p.category || categoryKey,
+                  }))
+                : [];
+            } catch (parseError) {
+              console.error(
+                `[apiService] Error parsing JSON from /data/${catFile}:`,
+                parseError
+              );
+              return []; // Return empty if JSON parsing fails
+            }
+          })
+          .catch((err) => {
+            console.error(
+              `[apiService] Network or other error fetching /data/${catFile}:`,
+              err
+            );
+            return []; // Return empty on fetch error for this file
+          })
+      );
+      const allProductArrays = await Promise.all(allPromises);
+      const flattenedProducts = allProductArrays.flat();
+      console.log(
+        `[apiService] Successfully fetched and combined ${flattenedProducts.length} products for 'all'.`
+      );
+      return flattenedProducts;
+    } catch (error) {
+      console.error("[apiService] Error in fetchProducts('all'):", error);
+      throw error; // Re-throw to be caught by the store
+    }
   }
-  // Add more 'else if' blocks here as you create more JSON files for other categories
-  // e.g., 'motherboard' -> 'motherboards.json'
-  else {
-    console.error(`Mock data for category '${category}' is not yet available.`);
-    // Return an empty array or throw an error if the category file isn't defined
-    return Promise.resolve([]); // Resolve with empty for now to prevent unhandled promise rejection
+
+  // Logic for fetching a single category
+  const categoryToFileMap = {
+    cpu: "cpus.json",
+    gpu: "gpus.json",
+    motherboard: "motherboards.json",
+    ram: "rams.json",
+    storage: "storages.json",
+    cooler: "psus.json", // Assuming cooler data is in psus.json
+    cabinet: "cases.json", // Assuming cabinet data is in cases.json
+    psu: "psus.json",
+    case: "cases.json",
+  };
+  const fileName = categoryToFileMap[lowerCategory];
+
+  if (!fileName) {
+    console.error(
+      `[apiService] No mock data file defined for category '${category}'.`
+    );
+    return Promise.resolve([]);
   }
 
-  const filePath = `/data/${fileName}`; // Path relative to the 'public' folder
-
+  const filePath = `/data/${fileName}`;
   try {
     console.log(
-      `Workspaceing mock products for category: ${category} from local file: ${filePath}`
+      `[apiService] Fetching mock products for category: ${category} from ${filePath}`
     );
-    // 'fetch' can be used to get files from your 'public' directory
     const response = await fetch(filePath);
-
     if (!response.ok) {
-      // This will happen if the file doesn't exist at the path or there's a server error
       throw new Error(
-        `Could not fetch ${filePath}. Status: ${response.status} ${response.statusText}`
+        `Could not fetch ${filePath}. Status: ${response.status}`
       );
     }
-
-    const data = await response.json(); // Parse the JSON data from the file
-
-    // Our local JSON files are expected to directly contain an array of products
+    const data = await response.json();
     if (Array.isArray(data)) {
-      return data;
+      const categoryKey = getCategoryKeyFromFile(fileName);
+      return data.map((product) => ({
+        ...product,
+        category: product.category || categoryKey,
+      }));
     } else {
-      console.warn(
-        `Data in ${filePath} is not an array as expected. Received:`,
-        data
-      );
-      return []; // Return empty array if the format is not a direct array
+      console.warn(`[apiService] Data in ${filePath} is not an array.`);
+      return [];
     }
   } catch (error) {
     console.error(
-      `Failed to fetch or parse mock products for category ${category} from ${filePath}:`,
+      `[apiService] Failed to fetch/parse products for ${category} from ${filePath}:`,
       error
     );
-    // Re-throw the error so the calling component (SpecsListPage) can handle it in its catch block
-    throw error;
+    throw error; // Re-throw
   }
 };
+
+// fetchPartById is no longer strictly needed here if the store handles finding by ID from allProducts.
+// The store's getProductById selector will be more efficient once all data is loaded.
+// If you still needed a direct API call for a single part without loading the store:
+// export const fetchPartById = async (partId) => { ... logic to search all files ... };
+// But for now, we'll rely on the store's getProductById.

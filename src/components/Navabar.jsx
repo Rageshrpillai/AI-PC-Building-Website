@@ -9,8 +9,8 @@ import specsIcon from "../assets/icons.png";
 const NAV_LINKS_CONFIG = [
   { name: "Home", to: "/" },
   { name: "Specs", to: "/spec" }, // Should match your route for SpecsListPage
-  { name: "Builds", to: "/builds" }, // Placeholder
-  { name: "Feeds", to: "/feeds" }, // Placeholder
+  { name: "Builds", to: "/build" }, // Placeholder
+  { name: "Chatbot", to: "/chat" }, // Placeholder
 ];
 
 export default function Navabar() {

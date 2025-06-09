@@ -1,0 +1,104 @@
+[
+  {
+    "id": "gpu-001",
+    "name": "NVIDIA GeForce RTX 4090 Founders Edition",
+    "brand": "NVIDIA",
+    "price": 1599.0,
+    "category": "gpu",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=RTX+4090",
+    "specs": {
+      "chipset": "GeForce RTX 4090",
+      "memory": "24GB GDDR6X",
+      "coreClock": "2235 MHz",
+      "boostClock": "2520 MHz",
+      "interface": "PCIe 4.0 x16",
+      "tdp": "450W"
+    },
+    "rating": { "rate": 4.9, "count": 600 }
+  },
+  {
+    "id": "gpu-002",
+    "name": "AMD Radeon RX 7900 XTX",
+    "brand": "AMD",
+    "price": 949.0,
+    "category": "gpu",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=RX+7900XTX",
+    "specs": {
+      "chipset": "Radeon RX 7900 XTX",
+      "memory": "24GB GDDR6",
+      "coreClock": "2000 MHz",
+      "boostClock": "2500 MHz",
+      "interface": "PCIe 4.0 x16",
+      "tdp": "355W"
+    },
+    "rating": { "rate": 4.8, "count": 550 }
+  },
+  {
+    "id": "gpu-003",
+    "name": "NVIDIA GeForce RTX 4070 Ti SUPER",
+    "brand": "NVIDIA",
+    "price": 799.0,
+    "category": "gpu",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=RTX+4070Ti+SUPER",
+    "specs": {
+      "chipset": "GeForce RTX 4070 Ti SUPER",
+      "memory": "16GB GDDR6X",
+      "coreClock": "2340 MHz",
+      "boostClock": "2610 MHz",
+      "interface": "PCIe 4.0 x16",
+      "tdp": "285W"
+    },
+    "rating": { "rate": 4.8, "count": 430 }
+  },
+  {
+    "id": "gpu-004",
+    "name": "AMD Radeon RX 6800 XT",
+    "brand": "AMD",
+    "price": 499.0,
+    "category": "gpu",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=RX+6800XT",
+    "specs": {
+      "chipset": "Radeon RX 6800 XT",
+      "memory": "16GB GDDR6",
+      "coreClock": "1825 MHz",
+      "boostClock": "2250 MHz",
+      "interface": "PCIe 4.0 x16",
+      "tdp": "300W"
+    },
+    "rating": { "rate": 4.7, "count": 1200 }
+  },
+  {
+    "id": "gpu-005",
+    "name": "NVIDIA GeForce RTX 3060 12GB",
+    "brand": "NVIDIA",
+    "price": 329.0,
+    "category": "gpu",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=RTX+3060",
+    "specs": {
+      "chipset": "GeForce RTX 3060",
+      "memory": "12GB GDDR6",
+      "coreClock": "1320 MHz",
+      "boostClock": "1777 MHz",
+      "interface": "PCIe 4.0 x16",
+      "tdp": "170W"
+    },
+    "rating": { "rate": 4.6, "count": 2500 }
+  },
+  {
+    "id": "gpu-006",
+    "name": "AMD Radeon RX 6600",
+    "brand": "AMD",
+    "price": 229.0,
+    "category": "gpu",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=RX+6600",
+    "specs": {
+      "chipset": "Radeon RX 6600",
+      "memory": "8GB GDDR6",
+      "coreClock": "1626 MHz",
+      "boostClock": "2491 MHz",
+      "interface": "PCIe 4.0 x8",
+      "tdp": "132W"
+    },
+    "rating": { "rate": 4.5, "count": 1700 }
+  }
+]

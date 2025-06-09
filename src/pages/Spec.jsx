@@ -1,207 +1,447 @@
-// src/pages/Spec.jsx (or SpecsListPage.jsx)
+// src/pages/Spec.jsx
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { fetchProducts } from "../services/apiService";
-import PartCard from "../components/PartCard";
-import FiltersSidebar from "../components/FiltersSidebar";
+import useProductStore from "../stores/productStore";
 import Navabar from "../components/Navabar";
+import FiltersSidebar from "../components/FiltersSidebar";
+import PartCard from "../components/PartCard";
+import CompareView from "../components/CompareView";
 
-const ratingCriteria = {
-  "5star": (rate) => rate >= 4.5,
-  "4star": (rate) => rate >= 3.5 && rate < 4.5,
-  "3star": (rate) => rate >= 2.5 && rate < 3.5,
-  "2star": (rate) => rate >= 1.5 && rate < 2.5,
-  "1star": (rate) => rate > 0 && rate < 1.5,
-};
+const CATEGORIES = [
+  { key: "all", name: "All components" },
+  { key: "cpu", name: "CPU" },
+  { key: "gpu", name: "GPU" },
+  { key: "ram", name: "RAM" },
+  { key: "motherboard", name: "Motherboard" },
+  { key: "storage", name: "Storage" },
+  { key: "psu", name: "PSU" },
+  { key: "case", name: "Case" },
+  { key: "cooler", name: "Cooler" },
+];
+const DEFAULT_COMPARE_CATEGORY = "cpu";
+const DEFAULT_CATEGORY_KEY = "all";
 
-export default function SpecsListPage() {
-  const [allProducts, setAllProducts] = useState([]);
+export default function SpecsPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const queryParams = useMemo(
+    () => new URLSearchParams(location.search),
+    [location.search]
+  );
+
+  const selectingFor = queryParams.get("selectingFor");
+  const categoryFromUrl = queryParams.get("category");
+  const originPage = queryParams.get("origin") || "/build";
+
+  // --- FIXED: Use specific, stable selectors for Zustand state to prevent infinite loops ---
+  const storeHasFetched = useProductStore((s) => s.hasFetchedInitialData);
+  const selectedMotherboardForBuild = useProductStore(
+    (s) => s.selectedComponents["Motherboard"]
+  );
+
+  const [currentDisplayCategory, setCurrentDisplayCategory] = useState(
+    categoryFromUrl || DEFAULT_CATEGORY_KEY
+  );
+  const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("components");
 
-  const [selectedRatingFilters, setSelectedRatingFilters] = useState([]);
-  const [selectedBrandFilters, setSelectedBrandFilters] = useState([]);
-  const [selectedSocketFilters, setSelectedSocketFilters] = useState([]);
-  const [searchTerm, setSearchTerm] = useState(""); // <-- New state for search term
+  const initialFiltersState = useMemo(
+    () => ({
+      brands: [],
+      ratings: [],
+      sockets: [],
+      formFactors: [],
+      ramTypes: [],
+      ramCapacities: [],
+      storageTypes: [],
+      storageCapacities: [],
+      psuEfficiencies: [],
+      psuModulars: [],
+      caseTypes: [],
+      caseSidePanels: [],
+      priceRange: { min: 0, max: 500000 },
+    }),
+    []
+  );
+  const [filters, setFilters] = useState(initialFiltersState);
 
   useEffect(() => {
-    if (activeTab === "components") {
-      const loadProducts = async () => {
-        const categoryToFetch = "cpu";
-        try {
-          setIsLoading(true);
-          setError(null);
-          const data = await fetchProducts(categoryToFetch);
-          if (Array.isArray(data)) {
-            setAllProducts(data);
-          } else {
-            setAllProducts([]);
-          }
-        } catch (err) {
-          setError(err.message || `Failed to fetch ${categoryToFetch}.`);
-          setAllProducts([]);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      loadProducts();
-    } else {
-      setIsLoading(false);
+    const newCategory = queryParams.get("category") || DEFAULT_CATEGORY_KEY;
+    if (newCategory !== currentDisplayCategory) {
+      setCurrentDisplayCategory(newCategory);
+      setFilters(initialFiltersState);
+      setSearchTerm("");
     }
-  }, [activeTab]);
+    if (selectingFor && activeTab !== "components") {
+      setActiveTab("components");
+    }
+  }, [
+    queryParams,
+    currentDisplayCategory,
+    initialFiltersState,
+    selectingFor,
+    activeTab,
+  ]);
 
-  const handleRatingFilterChange = useCallback((newSelectedRatings) => {
-    setSelectedRatingFilters(newSelectedRatings);
-  }, []);
+  useEffect(() => {
+    const loadProducts = async () => {
+      if (!currentDisplayCategory) {
+        setIsLoading(false);
+        return;
+      }
 
-  const handleBrandFilterChange = useCallback((newSelectedBrands) => {
-    setSelectedBrandFilters(newSelectedBrands);
-  }, []);
+      if (
+        currentDisplayCategory === "ram" &&
+        selectingFor &&
+        !storeHasFetched
+      ) {
+        setIsLoading(true);
+        return;
+      }
 
-  const handleSocketFilterChange = useCallback((newSelectedSockets) => {
-    setSelectedSocketFilters(newSelectedSockets);
-  }, []);
+      let fetchKey = currentDisplayCategory;
+      if (currentDisplayCategory === "cooler") fetchKey = "psu";
 
-  // NEW: Memoized handler for search term changes
-  const handleSearchTermChange = useCallback((newTerm) => {
-    setSearchTerm(newTerm.toLowerCase()); // Store in lowercase for case-insensitive search
-  }, []);
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await fetchProducts(fetchKey);
+        let processedData = Array.isArray(data) ? data : [];
+
+        if (currentDisplayCategory === "ram" && selectingFor) {
+          if (
+            selectedMotherboardForBuild &&
+            selectedMotherboardForBuild.specs?.memoryType
+          ) {
+            const moboMemoryType = selectedMotherboardForBuild.specs.memoryType;
+            processedData = processedData.filter(
+              (ram) => ram.specs?.type === moboMemoryType
+            );
+          } else {
+            processedData = [];
+          }
+        }
+        setProducts(processedData);
+      } catch (err) {
+        setError(err.message || `Failed to fetch ${currentDisplayCategory}.`);
+        setProducts([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, [
+    currentDisplayCategory,
+    storeHasFetched,
+    selectedMotherboardForBuild,
+    selectingFor,
+  ]);
+
+  const handleSelectPartForBuild = useCallback(
+    (part) => {
+      if (selectingFor && part) {
+        navigate(originPage, {
+          state: {
+            newlySelectedPartId: part.id,
+            targetCategoryName: selectingFor,
+            origin: originPage,
+          },
+        });
+      }
+    },
+    [navigate, selectingFor, originPage]
+  );
+
+  const handleCategoryChange = useCallback(
+    (categoryKey) => {
+      let targetUrl = `/spec?category=${categoryKey}`;
+      if (selectingFor) {
+        targetUrl += `&selectingFor=${encodeURIComponent(selectingFor)}`;
+      }
+      if (originPage) {
+        targetUrl += `&origin=${originPage}`;
+      }
+      navigate(targetUrl);
+    },
+    [navigate, selectingFor, originPage]
+  );
 
   const filteredProducts = useMemo(() => {
-    let productsToFilter = [...allProducts];
-
-    // Apply Search Filter FIRST
-    if (searchTerm) {
-      productsToFilter = productsToFilter.filter((product) => {
-        const nameMatch =
-          product.name && product.name.toLowerCase().includes(searchTerm);
-        const brandMatch =
-          product.brand && product.brand.toLowerCase().includes(searchTerm);
-        const socketMatch =
-          product.specs &&
-          product.specs.socket &&
-          product.specs.socket.toLowerCase().includes(searchTerm);
-        // Example: also search in cores
-        const coresMatch =
-          product.specs &&
-          product.specs.cores &&
-          product.specs.cores.toLowerCase().includes(searchTerm);
-
-        return nameMatch || brandMatch || socketMatch || coresMatch; // Add more fields as needed
-      });
-    }
-
-    // Then apply checkbox filters
-    if (selectedBrandFilters && selectedBrandFilters.length > 0) {
+    let productsToFilter = [...products];
+    
+    if (filters.priceRange) {
       productsToFilter = productsToFilter.filter(
-        (product) =>
-          product.brand && selectedBrandFilters.includes(product.brand)
+        (p) => p.price && p.price <= filters.priceRange.max
       );
     }
-    if (selectedSocketFilters && selectedSocketFilters.length > 0) {
+
+    if (activeTab === "components" && searchTerm) {
+      const lowerSearchTerm = searchTerm.toLowerCase();
       productsToFilter = productsToFilter.filter(
-        (product) =>
-          product.specs &&
-          product.specs.socket &&
-          selectedSocketFilters.includes(product.specs.socket)
+        (p) =>
+          p.name?.toLowerCase().includes(lowerSearchTerm) ||
+          p.brand?.toLowerCase().includes(lowerSearchTerm)
       );
     }
-    if (selectedRatingFilters && selectedRatingFilters.length > 0) {
-      productsToFilter = productsToFilter.filter((product) => {
-        if (!product.rating || typeof product.rating.rate !== "number") {
-          return false;
-        }
-        return selectedRatingFilters.some((filterId) => {
-          const criterion = ratingCriteria[filterId];
-          return criterion ? criterion(product.rating.rate) : false;
-        });
+
+    if (filters.brands.length > 0) {
+      productsToFilter = productsToFilter.filter(
+        (p) => p.brand && filters.brands.includes(p.brand)
+      );
+    }
+    if (filters.sockets.length > 0) {
+      productsToFilter = productsToFilter.filter(
+        (p) => p.specs?.socket && filters.sockets.includes(p.specs.socket)
+      );
+    }
+    if (filters.formFactors.length > 0) {
+      productsToFilter = productsToFilter.filter(
+        (p) =>
+          p.specs?.formFactor &&
+          filters.formFactors.includes(p.specs.formFactor)
+      );
+    }
+    if (filters.ramTypes.length > 0) {
+      productsToFilter = productsToFilter.filter(
+        (p) => p.specs?.type && filters.ramTypes.includes(p.specs.type)
+      );
+    }
+    if (filters.ramCapacities.length > 0) {
+      productsToFilter = productsToFilter.filter(
+        (p) =>
+          p.specs?.capacity && filters.ramCapacities.includes(p.specs.capacity)
+      );
+    }
+    if (filters.storageTypes.length > 0) {
+      productsToFilter = productsToFilter.filter(
+        (p) => p.specs?.type && filters.storageTypes.includes(p.specs.type)
+      );
+    }
+    if (filters.storageCapacities.length > 0) {
+      productsToFilter = productsToFilter.filter(
+        (p) =>
+          p.specs?.capacity &&
+          filters.storageCapacities.includes(p.specs.capacity)
+      );
+    }
+    if (filters.psuEfficiencies.length > 0) {
+      productsToFilter = productsToFilter.filter(
+        (p) =>
+          p.specs?.efficiencyRating &&
+          filters.psuEfficiencies.includes(p.specs.efficiencyRating)
+      );
+    }
+    if (filters.psuModulars.length > 0) {
+      productsToFilter = productsToFilter.filter(
+        (p) => p.specs?.modular && filters.psuModulars.includes(p.specs.modular)
+      );
+    }
+    if (filters.caseTypes.length > 0) {
+      productsToFilter = productsToFilter.filter(
+        (p) => p.specs?.type && filters.caseTypes.includes(p.specs.type)
+      );
+    }
+    if (filters.caseSidePanels.length > 0) {
+      productsToFilter = productsToFilter.filter(
+        (p) =>
+          p.specs?.sidePanel &&
+          filters.caseSidePanels.includes(p.specs.sidePanel)
+      );
+    }
+    if (filters.ratings.length > 0) {
+      productsToFilter = productsToFilter.filter((p) => {
+        if (!p.rating?.rate) return false;
+        const productRating = Math.floor(p.rating.rate);
+        return filters.ratings.some(
+          (rating) => Math.floor(parseFloat(rating)) === productRating
+        );
       });
     }
 
     return productsToFilter;
-  }, [
-    allProducts,
-    searchTerm,
-    selectedBrandFilters,
-    selectedRatingFilters,
-    selectedSocketFilters,
-  ]); // Add searchTerm to dependencies
+  }, [products, searchTerm, activeTab, filters]);
 
-  const renderComponentsContent = () => {
-    if (isLoading && allProducts.length === 0) {
-      /* ... loading ... */
-    }
-    if (error) {
-      /* ... error ... */
-    }
+  const handleFilterChange = useCallback((filterType, newValues) => {
+    setFilters((prev) => ({ ...prev, [filterType]: newValues }));
+  }, []);
+  const handleTabChange = useCallback(
+    (tab) => {
+      if (selectingFor && tab === "compare") {
+        return;
+      }
+      setActiveTab(tab);
+      if (tab === "compare" && currentDisplayCategory === "all") {
+        handleCategoryChange(DEFAULT_COMPARE_CATEGORY);
+      }
+    },
+    [currentDisplayCategory, selectingFor, handleCategoryChange]
+  );
 
-    return (
-      <div className="flex flex-col md:flex-row md:space-x-6 lg:space-x-8">
-        <div className="w-full md:w-auto md:flex-shrink-0 mb-6 md:mb-0">
-          <FiltersSidebar
-            onRatingFilterChange={handleRatingFilterChange}
-            onBrandFilterChange={handleBrandFilterChange}
-            onSocketFilterChange={handleSocketFilterChange}
-            onSearchTermChange={handleSearchTermChange} // <-- Pass new search handler
-          />
-        </div>
-        <main className="flex-grow">
-          {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-              {filteredProducts.map((product) => (
-                <PartCard key={product.id} product={product} />
-              ))}
-            </div>
-          ) : (
-            <div className="flex items-center justify-center h-64 bg-[#1A1325] rounded-lg">
-              <p className="text-center text-gray-400">
-                {isLoading
-                  ? "Loading..."
-                  : "No products match your current filters or none found."}
-              </p>
-            </div>
-          )}
-        </main>
+  const renderComponentsContent = () => (
+    <div className="flex flex-col md:flex-row md:space-x-6 lg:space-x-8">
+      <div className="w-full md:w-72 md:flex-shrink-0 mb-6 md:mb-0">
+        <FiltersSidebar
+          currentCategory={currentDisplayCategory}
+          availableProducts={products}
+          activeFilters={filters}
+          onFilterChange={handleFilterChange}
+        />
       </div>
-    );
-  };
+      <main className="flex-grow">
+        {isLoading && (
+          <div className="text-center py-10 text-gray-300">
+            Loading components...
+          </div>
+        )}
+        {!isLoading && error && (
+          <div className="text-center py-10 text-red-400">Error: {error}</div>
+        )}
+        {!isLoading && !error && filteredProducts.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+            {filteredProducts.map((p) => (
+              <PartCard
+                key={p.id}
+                product={p}
+                isSelectionMode={!!selectingFor}
+                onSelectForBuild={handleSelectPartForBuild}
+              />
+            ))}
+          </div>
+        )}
+        {!isLoading && !error && filteredProducts.length === 0 && (
+          <div className="flex items-center justify-center h-64 bg-[#1A1325] rounded-lg">
+            <p className="text-center text-gray-400">
+              {currentDisplayCategory === "ram" &&
+              selectingFor &&
+              !selectedMotherboardForBuild
+                ? "Please select a motherboard in your build to see compatible RAM."
+                : "No products found for this category or your filters."}
+            </p>
+          </div>
+        )}
+      </main>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[#100C16] text-gray-100 pt-16">
       <Navabar />
-      <div className="p-4 sm:p-6 md:p-8">
-        {/* ... Tabs ... */}
+      <div className="p-4 sm:p-6 md:p-8 max-w-screen-2xl mx-auto">
+        {selectingFor && (
+          <div className="mb-4 p-3 bg-purple-900/50 border border-purple-700 rounded-md text-center">
+            <p className="text-sm text-purple-300">
+              You are selecting a{" "}
+              <strong>
+                {CATEGORIES.find((c) => c.key === currentDisplayCategory)
+                  ?.name || currentDisplayCategory.toUpperCase()}
+              </strong>{" "}
+              for the <strong>{selectingFor}</strong> slot.
+            </p>
+          </div>
+        )}
         <div className="mb-6 sm:mb-8 flex border-b border-gray-700">
           <button
-            onClick={() => setActiveTab("components")}
-            className={`py-2.5 px-4 sm:py-3 sm:px-6 -mb-px text-sm sm:text-base font-medium focus:outline-none transition-colors duration-150 ${
+            onClick={() => handleTabChange("components")}
+            className={`py-3 px-6 -mb-px font-medium focus:outline-none transition-colors ${
               activeTab === "components"
                 ? "border-b-2 border-purple-500 text-purple-400"
-                : "text-gray-500 hover:text-gray-300 hover:border-gray-500 border-b-2 border-transparent"
+                : "text-gray-500 hover:text-gray-300 border-b-2 border-transparent"
             }`}
           >
             Components list
           </button>
           <button
-            onClick={() => setActiveTab("compare")}
-            className={`py-2.5 px-4 sm:py-3 sm:px-6 -mb-px text-sm sm:text-base font-medium focus:outline-none transition-colors duration-150 ${
+            onClick={() => handleTabChange("compare")}
+            disabled={!!selectingFor}
+            className={`py-3 px-6 -mb-px font-medium focus:outline-none transition-colors ${
               activeTab === "compare"
                 ? "border-b-2 border-purple-500 text-purple-400"
-                : "text-gray-500 hover:text-gray-300 hover:border-gray-500 border-b-2 border-transparent"
-            }`}
+                : "text-gray-500 hover:text-gray-300 border-b-2 border-transparent"
+            } ${!!selectingFor ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             Compare
           </button>
         </div>
-        {activeTab === "components" && renderComponentsContent()}
-        {activeTab === "compare" && (
-          <div className="text-center py-20 bg-[#1A1325] rounded-lg">
-            <h2 className="text-2xl font-semibold text-gray-300">
-              Compare Feature
-            </h2>
-            <p className="text-gray-400 mt-2">This section is coming soon!</p>
+        <div className="mb-8 flex items-center flex-wrap gap-4">
+          <div className="relative flex-grow min-w-[300px]">
+            <svg
+              className="w-5 h-5 text-gray-500 absolute top-1/2 left-4 -translate-y-1/2"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <input
+              type="text"
+              placeholder={
+                activeTab === "compare"
+                  ? "Search is disabled"
+                  : "Search by item name or brand..."
+              }
+              className={`w-full pl-12 pr-4 py-2.5 rounded-md bg-[#1A1325] border border-gray-700 placeholder-gray-500 text-gray-200 focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                activeTab === "compare" ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              disabled={activeTab === "compare"}
+            />
           </div>
-        )}
+          <div className="flex items-center gap-2 flex-wrap">
+            {CATEGORIES.map((cat) => {
+              const isCurrentlySelecting = !!selectingFor;
+              const baseCategoryOfSelection = selectingFor
+                ? selectingFor.toLowerCase().includes("ram")
+                  ? "ram"
+                  : CATEGORIES.find((c) => c.name === selectingFor)?.key ||
+                    selectingFor.toLowerCase()
+                : null;
+              let isDisabled = false;
+              if (isCurrentlySelecting && cat.key !== "all") {
+                if (cat.key !== baseCategoryOfSelection) {
+                  isDisabled = true;
+                }
+              } else if (activeTab === "compare" && cat.key === "all") {
+                isDisabled = true;
+              }
+              return (
+                <button
+                  key={cat.key}
+                  onClick={() => handleCategoryChange(cat.key)}
+                  disabled={isDisabled}
+                  className={`px-4 py-2.5 rounded-md text-sm font-medium whitespace-nowrap transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 ${
+                    currentDisplayCategory === cat.key
+                      ? "bg-purple-600 text-white"
+                      : "bg-[#282333] text-gray-300 hover:bg-[#3a3347]"
+                  } ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                >
+                  {cat.name}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+            {activeTab === "components" ? (
+              renderComponentsContent()
+            ) : (
+              <CompareView
+                key={currentDisplayCategory}
+                products={products}
+                isLoading={isLoading}
+              />
+            )}
       </div>
     </div>
   );

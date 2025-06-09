@@ -1,0 +1,140 @@
+[
+  {
+    "id": "ram-stick-001",
+    "name": "Corsair Vengeance LPX 8GB DDR4 3200MHz C16",
+    "brand": "Corsair",
+    "price": 27.99,
+    "category": "ram",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Corsair+LPX+8GB",
+    "specs": {
+      "type": "DDR4",
+      "speed": "3200MHz",
+      "capacity": "8GB",
+      "sticksInKit": 1,
+      "latency": "CL16",
+      "color": "Black"
+    },
+    "rating": { "rate": 4.8, "count": 1250 }
+  },
+  {
+    "id": "ram-stick-002",
+    "name": "Corsair Vengeance LPX 16GB DDR4 3200MHz C16",
+    "brand": "Corsair",
+    "price": 49.99,
+    "category": "ram",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Corsair+LPX+16GB",
+    "specs": {
+      "type": "DDR4",
+      "speed": "3200MHz",
+      "capacity": "16GB",
+      "sticksInKit": 1,
+      "latency": "CL16",
+      "color": "Black"
+    },
+    "rating": { "rate": 4.8, "count": 900 }
+  },
+  {
+    "id": "ram-stick-003",
+    "name": "G.Skill Ripjaws V 8GB DDR4 3600MHz C18",
+    "brand": "G.Skill",
+    "price": 29.99,
+    "category": "ram",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=GSKill+Ripjaws+8GB",
+    "specs": {
+      "type": "DDR4",
+      "speed": "3600MHz",
+      "capacity": "8GB",
+      "sticksInKit": 1,
+      "latency": "CL18",
+      "color": "Red"
+    },
+    "rating": { "rate": 4.7, "count": 980 }
+  },
+  {
+    "id": "ram-stick-004",
+    "name": "G.Skill Ripjaws V 16GB DDR4 3600MHz C18",
+    "brand": "G.Skill",
+    "price": 52.99,
+    "category": "ram",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=GSKill+Ripjaws+16GB",
+    "specs": {
+      "type": "DDR4",
+      "speed": "3600MHz",
+      "capacity": "16GB",
+      "sticksInKit": 1,
+      "latency": "CL18",
+      "color": "Red"
+    },
+    "rating": { "rate": 4.7, "count": 750 }
+  },
+  {
+    "id": "ram-stick-005",
+    "name": "Kingston Fury Beast RGB 8GB DDR5 5200MHz C40",
+    "brand": "Kingston",
+    "price": 45.99,
+    "category": "ram",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Kingston+Fury+8GB+DDR5",
+    "specs": {
+      "type": "DDR5",
+      "speed": "5200MHz",
+      "capacity": "8GB",
+      "sticksInKit": 1,
+      "latency": "CL40",
+      "color": "Black",
+      "rgb": true
+    },
+    "rating": { "rate": 4.6, "count": 350 }
+  },
+  {
+    "id": "ram-stick-006",
+    "name": "Kingston Fury Beast RGB 16GB DDR5 5200MHz C40",
+    "brand": "Kingston",
+    "price": 89.99,
+    "category": "ram",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Kingston+Fury+16GB+DDR5",
+    "specs": {
+      "type": "DDR5",
+      "speed": "5200MHz",
+      "capacity": "16GB",
+      "sticksInKit": 1,
+      "latency": "CL40",
+      "color": "Black",
+      "rgb": true
+    },
+    "rating": { "rate": 4.6, "count": 420 }
+  },
+  {
+    "id": "ram-stick-007",
+    "name": "Crucial Pro 16GB DDR5 5600MHz C46",
+    "brand": "Crucial",
+    "price": 55.99,
+    "category": "ram",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Crucial+Pro+16GB+DDR5",
+    "specs": {
+      "type": "DDR5",
+      "speed": "5600MHz",
+      "capacity": "16GB",
+      "sticksInKit": 1,
+      "latency": "CL46",
+      "color": "Grey"
+    },
+    "rating": { "rate": 4.5, "count": 210 }
+  },
+  {
+    "id": "ram-stick-008",
+    "name": "Crucial Pro 32GB DDR5 5600MHz C46",
+    "brand": "Crucial",
+    "price": 109.99,
+    "category": "ram",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Crucial+Pro+32GB+DDR5",
+    "specs": {
+      "type": "DDR5",
+      "speed": "5600MHz",
+      "capacity": "32GB",
+      "sticksInKit": 1,
+      "latency": "CL46",
+      "color": "Grey"
+    },
+    "rating": { "rate": 4.5, "count": 150 }
+  }
+]

@@ -1,0 +1,70 @@
+[
+  {
+    "id": "case-001",
+    "name": "NZXT H510 Flow - Compact ATX Mid-Tower",
+    "brand": "NZXT",
+    "price": 89.99,
+    "category": "case",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=NZXT+H510+Flow",
+    "specs": {
+      "type": "Mid Tower",
+      "motherboardSupport": ["ATX", "Micro-ATX", "Mini-ITX"],
+      "color": "Black",
+      "sidePanel": "Tempered Glass",
+      "maxGPULength": "360mm",
+      "maxCoolerHeight": "165mm"
+    },
+    "rating": { "rate": 4.7, "count": 1300 }
+  },
+  {
+    "id": "case-002",
+    "name": "Lian Li Lancool II Mesh Performance - Mid-Tower E-ATX",
+    "brand": "Lian Li",
+    "price": 109.99,
+    "category": "case",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Lian+Li+Lancool+II",
+    "specs": {
+      "type": "Mid Tower",
+      "motherboardSupport": ["E-ATX", "ATX", "Micro-ATX", "Mini-ITX"],
+      "color": "Black",
+      "sidePanel": "Tempered Glass (both sides)",
+      "maxGPULength": "384mm",
+      "maxCoolerHeight": "176mm"
+    },
+    "rating": { "rate": 4.9, "count": 950 }
+  },
+  {
+    "id": "case-003",
+    "name": "Fractal Design Meshify 2 Compact - Mid-Tower ATX",
+    "brand": "Fractal Design",
+    "price": 99.99,
+    "category": "case",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Fractal+Meshify+2C",
+    "specs": {
+      "type": "Mid Tower",
+      "motherboardSupport": ["ATX", "Micro-ATX", "Mini-ITX"],
+      "color": "Dark Tint Tempered Glass",
+      "sidePanel": "Tempered Glass",
+      "maxGPULength": "341mm (360mm without front fan)",
+      "maxCoolerHeight": "169mm"
+    },
+    "rating": { "rate": 4.8, "count": 880 }
+  },
+  {
+    "id": "case-004",
+    "name": "Cooler Master MasterBox Q300L - Micro-ATX Mini Tower",
+    "brand": "Cooler Master",
+    "price": 49.99,
+    "category": "case",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=CM+Q300L",
+    "specs": {
+      "type": "Mini Tower",
+      "motherboardSupport": ["Micro-ATX", "Mini-ITX"],
+      "color": "Black",
+      "sidePanel": "Acrylic",
+      "maxGPULength": "360mm",
+      "maxCoolerHeight": "159mm"
+    },
+    "rating": { "rate": 4.5, "count": 2100 }
+  }
+]

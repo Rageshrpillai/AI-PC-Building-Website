@@ -1,0 +1,70 @@
+[
+  {
+    "id": "stor-001",
+    "name": "Samsung 980 Pro 1TB NVMe M.2 SSD",
+    "brand": "Samsung",
+    "price": 99.99,
+    "category": "storage",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Samsung+980+Pro+1TB",
+    "specs": {
+      "type": "NVMe SSD",
+      "interface": "PCIe 4.0 x4",
+      "capacity": "1TB",
+      "readSpeed": "7000MB/s",
+      "writeSpeed": "5000MB/s",
+      "formFactor": "M.2 2280"
+    },
+    "rating": { "rate": 4.9, "count": 2500 }
+  },
+  {
+    "id": "stor-002",
+    "name": "Western Digital Blue SN570 500GB NVMe M.2 SSD",
+    "brand": "Western Digital",
+    "price": 49.99,
+    "category": "storage",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=WD+Blue+SN570+500GB",
+    "specs": {
+      "type": "NVMe SSD",
+      "interface": "PCIe 3.0 x4",
+      "capacity": "500GB",
+      "readSpeed": "3500MB/s",
+      "writeSpeed": "2300MB/s",
+      "formFactor": "M.2 2280"
+    },
+    "rating": { "rate": 4.7, "count": 1800 }
+  },
+  {
+    "id": "stor-003",
+    "name": "Crucial MX500 2TB SATA 2.5\" SSD",
+    "brand": "Crucial",
+    "price": 129.99,
+    "category": "storage",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Crucial+MX500+2TB",
+    "specs": {
+      "type": "SATA SSD",
+      "interface": "SATA III (6Gb/s)",
+      "capacity": "2TB",
+      "readSpeed": "560MB/s",
+      "writeSpeed": "510MB/s",
+      "formFactor": "2.5\""
+    },
+    "rating": { "rate": 4.8, "count": 3500 }
+  },
+  {
+    "id": "stor-004",
+    "name": "Seagate BarraCuda 4TB 3.5\" HDD 5400 RPM",
+    "brand": "Seagate",
+    "price": 79.99,
+    "category": "storage",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Seagate+4TB+HDD",
+    "specs": {
+      "type": "HDD",
+      "interface": "SATA III (6Gb/s)",
+      "capacity": "4TB",
+      "rpm": "5400 RPM",
+      "cache": "256MB",
+      "formFactor": "3.5\""
+    },
+    "rating": { "rate": 4.5, "count": 2200 }
+  }
+]

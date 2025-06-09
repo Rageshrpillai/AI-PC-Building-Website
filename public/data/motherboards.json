@@ -1,0 +1,97 @@
+[
+  {
+    "id": "mobo-001",
+    "name": "ASUS ROG Strix Z790-E Gaming WiFi II",
+    "brand": "ASUS",
+    "price": 499.99,
+    "category": "motherboard",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=ROG+Strix+Z790E+II",
+    "specs": {
+      "socket": "LGA1700",
+      "formFactor": "ATX",
+      "chipset": "Intel Z790",
+      "memoryMax": "192GB",
+      "memorySlots": "4",
+      "memoryType": "DDR5",
+      "pcie_x16_slots": "1x PCIe 5.0",
+      "m2_slots": "5"
+    },
+    "rating": { "rate": 4.8, "count": 250 }
+  },
+  {
+    "id": "mobo-002",
+    "name": "Gigabyte X670 AORUS Elite AX (rev. 1.0)",
+    "brand": "Gigabyte",
+    "price": 289.99,
+    "category": "motherboard",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=X670+AORUS+Elite",
+    "specs": {
+      "socket": "AM5",
+      "formFactor": "ATX",
+      "chipset": "AMD X670",
+      "memoryMax": "128GB",
+      "memorySlots": "4",
+      "memoryType": "DDR5",
+      "pcie_x16_slots": "1x PCIe 5.0 (CPU), 1x PCIe 4.0 (Chipset)",
+      "m2_slots": "4"
+    },
+    "rating": { "rate": 4.7, "count": 310 }
+  },
+  {
+    "id": "mobo-003",
+    "name": "MSI MAG B650 TOMAHAWK WIFI",
+    "brand": "MSI",
+    "price": 219.99,
+    "category": "motherboard",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=MAG+B650+Tomahawk",
+    "specs": {
+      "socket": "AM5",
+      "formFactor": "ATX",
+      "chipset": "AMD B650",
+      "memoryMax": "128GB",
+      "memorySlots": "4",
+      "memoryType": "DDR5",
+      "pcie_x16_slots": "1x PCIe 4.0",
+      "m2_slots": "3"
+    },
+    "rating": { "rate": 4.6, "count": 550 }
+  },
+  {
+    "id": "mobo-004",
+    "name": "ASRock B760M PG Riptide WiFi",
+    "brand": "ASRock",
+    "price": 149.99,
+    "category": "motherboard",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=ASRock+B760M+Riptide",
+    "specs": {
+      "socket": "LGA1700",
+      "formFactor": "Micro-ATX",
+      "chipset": "Intel B760",
+      "memoryMax": "128GB",
+      "memorySlots": "4",
+      "memoryType": "DDR5",
+      "pcie_x16_slots": "1x PCIe 4.0",
+      "m2_slots": "2"
+    },
+    "rating": { "rate": 4.5, "count": 180 }
+  },
+  {
+    "id": "mobo-005",
+    "name": "ASUS Prime B550M-A WiFi II",
+    "brand": "ASUS",
+    "price": 109.99,
+    "category": "motherboard",
+    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=ASUS+Prime+B550M",
+    "specs": {
+      "socket": "AM4",
+      "formFactor": "Micro-ATX",
+      "chipset": "AMD B550",
+      "memoryMax": "128GB",
+      "memorySlots": "4",
+      "memoryType": "DDR4",
+      "pcie_x16_slots": "1x PCIe 4.0 (CPU)",
+      "m2_slots": "2"
+    },
+    "rating": { "rate": 4.6, "count": 1200 }
+  }
+]

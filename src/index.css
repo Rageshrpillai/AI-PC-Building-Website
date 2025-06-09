@@ -17,3 +17,17 @@
     transform: translateY(0);
   }
 }
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #202123;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #40414f;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
