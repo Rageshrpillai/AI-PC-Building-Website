@@ -110,9 +110,9 @@ const useProductStore = create(
       },
 
       getProductById: (id) => {
+        const state = get();
         if (!id) return null;
-        // Ensure ID comparison is robust (string vs number)
-        return get().allProducts.find((p) => String(p.id) === String(id));
+        return state.allProducts.find(p => p.id === id) || null;
       },
 
       getSelectedComponent: (categoryName) => {

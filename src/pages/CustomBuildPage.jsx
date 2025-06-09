@@ -53,6 +53,7 @@ export default function CustomBuildPage() {
   );
   const [totalPrice, setTotalPrice] = useState(0);
   const [isProcessingSelection, setIsProcessingSelection] = useState(false);
+  const [processingError, setProcessingError] = useState(null);
   const [upgradeData, setUpgradeData] = useState(null);
 
   // This effect calculates total price whenever the selections change
@@ -145,6 +146,64 @@ export default function CustomBuildPage() {
     }
   }, [location.state, navigate, clearAllComponents, selectComponent]);
 
+  // Parse URL parameters for deep linking
+  useEffect(() => {
+    const handleDeepLink = async () => {
+      try {
+        const queryParams = new URLSearchParams(location.search);
+        const partsParam = queryParams.get('parts');
+        
+        if (partsParam && hasFetchedInitialData && allProducts?.length > 0) {
+          setIsProcessingSelection(true);
+          setProcessingError(null);
+          
+          const partIds = partsParam.split(',').filter(Boolean);
+          await clearAllComponents();
+          
+          const ramParts = [];
+          const otherComponents = [];
+          
+          // First pass: separate RAM and other components
+          partIds.forEach(id => {
+            const part = allProducts.find(p => p.id === id);
+            if (part) {
+              if (part.category === 'ram') {
+                // Push each RAM part individually, even if identical
+                ramParts.push(part);
+              } else {
+                const categoryConfig = BASE_COMPONENT_CATEGORIES.find(c => c.actualCategory === part.category);
+                if (categoryConfig) {
+                  otherComponents.push({ part, categoryName: categoryConfig.name });
+                }
+              }
+            }
+          });
+          
+          // Second pass: add non-RAM components first
+          for (const { part, categoryName } of otherComponents) {
+            await selectComponent(categoryName, part);
+          }
+          
+          // Add RAM parts to sequential slots
+          for (let i = 0; i < ramParts.length; i++) {
+            const slotNumber = i + 1;
+            await selectComponent(`RAM Slot ${slotNumber}`, ramParts[i]);
+          }
+
+          // Clear the URL parameters after processing
+          navigate(location.pathname, { replace: true });
+        }
+      } catch (error) {
+        console.error('Error processing deep link:', error);
+        setProcessingError(error.message);
+      } finally {
+        setIsProcessingSelection(false);
+      }
+    };
+
+    handleDeepLink();
+  }, [location.search, hasFetchedInitialData, allProducts, clearAllComponents, selectComponent, navigate]);
+
   // Wrapper for removing a component to use the processing flag
   const handleUIRemoveComponent = useCallback(
     (categoryOrSlotName) => {
@@ -161,7 +220,16 @@ export default function CustomBuildPage() {
     (categoryOrSlotName, partToSelect) => {
       if (isProcessingSelection) return;
       setIsProcessingSelection(true);
-      selectComponent(categoryOrSlotName, partToSelect);
+      
+      // If we received a direct part selection from state
+      if (location.state?.selectedComponent && location.state?.categoryName) {
+        selectComponent(location.state.categoryName, location.state.selectedComponent);
+        navigate(location.pathname, { replace: true, state: {} });
+      } 
+      // Handle normal selection
+      else if (categoryOrSlotName && partToSelect) {
+        selectComponent(categoryOrSlotName, partToSelect);
+      }
 
       // If we are in an upgrade context, update the local data as well
       if (upgradeData) {
@@ -182,7 +250,7 @@ export default function CustomBuildPage() {
 
       setTimeout(() => setIsProcessingSelection(false), 100);
     },
-    [selectComponent, isProcessingSelection, upgradeData]
+    [selectComponent, isProcessingSelection, upgradeData, location.state, navigate]
   );
 
   // Other handlers
@@ -195,18 +263,20 @@ export default function CustomBuildPage() {
     navigate("/build", { replace: true });
   }, [clearAllComponents, navigate]);
 
-  // Loading and Error UI
-  if (!hasFetchedInitialData && isLoadingStoreProducts) {
+  // Error display
+  if (processingError) {
     return (
-      <div className="min-h-screen bg-[#100C16] text-white flex justify-center items-center">
-        <p>Loading...</p>
+      <div className="min-h-screen bg-[#100C16] text-red-400 flex justify-center items-center">
+        <p>Error: {processingError}</p>
       </div>
     );
   }
-  if (storeError) {
+
+  // Loading display
+  if (!hasFetchedInitialData || isLoadingStoreProducts || isProcessingSelection) {
     return (
-      <div className="min-h-screen bg-[#100C16] text-red-400 flex justify-center items-center">
-        <p>Error: {storeError}</p>
+      <div className="min-h-screen bg-[#100C16] text-white flex justify-center items-center">
+        <p>Loading...</p>
       </div>
     );
   }
