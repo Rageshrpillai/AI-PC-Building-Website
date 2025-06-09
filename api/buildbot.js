@@ -4,7 +4,6 @@ import fs from "node:fs";
 import path from "node:path";
 
 function loadMockData(filename) {
-  // This function remains the same
   try {
     const filePath = path.join(process.cwd(), "public", "data", filename);
     if (!fs.existsSync(filePath)) {
@@ -23,7 +22,6 @@ function loadMockData(filename) {
 }
 
 function buildMockDataSummary(allPartsCollections) {
-  // This helper function remains the same
   let summary = "";
   const categoriesToSummarize = [
     {
@@ -34,44 +32,34 @@ function buildMockDataSummary(allPartsCollections) {
     {
       name: "GPUs",
       data: allPartsCollections.gpus,
-      keySpecs: (p) =>
-        `Memory: ${p.specs.memory}, TDP: ${p.specs.tdp || "N/A"}`,
+      keySpecs: (p) => `Memory: ${p.specs.memory}`,
     },
     {
       name: "Motherboards",
       data: allPartsCollections.motherboards,
       keySpecs: (p) =>
-        `Socket: ${p.specs.socket}, Form Factor: ${p.specs.formFactor}, Memory Type: ${p.specs.memoryType}, Memory Slots: ${p.specs.memorySlots}`,
+        `Socket: ${p.specs.socket}, Memory Type: ${p.specs.memoryType}, Memory Slots: ${p.specs.memorySlots}`,
     },
     {
       name: "RAMs",
       data: allPartsCollections.rams,
       keySpecs: (p) =>
-        `Capacity: ${p.specs.capacity} (per stick), Type: ${
-          p.specs.type
-        }, Speed: ${p.specs.speed}, Sticks: ${p.specs.sticksInKit || 1}`,
+        `Capacity: ${p.specs.capacity} (per stick), Type: ${p.specs.type}, Speed: ${p.specs.speed}`,
     },
     {
       name: "Storage",
       data: allPartsCollections.storages,
-      keySpecs: (p) =>
-        `Type: ${p.specs.type}, Capacity: ${p.specs.capacity}, Read Speed: ${
-          p.specs.readSpeed || "N/A"
-        }`,
+      keySpecs: (p) => `Type: ${p.specs.type}, Capacity: ${p.specs.capacity}`,
     },
     {
       name: "PSUs",
       data: allPartsCollections.psus,
-      keySpecs: (p) =>
-        `Wattage: ${p.specs.wattage}, Efficiency: ${p.specs.efficiencyRating}`,
+      keySpecs: (p) => `Wattage: ${p.specs.wattage}`,
     },
     {
       name: "Cases",
       data: allPartsCollections.cases,
-      keySpecs: (p) =>
-        `Type: ${p.specs.type}, Max GPU Length: ${
-          p.specs.maxGPULength || "N/A"
-        }`,
+      keySpecs: (p) => `Type: ${p.specs.type}`,
     },
   ];
   for (const category of categoriesToSummarize) {
@@ -90,67 +78,60 @@ function buildMockDataSummary(allPartsCollections) {
   return summary;
 }
 
-// --- UPDATED PROMPT 1: Your New, Stricter Prompt for New Builds ---
+// --- UPDATED, SIMPLER, AND STRICTER PROMPT FOR NEW BUILDS ---
 const NEW_BUILD_SYSTEM_INSTRUCTIONS = (mockDataSummary, budget) => `
-You are BuildBot, an expert at assembling **complete** PC builds **under a strict budget**.
-**MAX BUDGET: $${budget.toFixed(2)}**
-You may use **only** the components listed below, and under **no circumstances** may your total exceed $${budget.toFixed(
-  2
-)}.
-**Always** output **one** single, valid JSON object—no Markdown, no extra commentary, no omissions.
+You are BuildBot, an expert AI that assembles complete PC builds. Your ONLY goal is to analyze a user's request and respond with a single, valid JSON object. Do not output any other text, greetings, or explanations outside of the JSON structure.
 
 ================================================================================
-**AVAILABLE COMPONENTS:**
+AVAILABLE COMPONENTS:
 ${mockDataSummary}
 ================================================================================
 
-**USER REQUEST:**
-“<the user’s natural-language request>”
+**RULES:**
+1.  **BUDGET:** You will be given a hard budget limit of **$${budget.toFixed(
+  2
+)}**. The 'totalCost' of all selected parts MUST NOT exceed this number.
+2.  **COMPONENT SELECTION:** You must select exactly one of each: CPU, Motherboard, GPU, Storage, PSU, and Case from the AVAILABLE COMPONENTS list. For RAM, select exactly two identical sticks for dual-channel performance (if the motherboard has >= 2 slots).
+3.  **COMPATIBILITY:** The build MUST be compatible.
+    - \`cpu.specs.socket\` must match \`motherboard.specs.socket\`.
+    - \`ram.specs.type\` must match \`motherboard.specs.memoryType\`.
+4.  **SUBSTITUTION:** If the user requests a specific component not in the list (e.g., "RTX 3050"), find the most similar available alternative (e.g., "RTX 3060") and use that instead. Mention the substitution in your 'reply' and 'compatibilityNotes'.
 
-**RULES (build must follow ALL of these):**
-1. **Budget Enforcement**
-   - The sum of all part prices **must** be ≤ $${budget.toFixed(2)}.
-   - If you cannot find a valid combination ≤ $${budget.toFixed(
-     2
-   )}, return exactly:
-     \`\`\`json
-     {
-       "error": "Budget Exceeded",
-       "requestedBudget": ${budget},
-       "minimumRequired": <the smallest total you could not beat>
-     }
-     \`\`\`
-2. **Parts Required**
-   - 1× CPU
-   - 1× Motherboard
-   - 1× GPU
-   - 1× Storage
-   - 1× PSU
-   - 1× Case
-   - RAM: if motherboard has ≥2 slots, pick exactly 2 identical sticks; never exceed slot count.
-3. **Compatibility** (all must pass):
-   - CPU socket ↔ Motherboard socket
-   - RAM type ↔ Motherboard memoryType
-   - Motherboard form factor ↔ Case form factor
-4. **Output**
-   - **One** single, valid JSON object—no Markdown, no commentary, no extra fields.
-   - Shape must be exactly:
-     \`\`\`json
-     {
-       "buildName": "string",
-       "reply": "string",
-       "parts": [
-         { "category":"cpu", "id":"…", "name":"…", "price":0.00 },
-         …other parts…
-       ],
-       "totalCost": 0.00,
-       "compatibilityNotes": [ "note1", … ],
-       "deepLink": "/build?parts=ID1,ID2,…"
-     }
-     \`\`\`
+**FINAL OUTPUT:**
+Your entire output must be a single JSON object.
+
+* **If a compatible build within budget is possible**, output this exact JSON shape:
+    \`\`\`json
+    {
+      "buildName": "A descriptive name for the build",
+      "reply": "A short, helpful summary of the build and your key choices.",
+      "parts": [
+        { "category": "cpu", "id": "...", "name": "...", "price": 0.00 },
+        { "category": "motherboard", "id": "...", "name": "...", "price": 0.00 },
+        { "category": "ram", "id": "...", "name": "...", "price": 0.00 },
+        { "category": "ram", "id": "...", "name": "...", "price": 0.00 },
+        { "category": "gpu", "id": "...", "name": "...", "price": 0.00 },
+        { "category": "storage", "id": "...", "name": "...", "price": 0.00 },
+        { "category": "psu", "id": "...", "name": "...", "price": 0.00 },
+        { "category": "case", "id": "...", "name": "...", "price": 0.00 }
+      ],
+      "totalCost": 0.00,
+      "compatibilityNotes": ["CPU and Motherboard sockets are compatible (LGA1700).", "RAM type (DDR5) is compatible with the motherboard."],
+      "deepLink": "/build?parts=id1,id2,id3,id4,id5,id6,id7,id8"
+    }
+    \`\`\`
+
+* **If you CANNOT create a build** that meets all compatibility and budget rules, output this exact JSON shape:
+    \`\`\`json
+    {
+      "error": "Budget Exceeded",
+      "budget": ${budget},
+      "minimumRequired": "<the total price of the cheapest compatible build you could find>"
+    }
+    \`\`\`
 `;
 
-// --- PROMPT 2: For UPGRADES (Unchanged from before) ---
+// --- PROMPT 2: For UPGRADES (Unchanged from our last version) ---
 const UPGRADE_SYSTEM_INSTRUCTIONS = (mockDataSummaryForPrompt) => `
 You are BuildBot, an AI agent specialized in recommending **upgrades for a user's EXISTING PC**. You will be given the user's current components and upgrade budget. Base your suggestions for NEW parts **only** on the provided AVAILABLE COMPONENTS list.
 
@@ -176,7 +157,7 @@ YOUR TASK (FOR AN UPGRADE):
       ],
       "totalCost": 0.00, // Sum of "new" parts only.
       "compatibilityNotes": [ "string" ],
-      "deepLink": "string" // Includes IDs of ALL selectedParts (existing and new).
+      "deepLink": "string"
     }
 `;
 
@@ -202,22 +183,18 @@ export default async function handler(request, response) {
     } = requestBody;
 
     if (requestType === "newBuild" && !userNaturalLanguageQuery) {
-      return response
-        .status(400)
-        .json({
-          error: 'Invalid request: "message" is required for new builds.',
-        });
+      return response.status(400).json({
+        error: 'Invalid request: "message" is required for new builds.',
+      });
     }
     if (
       requestType === "upgrade" &&
       (!currentUserParts || upgradeBudget === undefined)
     ) {
-      return response
-        .status(400)
-        .json({
-          error:
-            'Invalid request: "currentUserParts" and "upgradeBudget" are required for upgrades.',
-        });
+      return response.status(400).json({
+        error:
+          'Invalid request: "currentUserParts" and "upgradeBudget" are required for upgrades.',
+      });
     }
 
     console.log("[api/buildbot] Request type:", requestType);
@@ -275,12 +252,13 @@ export default async function handler(request, response) {
         INPUT (for an UPGRADE):
         Existing components: ${currentPartsDescription}
         Upgrade budget: $${upgradeBudget}
-        Upgrade goals: "${userNaturalLanguageQuery}"
+        Goal: "${userNaturalLanguageQuery}"
       `;
     } else {
-      // Default to new build
-      // Parse budget from user query or use default, as per the new prompt's rules
-      const budgetMatch = userNaturalLanguageQuery.match(/\$?(\d{3,})/);
+      // *** FIXED: Use the new, more robust regex to parse the budget ***
+      const budgetMatch = userNaturalLanguageQuery.match(
+        /(?:for|under|budget|less than|around)\s*\$?(\d+)/i
+      );
       const parsedBudget = budgetMatch ? parseInt(budgetMatch[1], 10) : 1200;
       console.log(
         `[api/buildbot] Parsed budget for new build: $${parsedBudget}`
@@ -324,24 +302,21 @@ export default async function handler(request, response) {
         : rawAiResponseText.trim();
       aiJsonOutput = JSON.parse(jsonStringToParse);
     } catch (error) {
-      return response
-        .status(500)
-        .json({
-          reply: `AI response was not valid JSON. Raw: ${rawAiResponseText.substring(
-            0,
-            200
-          )}`,
-        });
+      return response.status(500).json({
+        reply: `AI response was not valid JSON. Raw: ${rawAiResponseText.substring(
+          0,
+          200
+        )}`,
+      });
     }
 
-    // UPDATED: Handle the new "error" key for budget failures from both prompts
+    // UPDATED: Handle the new "error" key for budget failures
     if (aiJsonOutput.error) {
       console.log(
-        "[api/buildbot] AI returned a structured error message:",
-        aiJsonOutput.error
+        "[api/buildbot] AI returned a structured error:",
+        aiJsonOutput
       );
       return response.status(400).json({
-        // Create a user-friendly reply from the AI's error object
         reply: `I'm sorry, I couldn't complete the request. Reason: ${
           aiJsonOutput.error
         }. Your budget was $${
@@ -360,7 +335,6 @@ export default async function handler(request, response) {
         .json({ reply: "AI response missing critical fields." });
     }
 
-    // This validation logic is now more flexible and handles both prompt outputs
     const validatedPartsOutput = [];
     let calculatedCost = 0;
     const deepLinkPartIds = [];
@@ -393,12 +367,9 @@ export default async function handler(request, response) {
         price: Number(foundPart.price),
         category: foundPart.category,
       };
-
-      // For upgrades, cost is only new parts. For new builds, all parts are new.
       if (status === "new") {
         calculatedCost += finalSelectedPart.price;
       }
-
       deepLinkPartIds.push(finalSelectedPart.id);
 
       const validatedAlternativeParts = [];
