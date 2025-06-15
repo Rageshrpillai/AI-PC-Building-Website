@@ -5,7 +5,7 @@
     "brand": "Corsair",
     "price": 27.99,
     "category": "ram",
-    "imageUrl": "/images/ram/px8gb.png",
+    "imageUrl": "/images/ram/1px8gb.png",
     "specs": {
       "type": "DDR4",
       "speed": "3200MHz",

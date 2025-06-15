@@ -1,7 +1,6 @@
 // src/App.jsx
-import React, { useEffect } from "react";
+import React from "react";
 import { Route, Routes } from "react-router-dom";
-import { shallow } from "zustand/shallow"; // Import shallow from Zustand
 import "./App.css";
 
 import Home from "./pages/Home";
@@ -18,38 +17,21 @@ function AppLoader() {
   return (
     <div className="min-h-screen bg-[#100C16] flex flex-col justify-center items-center text-white">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mb-4"></div>
-      <p className="text-xl">Loading Components...</p>
+      <p className="text-xl">Loading Essential Data...</p>
     </div>
   );
 }
 
 function App() {
-  // --- THIS IS THE CRITICAL FIX ---
-  // We are now using the `shallow` function to prevent infinite loops.
-  const { fetchAllProducts, fetchPrebuilds, isLoading } = useProductStore(
-    (state) => ({
-      fetchAllProducts: state.fetchAllProducts,
-      fetchPrebuilds: state.fetchPrebuilds,
-      isLoading: state.isLoading,
-    }),
-    shallow // This tells Zustand to be smarter about re-rendering
-  );
+  // Only get the isLoading state from the store
+  const isLoading = useProductStore((state) => state.isLoading);
 
-  // This useEffect will now run safely only once on mount
-  useEffect(() => {
-    const initializeData = async () => {
-      await fetchAllProducts();
-      await fetchPrebuilds();
-    };
-
-    initializeData();
-  }, [fetchAllProducts, fetchPrebuilds]);
-
-  // The application-level loading gate
+  // The application-level loading gate. This will now work reliably.
   if (isLoading) {
     return <AppLoader />;
   }
 
+  // Once loading is false, render the application
   return (
     <div>
       <Routes>
