@@ -1,270 +1,347 @@
-// src/pages/Chatpage.jsx
-import React, { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom"; // Import useLocation
+import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import Navabar from "../components/Navabar";
-import Sidebar from "../components/Sidebar";
 
-// --- Icon and Avatar Components ---
-const IconSend = () => (
-  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-    <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 008 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-  </svg>
-);
-const UserAvatar = () => (
-  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex-shrink-0"></div>
-);
-const AiAvatar = () => (
-  <div className="w-8 h-8 rounded-full bg-gray-600 flex-shrink-0 flex items-center justify-center font-bold text-sm text-white">
-    BB
-  </div>
-);
-const pastChats = [
-  { id: "1", title: "Budget Gaming Rig under $800" },
-  { id: "2", title: "Upgrade for 1440p Gaming" },
-  { id: "3", title: "Video Editing Workstation" },
-];
+function PartCard({ part, label, onClick, isSelected }) {
+  const borderColor = isSelected ? "border-pink-500" : "border-cyan-700";
+  const cursorStyle = onClick ? "cursor-pointer hover:border-pink-400" : "";
 
-export default function ChatPage() {
-  const location = useLocation(); // Get location object
-  const [currentMessage, setCurrentMessage] = useState("");
-  const [chatHistory, setChatHistory] = useState([]);
-  const [isLoadingAiResponse, setIsLoadingAiResponse] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const chatMessagesEndRef = useRef(null);
-
-  useEffect(() => {
-    // If navigated with an initial query, send it automatically
-    if (location.state?.initialQuery) {
-      handleSendMessage(null, location.state.initialQuery);
-    }
-  }, [location.state]);
-
-  useEffect(() => {
-    chatMessagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatHistory]);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 768px)");
-    setSidebarOpen(mq.matches);
-    const handleResize = (e) => setSidebarOpen(e.matches);
-    mq.addEventListener("change", handleResize);
-    return () => mq.removeEventListener("change", handleResize);
-  }, []);
-
-  const handleSendMessage = async (e, initialMessage = null) => {
-    if (e) e.preventDefault();
-    const messageToSend = initialMessage || currentMessage;
-    if (!messageToSend.trim()) return;
-
-    const userMsg = {
-      id: "user-" + Date.now(),
-      sender: "user",
-      text: messageToSend,
-    };
-    setChatHistory((prevHistory) => [...prevHistory, userMsg]);
-    if (!initialMessage) setCurrentMessage("");
-    setIsLoadingAiResponse(true);
-
-    try {
-      const res = await fetch("/api/buildbot", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: messageToSend,
-          requestType: "newBuild",
-        }),
-      });
-
-      const responseData = await res.json();
-
-      if (!res.ok) {
-        throw new Error(
-          responseData.reply || responseData.error || `An API error occurred.`
-        );
-      }
-
-      setChatHistory((prevHistory) => [
-        ...prevHistory,
-        {
-          id: "ai-" + Date.now(),
-          sender: "ai",
-          text: responseData.reply,
-          data: responseData,
-        },
-      ]);
-    } catch (err) {
-      setChatHistory((prevHistory) => [
-        ...prevHistory,
-        {
-          id: "err-" + Date.now(),
-          sender: "ai",
-          text: `Sorry, BuildBot encountered an error: ${err.message}`,
-        },
-      ]);
-    } finally {
-      setIsLoadingAiResponse(false);
-    }
-  };
-
-  const handleNewChat = () => setChatHistory([]);
-  const handleToggleSidebar = () => setSidebarOpen((prev) => !prev);
+  if (!part) {
+    return (
+      <div className="w-56 h-40 flex flex-col justify-center items-center border-2 border-dashed border-gray-700 bg-[#1A1325] rounded-xl min-w-[220px]">
+        <p className="text-gray-500 text-sm">
+          {label === "AI Priority" ? "No upgrade needed" : "No part selected"}
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col h-screen bg-[#100C16]">
-      <Navabar />
-      <div className="flex flex-1 overflow-hidden pt-16">
-        <Sidebar
-          isOpen={sidebarOpen}
-          onNewChat={handleNewChat}
-          chats={pastChats}
-          onSelectChat={(chatId) => console.log("Selected chat:", chatId)}
-          onToggle={handleToggleSidebar}
-        />
-        <main className="flex-1 bg-[#1A161F] flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 custom-scrollbar">
-            {chatHistory.length === 0 && !isLoadingAiResponse && (
-              <div className="flex flex-col items-center justify-center h-full text-gray-400 text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-600 to-blue-500 mb-4 flex items-center justify-center font-bold text-2xl text-white">
-                  BB
-                </div>
-                <h2 className="text-2xl font-semibold mb-2 text-white">
-                  BuildBot
-                </h2>
-                <p className="text-sm">
-                  How can I help you plan your PC today?
-                </p>
-              </div>
-            )}
-            {chatHistory.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex items-start gap-3 w-full animate-fadeIn ${
-                  msg.sender === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
-                {msg.sender === "ai" && <AiAvatar />}
-                <div
-                  className={`max-w-[85%] md:max-w-[75%] p-3.5 rounded-xl shadow-md text-white ${
-                    msg.sender === "user"
-                      ? "bg-purple-600 rounded-br-md"
-                      : "bg-[#2A2A2A] rounded-bl-md"
-                  }`}
-                >
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                    {msg.text}
-                  </p>
+    <div
+      className={`relative w-56 h-40 flex flex-col justify-between border-2 ${borderColor} ${cursorStyle} bg-[#181122] rounded-xl shadow-lg min-w-[220px] transition-colors duration-200`}
+      onClick={onClick}
+    >
+      {label && (
+        <span
+          className={`absolute left-2 top-2 ${
+            label === "AI Priority" ? "bg-purple-600" : "bg-purple-800"
+          } text-xs px-2 py-0.5 rounded-full text-white font-semibold z-10`}
+        >
+          {label}
+        </span>
+      )}
+      <div className="flex-1 flex items-center justify-center px-2 pt-4">
+        <span className="text-lg text-white font-semibold text-center line-clamp-2">
+          {part.name}
+        </span>
+      </div>
+      <div className="p-3 flex flex-col">
+        <span className="text-base text-purple-300 font-bold">
+          ₹{Number(part.price).toLocaleString("en-IN")}
+        </span>
+        <span className="text-xs text-gray-400 truncate">{part.category}</span>
+      </div>
+    </div>
+  );
+}
 
-                  {/* --- CORRECTED: UI for displaying build details --- */}
-                  {msg.sender === "ai" && msg.data?.parts?.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-gray-600/50 space-y-3">
-                      <h4 className="text-sm font-semibold text-gray-200 tracking-wide">
-                        {msg.data.buildName || "Suggested Components:"}
-                      </h4>
-                      <ul className="space-y-1.5 text-sm text-gray-300">
-                        {msg.data.parts.map((partItem, index) => {
-                          const partDetail = partItem.selectedPart || partItem;
-                          if (!partDetail.name) return null;
-                          return (
-                            <li
-                              key={`${partDetail.id}-${index}`}
-                              className="flex justify-between items-baseline"
-                            >
-                              <span className="truncate pr-2">
-                                {partDetail.name}{" "}
-                                <span className="text-gray-500">
-                                  ({partDetail.category})
-                                </span>
-                              </span>
-                              <span className="text-purple-400 font-medium whitespace-nowrap">
-                                ₹
-                                {Number(partDetail.price)
-                                  ? Number(partDetail.price).toLocaleString(
-                                      "en-IN"
-                                    )
-                                  : "N/A"}
-                              </span>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                      {typeof msg.data.totalCost === "number" &&
-                        msg.data.totalCost > 0 && (
-                          <div className="mt-3 pt-3 border-t border-gray-700/50">
-                            <p className="flex justify-between font-bold text-base text-white">
-                              <span>Estimated Total:</span>
-                              <span className="text-purple-300">
-                                ₹{msg.data.totalCost.toLocaleString("en-IN")}
-                              </span>
-                            </p>
-                          </div>
-                        )}
-                      {msg.data.compatibilityNotes &&
-                        msg.data.compatibilityNotes.length > 0 && (
-                          <div className="mt-3 text-xs text-gray-400 space-y-1">
-                            <p className="font-semibold mb-1 text-gray-300">
-                              Notes:
-                            </p>
-                            {msg.data.compatibilityNotes.map((note, idx) => (
-                              <p key={idx}>- {note}</p>
-                            ))}
-                          </div>
-                        )}
-                      {msg.data.deepLink && (
-                        <div className="mt-4">
-                          <a
-                            href={msg.data.deepLink}
-                            className="text-sm text-purple-400 hover:text-purple-300 underline font-semibold"
-                          >
-                            View or Customize This Build
-                          </a>
+function UpgradeCategoryRow({
+  category,
+  existingPart,
+  priorityUpgrade,
+  alternatives,
+  selectedUpgrade,
+  onSelectUpgrade,
+}) {
+  // Special handling for RAM, which can have multiple existing parts
+  const isRam = category.key === "ram";
+  const existingParts =
+    isRam && Array.isArray(existingPart)
+      ? existingPart
+      : existingPart
+      ? [existingPart]
+      : [];
+
+  // Don't render the row if there's nothing to show for this category
+  if (
+    existingParts.length === 0 &&
+    !priorityUpgrade &&
+    (!alternatives || alternatives.length === 0)
+  ) {
+    return null;
+  }
+
+  return (
+    <div className="mb-10">
+      <h2 className="text-xl font-semibold text-gray-300 mb-3">
+        {category.name}
+      </h2>
+      <div className="flex overflow-x-auto gap-4 pb-2 custom-scrollbar">
+        {/* Show existing parts */}
+        {existingParts.map((part, idx) => (
+          <PartCard
+            key={`existing-${category.key}-${idx}`}
+            part={part}
+            label={isRam ? `Existing RAM ${idx + 1}` : "Existing Part"}
+          />
+        ))}
+        {(priorityUpgrade || (alternatives && alternatives.length > 0)) &&
+          existingParts.length > 0 && (
+            <div className="w-px bg-gray-800 self-stretch mx-2"></div>
+          )}
+
+        {/* Show priority upgrade */}
+        {priorityUpgrade ? (
+          <PartCard
+            part={priorityUpgrade}
+            label="AI Priority"
+            isSelected={selectedUpgrade?.id === priorityUpgrade.id}
+            onClick={() => onSelectUpgrade(category.key, priorityUpgrade)}
+          />
+        ) : (
+          <PartCard part={null} label="AI Priority" />
+        )}
+
+        {/* Show alternatives */}
+        {Array.isArray(alternatives) && alternatives.length > 0 && (
+          <>
+            <div className="w-px bg-gray-800 self-stretch mx-2"></div>
+            {alternatives.map((alt, idx) => (
+              <PartCard
+                key={`alt-${alt.id || idx}`}
+                part={alt}
+                label="Alternative"
+                isSelected={selectedUpgrade?.id === alt.id}
+                onClick={() => onSelectUpgrade(category.key, alt)}
+              />
+            ))}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function UpgradeResultPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { upgradeSuggestion, originalBuild } = location.state || {};
+
+  const [costNewParts, setCostNewParts] = useState(0);
+  const [selectedUpgrades, setSelectedUpgrades] = useState({});
+
+  const handleSelectUpgrade = (categoryKey, part) => {
+    setSelectedUpgrades((prev) => {
+      // If the clicked part is already selected, unselect it
+      if (prev[categoryKey]?.id === part.id) {
+        const newSelections = { ...prev };
+        delete newSelections[categoryKey];
+        return newSelections;
+      }
+      // Otherwise, select the new part
+      return {
+        ...prev,
+        [categoryKey]: part,
+      };
+    });
+  };
+
+  const componentCategories = useMemo(
+    () => [
+      { key: "cpu", name: "CPU" },
+      { key: "motherboard", name: "Motherboard" },
+      { key: "ram", name: "RAM" },
+      { key: "gpu", name: "GPU" },
+      { key: "storage", name: "Storage" },
+      { key: "cooler", name: "Cooler" },
+      { key: "psu", name: "PSU" },
+      { key: "case", name: "Case" },
+    ],
+    []
+  );
+
+  // --- Log API shape for debugging!
+  useEffect(() => {
+    if (upgradeSuggestion) {
+      console.log("Upgrade API response:", upgradeSuggestion);
+      console.log("Original build:", originalBuild);
+    }
+  }, [upgradeSuggestion, originalBuild]);
+
+  // Build a quick category->upgrade map
+  const priorityMap = useMemo(() => {
+    if (!upgradeSuggestion?.priorityUpgrades) return {};
+    const m = {};
+    for (const up of upgradeSuggestion.priorityUpgrades) {
+      if (up && up.category) {
+        const category = up.category.toLowerCase();
+        m[category] = up; // Just store the upgrade, we'll handle RAM separately
+      }
+    }
+    return m;
+  }, [upgradeSuggestion]);
+
+  const alternativesMap = useMemo(
+    () => upgradeSuggestion?.alternatives || {},
+    [upgradeSuggestion]
+  );
+
+  useEffect(() => {
+    if (priorityMap) {
+      setSelectedUpgrades(priorityMap);
+    }
+  }, [priorityMap]);
+
+  // Get all RAM parts from the original build
+  const getOriginalRamParts = useCallback(() => {
+    if (!originalBuild) return [];
+    return Object.entries(originalBuild)
+      .filter(([key, value]) => key.startsWith("ram_slot_") && value)
+      .map(([_, part]) => part);
+  }, [originalBuild]);
+
+  // Get all selected parts for the summary
+  const newParts = useMemo(() => {
+    if (!selectedUpgrades) return [];
+    // We filter by part.id to ensure we only have actual parts
+    return Object.values(selectedUpgrades).filter((part) => part && part.id);
+  }, [selectedUpgrades]);
+
+  // Calculate cost of new parts based on selection
+  useEffect(() => {
+    const total = newParts.reduce((sum, upgrade) => {
+      return sum + (Number(upgrade?.price) || 0);
+    }, 0);
+    setCostNewParts(total);
+  }, [newParts]);
+
+  if (!upgradeSuggestion || !originalBuild) {
+    return (
+      <div className="min-h-screen bg-[#100C16] text-gray-100">
+        <Navabar />
+        <div className="pt-40 text-center">
+          <h1 className="text-2xl font-bold mb-4">No upgrade data found.</h1>
+          <Link
+            to="/upgrade"
+            className="px-6 py-2 bg-purple-600 text-white rounded-md"
+          >
+            Go to Upgrade Page
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Get RAM parts for display
+  const originalRamParts = getOriginalRamParts();
+
+  return (
+    <div className="min-h-screen bg-[#100C16] text-gray-100">
+      <Navabar />
+      <div className="pt-20 md:pt-24">
+        <div className="p-4 sm:p-6 md:p-8 max-w-screen-2xl mx-auto">
+          <div className="mb-4">
+            <Link
+              to="/upgrade"
+              className="text-sm text-purple-400 hover:text-purple-300 flex items-center"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                />
+              </svg>
+              Back to Upgrade
+            </Link>
+          </div>
+
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+            <div className="lg:w-[calc(66.666%-1rem)]">
+              {componentCategories.map((cat) => {
+                const isRam = cat.key === "ram";
+                const existingPart = isRam
+                  ? originalRamParts
+                  : originalBuild?.[cat.key] || null;
+
+                return (
+                  <UpgradeCategoryRow
+                    key={cat.key}
+                    category={cat}
+                    existingPart={existingPart}
+                    priorityUpgrade={priorityMap[cat.key] || null}
+                    alternatives={alternativesMap[cat.key] || []}
+                    selectedUpgrade={selectedUpgrades[cat.key]}
+                    onSelectUpgrade={handleSelectUpgrade}
+                  />
+                );
+              })}
+            </div>
+
+            {/* Right Column - Summary */}
+            <div className="lg:w-[33.333%] lg:sticky top-24 self-start">
+              <div className="bg-[#1A1325] p-5 rounded-lg shadow-xl">
+                <h2 className="text-xl font-semibold text-white mb-4">
+                  Upgrade Summary
+                </h2>
+
+                <div className="space-y-4">
+                  <div className="p-3 bg-purple-900/40 rounded-md">
+                    <p className="text-sm text-gray-300 mb-1">
+                      Total Cost of New Parts
+                    </p>
+                    <p className="text-2xl font-bold text-purple-300">
+                      ₹{costNewParts.toLocaleString("en-IN")}
+                    </p>
+                  </div>
+
+                  <div className="pt-4 border-t border-gray-700">
+                    <h3 className="text-sm font-semibold text-gray-300 mb-2">
+                      New Parts ({newParts.length})
+                    </h3>
+                    <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                      {newParts.map((part, index) => (
+                        <div
+                          key={`new-part-${index}`}
+                          className="flex justify-between text-sm"
+                        >
+                          <span className="text-gray-300 truncate pr-2">
+                            {part.name}
+                          </span>
+                          <span className="text-purple-300 whitespace-nowrap">
+                            ₹{Number(part.price).toLocaleString("en-IN")}
+                          </span>
                         </div>
+                      ))}
+                      {newParts.length === 0 && (
+                        <p className="text-xs text-gray-500">
+                          No new parts selected
+                        </p>
                       )}
                     </div>
-                  )}
-                </div>
-                {msg.sender === "user" && <UserAvatar />}
-              </div>
-            ))}
-            {isLoadingAiResponse && (
-              <div className="flex items-start gap-3 justify-start animate-fadeIn">
-                <AiAvatar />
-                <div className="p-3 rounded-lg bg-[#2A2A2A] text-gray-200 shadow-md">
-                  <div className="flex space-x-1 items-center">
-                    <span className="text-sm italic">BuildBot is thinking</span>
-                    <span className="animate-pulse delay-100 text-xl">.</span>
-                    <span className="animate-pulse delay-200 text-xl">.</span>
-                    <span className="animate-pulse delay-300 text-xl">.</span>
                   </div>
+
+                  <button
+                    onClick={() => {
+                      // Handle save build
+                      console.log("Saving build...");
+                    }}
+                    className="w-full py-2.5 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors font-medium"
+                  >
+                    Save This Build
+                  </button>
                 </div>
               </div>
-            )}
-            <div ref={chatMessagesEndRef} />
-          </div>
-
-          <div className="p-4 bg-[#1A161F] border-t border-gray-800/50">
-            <div className="max-w-3xl w-full mx-auto">
-              <form
-                onSubmit={handleSendMessage}
-                className="flex items-center p-1.5 bg-[#2A2A2A] rounded-xl border border-gray-700 focus-within:border-purple-500 transition-colors"
-              >
-                <input
-                  className="flex-1 px-4 py-2.5 bg-transparent placeholder-gray-400/80 text-gray-100 focus:outline-none text-sm"
-                  placeholder="Message BuildBot…"
-                  value={currentMessage}
-                  onChange={(e) => setCurrentMessage(e.target.value)}
-                  disabled={isLoadingAiResponse}
-                />
-                <button
-                  type="submit"
-                  disabled={isLoadingAiResponse || !currentMessage.trim()}
-                  className="p-2.5 ml-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <IconSend />
-                </button>
-              </form>
             </div>
           </div>
-        </main>
+        </div>
       </div>
     </div>
   );

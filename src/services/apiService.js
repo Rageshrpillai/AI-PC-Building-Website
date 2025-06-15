@@ -9,6 +9,7 @@ const ALL_CATEGORY_FILENAMES = [
   "storages.json",
   "psus.json",
   "cases.json",
+  "coolers.json",
   // Add any other .json file names here
 ];
 
@@ -77,8 +78,8 @@ export const fetchProducts = async (category = "cpu") => {
     motherboard: "motherboards.json",
     ram: "rams.json",
     storage: "storages.json",
-    cooler: "psus.json", // Assuming cooler data is in psus.json
-    cabinet: "cases.json", // Assuming cabinet data is in cases.json
+    cooler: "coolers.json", // Assuming cooler data is in psus.json
+    cabinet: "cases.json",
     psu: "psus.json",
     case: "cases.json",
   };

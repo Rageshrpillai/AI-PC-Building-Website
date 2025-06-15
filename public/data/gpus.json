@@ -5,7 +5,7 @@
     "brand": "NVIDIA",
     "price": 1599.0,
     "category": "gpu",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=RTX+4090",
+    "imageUrl": "/images/gpu/rtx3080.png",
     "specs": {
       "chipset": "GeForce RTX 4090",
       "memory": "24GB GDDR6X",
@@ -22,7 +22,7 @@
     "brand": "AMD",
     "price": 949.0,
     "category": "gpu",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=RX+7900XTX",
+    "imageUrl": "/images/gpu/rx6700.png",
     "specs": {
       "chipset": "Radeon RX 7900 XTX",
       "memory": "24GB GDDR6",
@@ -39,7 +39,7 @@
     "brand": "NVIDIA",
     "price": 799.0,
     "category": "gpu",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=RTX+4070Ti+SUPER",
+    "imageUrl": "/images/gpu/rtx4070ti.png",
     "specs": {
       "chipset": "GeForce RTX 4070 Ti SUPER",
       "memory": "16GB GDDR6X",
@@ -56,7 +56,7 @@
     "brand": "AMD",
     "price": 499.0,
     "category": "gpu",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=RX+6800XT",
+    "imageUrl": "/images/gpu/rx6800.png",
     "specs": {
       "chipset": "Radeon RX 6800 XT",
       "memory": "16GB GDDR6",
@@ -73,7 +73,7 @@
     "brand": "NVIDIA",
     "price": 329.0,
     "category": "gpu",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=RTX+3060",
+    "imageUrl": "/images/gpu/rtx3060ti.png",
     "specs": {
       "chipset": "GeForce RTX 3060",
       "memory": "12GB GDDR6",
@@ -90,7 +90,7 @@
     "brand": "AMD",
     "price": 229.0,
     "category": "gpu",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=RX+6600",
+    "imageUrl": "/images/gpu/rx6700.png",
     "specs": {
       "chipset": "Radeon RX 6600",
       "memory": "8GB GDDR6",

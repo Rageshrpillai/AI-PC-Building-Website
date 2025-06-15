@@ -22,6 +22,13 @@ const BASE_COMPONENT_CATEGORIES = [
     hasQuickPicks: true,
   },
   { key: "psu", name: "PSU", actualCategory: "psu", hasQuickPicks: true },
+
+  {
+    key: "cooler",
+    name: "Cooler",
+    actualCategory: "cooler",
+    hasQuickPicks: true,
+  },
   { key: "case", name: "Case", actualCategory: "case", hasQuickPicks: true },
 ];
 
@@ -237,40 +244,45 @@ export default function CustomBuildPage() {
   // Handler for selecting an item from either the quick pick list or the Spec page
   const handleSelectComponent = useCallback(
     (categoryOrSlotName, partToSelect) => {
-      console.log('[CustomBuildPage] handleSelectComponent called');
-      console.log('[CustomBuildPage] location.state:', location.state);
-      
+      console.log("[CustomBuildPage] handleSelectComponent called");
+      console.log("[CustomBuildPage] location.state:", location.state);
+
       if (isProcessingSelection) {
-        console.log('[CustomBuildPage] Processing selection in progress, returning');
+        console.log(
+          "[CustomBuildPage] Processing selection in progress, returning"
+        );
         return;
       }
-      
+
       setIsProcessingSelection(true);
-      console.log('[CustomBuildPage] Set processing to true');
+      console.log("[CustomBuildPage] Set processing to true");
 
       try {
         // If we received a direct part selection from state
         if (location.state?.selectedComponent && location.state?.categoryName) {
-          console.log('[CustomBuildPage] Found component in state, selecting:', {
-            category: location.state.categoryName,
-            component: location.state.selectedComponent
-          });
-          
+          console.log(
+            "[CustomBuildPage] Found component in state, selecting:",
+            {
+              category: location.state.categoryName,
+              component: location.state.selectedComponent,
+            }
+          );
+
           selectComponent(
             location.state.categoryName,
             location.state.selectedComponent
           );
-          
+
           requestAnimationFrame(() => {
-            console.log('[CustomBuildPage] Clearing navigation state');
+            console.log("[CustomBuildPage] Clearing navigation state");
             navigate(location.pathname, { replace: true, state: {} });
           });
         }
         // Handle normal selection (from quick picks)
         else if (categoryOrSlotName && partToSelect) {
-          console.log('[CustomBuildPage] Quick pick selection:', {
+          console.log("[CustomBuildPage] Quick pick selection:", {
             category: categoryOrSlotName,
-            component: partToSelect
+            component: partToSelect,
           });
           selectComponent(categoryOrSlotName, partToSelect);
         }
@@ -292,12 +304,15 @@ export default function CustomBuildPage() {
           });
         }
       } catch (error) {
-        console.error('[CustomBuildPage] Error in handleSelectComponent:', error);
+        console.error(
+          "[CustomBuildPage] Error in handleSelectComponent:",
+          error
+        );
       } finally {
-        console.log('[CustomBuildPage] Selection processing complete');
+        console.log("[CustomBuildPage] Selection processing complete");
         setTimeout(() => {
           setIsProcessingSelection(false);
-          console.log('[CustomBuildPage] Processing flag cleared');
+          console.log("[CustomBuildPage] Processing flag cleared");
         }, 150);
       }
     },
@@ -316,20 +331,22 @@ export default function CustomBuildPage() {
 
   // Effect to handle component selection from Spec page
   useEffect(() => {
-    console.log('[CustomBuildPage] Location state changed:', location.state);
-    
+    console.log("[CustomBuildPage] Location state changed:", location.state);
+
     if (location.state?.selectedComponent && location.state?.categoryName) {
-      console.log('[CustomBuildPage] Processing component selection from navigation');
-      
+      console.log(
+        "[CustomBuildPage] Processing component selection from navigation"
+      );
+
       if (!isProcessingSelection) {
         setIsProcessingSelection(true);
-        
+
         try {
-          console.log('[CustomBuildPage] Selecting component:', {
+          console.log("[CustomBuildPage] Selecting component:", {
             category: location.state.categoryName,
-            component: location.state.selectedComponent
+            component: location.state.selectedComponent,
           });
-          
+
           selectComponent(
             location.state.categoryName,
             location.state.selectedComponent
@@ -339,7 +356,7 @@ export default function CustomBuildPage() {
           requestAnimationFrame(() => {
             navigate(location.pathname, { replace: true, state: {} });
           });
-          
+
           // Reset processing flag
           setTimeout(() => {
             setIsProcessingSelection(false);

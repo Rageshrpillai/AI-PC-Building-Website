@@ -1,0 +1,138 @@
+[
+  {
+    "id": "prebuilt-001",
+    "name": "Gaming Beast Pro",
+    "price": 75000,
+    "rating": 4.5,
+    "imageUrl": "/images/prebuilt1.png",
+    "description": "High-end gaming PC featuring AMD Ryzen 5 and RTX 3060 Ti. Perfect for AAA gaming at 1440p.",
+    "parts": [
+      { "category": "cpu", "id": "cpu-006" },
+      { "category": "gpu", "id": "gpu-005" },
+      { "category": "motherboard", "id": "mobo-005" },
+      { "category": "ram", "id": "ram-stick-002" },
+      { "category": "storage", "id": "stor-001" },
+      { "category": "psu", "id": "psu-004" },
+      { "category": "case", "id": "case-004" }
+    ]
+  },
+  {
+    "id": "prebuilt-002",
+    "name": "Content Creator Studio",
+    "price": 90000,
+    "rating": 4.8,
+    "imageUrl": "/images/prebuilt2.png",
+    "description": "Professional workstation with Intel i9 and RTX 3080. Optimized for content creation and rendering.",
+    "parts": [
+      { "category": "cpu", "id": "cpu-001" },
+      { "category": "gpu", "id": "gpu-001" },
+      { "category": "motherboard", "id": "mobo-001" },
+      { "category": "ram", "id": "ram-stick-004" },
+      { "category": "storage", "id": "stor-003" },
+      { "category": "psu", "id": "psu-001" },
+      { "category": "case", "id": "case-002" }
+    ]
+  },
+  {
+    "id": "prebuilt-003",
+    "name": "Budget Champion",
+    "price": 45000,
+    "rating": 4.3,
+    "imageUrl": "/images/prebuilt3.png",
+    "description": "Best value gaming PC with AMD Ryzen 3 and GTX 1660 Super. Great for 1080p gaming.",
+    "parts": [
+      { "category": "cpu", "id": "cpu-003" },
+      { "category": "gpu", "id": "gpu-003" },
+      { "category": "motherboard", "id": "mobo-003" },
+      { "category": "ram", "id": "ram-stick-001" },
+      { "category": "storage", "id": "stor-002" },
+      { "category": "psu", "id": "psu-002" },
+      { "category": "case", "id": "case-001" }
+    ]
+  },
+  {
+    "id": "prebuilt-004",
+    "name": "Streaming Pro",
+    "price": 85000,
+    "rating": 4.6,
+    "imageUrl": "/images/prebuilt4.png",
+    "description": "Dual PC setup ready for professional streaming. Features Ryzen 7 and RTX 3070.",
+    "parts": [
+      { "category": "cpu", "id": "cpu-004" },
+      { "category": "gpu", "id": "gpu-004" },
+      { "category": "motherboard", "id": "mobo-004" },
+      { "category": "ram", "id": "ram-stick-003" },
+      { "category": "storage", "id": "stor-004" },
+      { "category": "psu", "id": "psu-003" },
+      { "category": "case", "id": "case-003" }
+    ]
+  },
+  {
+    "id": "prebuilt-005",
+    "name": "Stealth Beast",
+    "price": 75000,
+    "rating": 2,
+    "imageUrl": "/images/prebuilt5.png",
+    "description": "For the ultimate gaming experience, the Stealth Beast combines an Intel i7 processor and RTX 3060 GPU, ensuring you never lag behind.",
+    "parts": [
+      { "category": "cpu", "id": "cpu-005" },
+      { "category": "gpu", "id": "gpu-005" },
+      { "category": "motherboard", "id": "mobo-002" },
+      { "category": "ram", "id": "ram-stick-003" },
+      { "category": "storage", "id": "stor-003" },
+      { "category": "psu", "id": "psu-003" },
+      { "category": "case", "id": "case-003" }
+    ]
+  },
+  {
+    "id": "prebuilt-006",
+    "name": "Powerhouse Pro",
+    "price": 90000,
+    "rating": 2,
+    "imageUrl": "/images/prebuilt6.png",
+    "description": "The Powerhouse Pro features a Ryzen 9 CPU and a powerful RTX 3070, making it ideal for both gaming and content creation. Its sleek design stands out.",
+    "parts": [
+      { "category": "cpu", "id": "cpu-002" },
+      { "category": "gpu", "id": "gpu-003" },
+      { "category": "motherboard", "id": "mobo-002" },
+      { "category": "ram", "id": "ram-stick-005" },
+      { "category": "storage", "id": "stor-004" },
+      { "category": "psu", "id": "psu-003" },
+      { "category": "case", "id": "case-003" }
+    ]
+  },
+  {
+    "id": "prebuilt-007",
+    "name": "Budget Hero",
+    "price": 65000,
+    "rating": 2,
+    "imageUrl": "/images/prebuilt7.png",
+    "description": "A perfect entry-level build, the Budget Hero packs an AMD Ryzen 5 processor and GTX 1650, providing excellent performance for casual gamers.",
+    "parts": [
+      { "category": "cpu", "id": "cpu-006" },
+      { "category": "gpu", "id": "gpu-006" },
+      { "category": "motherboard", "id": "mobo-005" },
+      { "category": "ram", "id": "ram-stick-002" },
+      { "category": "storage", "id": "stor-001" },
+      { "category": "psu", "id": "psu-001" },
+      { "category": "case", "id": "case-001" }
+    ]
+  },
+  {
+    "id": "prebuilt-008",
+    "name": "Ultimate Creator",
+    "price": 90000,
+    "rating": 2,
+    "imageUrl": "/images/prebuilt8.png",
+    "description": "The Ultimate Creator is tailored for professionals with a Ryzen 9, 32GB RAM, and RTX 3080. This powerhouse is built for heavy workloads and multitasking.",
+    "parts": [
+      { "category": "cpu", "id": "cpu-002" },
+      { "category": "gpu", "id": "gpu-001" },
+      { "category": "motherboard", "id": "mobo-002" },
+      { "category": "ram", "id": "ram-stick-008" },
+      { "category": "storage", "id": "stor-003" },
+      { "category": "psu", "id": "psu-003" },
+      { "category": "case", "id": "case-002" }
+    ]
+  }
+] 

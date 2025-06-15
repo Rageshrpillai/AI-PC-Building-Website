@@ -1,57 +1,51 @@
-// src/stores/productStore.js
 import { create } from "zustand";
-import { persist } from 'zustand/middleware';
-// Assuming apiService.js is in src/services/
+import { persist } from "zustand/middleware";
 import { fetchProducts as fetchAllProductsFromAPI } from "../services/apiService";
 
-// Helper to get a display name from a category key
 const getCategoryName = (key) => {
   if (!key) return "Unknown";
-  return key.charAt(0).toUpperCase() + key.slice(1).replace(/s$/, ""); // e.g., cpus -> Cpu
+  return key.charAt(0).toUpperCase() + key.slice(1).replace(/s$/, "");
 };
 
 const useProductStore = create(
   persist(
     (set, get) => ({
-      // State
+      // --- STATE ---
+      // The key change is setting isLoading to true by default.
+      isLoading: true,
+      hasFetchedInitialData: false,
+
       allProducts: [],
-      productsByCategory: {}, // e.g., { cpu: [...], gpu: [...] }
-      uniqueCategoryObjects: [], // e.g., [{ key: 'cpu', name: 'CPU' }, ...]
+      productsByCategory: {},
+      uniqueCategoryObjects: [],
       selectedComponents: {},
-      isLoading: false,
       error: null,
-      hasFetchedInitialData: false, // To track if initial fetch has been attempted
 
-      // Actions
+      prebuilds: [],
+      isPrebuildsLoading: false,
+      prebuildsError: null,
+
+      // --- ACTIONS ---
       fetchAllProducts: async () => {
-        if (get().isLoading) return;
-
-        set({ isLoading: true, error: null });
         try {
-          const products = await fetchAllProductsFromAPI("all"); // Fetches all products
+          const products = await fetchAllProductsFromAPI("all");
           if (!Array.isArray(products)) {
             throw new Error("Fetched products is not an array");
           }
 
           const categorized = {};
           const categoryKeys = new Set();
-
           products.forEach((product) => {
-            const key = product.category?.toLowerCase() || "unknown"; // Ensure category key is consistent
-            if (!categorized[key]) {
-              categorized[key] = [];
-            }
+            const key = product.category?.toLowerCase() || "unknown";
+            if (!categorized[key]) categorized[key] = [];
             categorized[key].push(product);
-            if (key !== "unknown") {
-              categoryKeys.add(key);
-            }
+            if (key !== "unknown") categoryKeys.add(key);
           });
 
           const uniqueCats = Array.from(categoryKeys)
             .sort()
             .map((key) => ({ key, name: getCategoryName(key) }));
 
-          // Add "All components" for UI, ensure it matches CATEGORIES in Spec.jsx if used there
           const finalCategoriesForUI = [
             { key: "all", name: "All components" },
             ...uniqueCats,
@@ -60,89 +54,97 @@ const useProductStore = create(
           set({
             allProducts: products,
             productsByCategory: categorized,
-            uniqueCategoryObjects: finalCategoriesForUI, // Store this for UIs needing category lists
-            isLoading: false,
+            uniqueCategoryObjects: finalCategoriesForUI,
+            isLoading: false, // Turn off loading only AFTER data is ready
             hasFetchedInitialData: true,
             error: null,
           });
-          console.log(
-            "[ProductStore] Successfully fetched and processed all products."
-          );
         } catch (error) {
           console.error("[ProductStore] Error fetching all products:", error);
           set({
             error: error.message,
             isLoading: false,
             hasFetchedInitialData: true,
-          }); // Set hasFetched to true even on error to prevent loops
+          });
         }
       },
 
-      // Component Selection Actions
-      selectComponent: (categoryName, component) => {
-        console.log('[ProductStore] Selecting component:', {
-          categoryName,
-          component
-        });
-        set((state) => {
-          const newState = {
-            selectedComponents: {
-              ...state.selectedComponents,
-              [categoryName]: component
-            }
-          };
-          console.log('[ProductStore] New state:', newState);
-          return newState;
-        });
+      fetchPrebuilds: async () => {
+        if (get().isPrebuildsLoading) return;
+        if (!get().hasFetchedInitialData) {
+          await get().fetchAllProducts();
+        }
+        set({ isPrebuildsLoading: true, prebuildsError: null });
+        try {
+          const response = await fetch("/data/prebuilds.json");
+          if (!response.ok) {
+            throw new Error(
+              `Failed to fetch prebuilds: ${response.statusText}`
+            );
+          }
+          const prebuildsData = await response.json();
+          const allProducts = get().allProducts;
+          const enrichedPrebuilds = prebuildsData.map((prebuild) => {
+            const resolvedParts = prebuild.parts.map((part) => {
+              const fullPart = allProducts.find((p) => p.id === part.id);
+              return fullPart || part;
+            });
+            return {
+              ...prebuild,
+              resolvedParts,
+              name: prebuild.name || "Unnamed Build",
+              description: prebuild.description || "No description available",
+              price: prebuild.price || 0,
+              rating: prebuild.rating || 0,
+              imageUrl: prebuild.imageUrl || "/images/placeholder.jpg",
+            };
+          });
+          set({
+            prebuilds: enrichedPrebuilds,
+            isPrebuildsLoading: false,
+          });
+          console.log(
+            "[ProductStore] Successfully loaded prebuilds:",
+            enrichedPrebuilds
+          );
+        } catch (err) {
+          console.error("[ProductStore] Error fetching pre-builds:", err);
+          set({
+            prebuildsError: err.message,
+            isPrebuildsLoading: false,
+          });
+        }
       },
 
-      removeComponent: (categoryName) => {
-        console.log('[ProductStore] Removing component:', categoryName);
+      selectComponent: (categoryName, component) =>
+        set((state) => ({
+          selectedComponents: {
+            ...state.selectedComponents,
+            [categoryName]: component,
+          },
+        })),
+      removeComponent: (categoryName) =>
         set((state) => {
           const newSelectedComponents = { ...state.selectedComponents };
           delete newSelectedComponents[categoryName];
           return { selectedComponents: newSelectedComponents };
-        });
-      },
+        }),
+      clearAllComponents: () => set({ selectedComponents: {} }),
 
-      clearAllComponents: () => {
-        console.log('[ProductStore] Clearing all components');
-        set({ selectedComponents: {} });
-      },
-
-      // Selectors (functions to get data from the store)
+      // --- SELECTORS ---
       getProductsForCategory: (categoryKey) => {
         const key = categoryKey?.toLowerCase();
-        if (!key || key === "all") {
-          return get().allProducts;
-        }
+        if (!key || key === "all") return get().allProducts;
         return get().productsByCategory[key] || [];
       },
-
-      getProductById: (id) => {
-        const state = get();
-        if (!id) return null;
-        return state.allProducts.find(p => p.id === id) || null;
-      },
-
-      getSelectedComponent: (categoryName) => {
-        return get().selectedComponents[categoryName] || null;
-      },
-
-      getAllSelectedComponents: () => {
-        return get().selectedComponents;
-      }
+      getProductById: (id) =>
+        get().allProducts.find((p) => p.id === id) || null,
     }),
     {
-      name: 'product-store',
-      partialize: (state) => ({
-        selectedComponents: state.selectedComponents
-      })
+      name: "product-store",
+      partialize: (state) => ({ selectedComponents: state.selectedComponents }),
     }
   )
 );
-
-// Optional: Trigger initial fetch when the store is defined (or do it in App.jsx)
-// useProductStore.getState().fetchAllProducts();
 
 export default useProductStore;

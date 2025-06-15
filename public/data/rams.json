@@ -5,7 +5,7 @@
     "brand": "Corsair",
     "price": 27.99,
     "category": "ram",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Corsair+LPX+8GB",
+    "imageUrl": "/images/ram/px8gb.png",
     "specs": {
       "type": "DDR4",
       "speed": "3200MHz",
@@ -22,7 +22,7 @@
     "brand": "Corsair",
     "price": 49.99,
     "category": "ram",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Corsair+LPX+16GB",
+    "imageUrl": "/images/ram/lpx16gb.png",
     "specs": {
       "type": "DDR4",
       "speed": "3200MHz",
@@ -39,7 +39,7 @@
     "brand": "G.Skill",
     "price": 29.99,
     "category": "ram",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=GSKill+Ripjaws+8GB",
+    "imageUrl": "/images/ram/gskill.png",
     "specs": {
       "type": "DDR4",
       "speed": "3600MHz",
@@ -56,7 +56,7 @@
     "brand": "G.Skill",
     "price": 52.99,
     "category": "ram",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=GSKill+Ripjaws+16GB",
+    "imageUrl": "/images/ram/gskill16gb.png",
     "specs": {
       "type": "DDR4",
       "speed": "3600MHz",
@@ -73,7 +73,7 @@
     "brand": "Kingston",
     "price": 45.99,
     "category": "ram",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Kingston+Fury+8GB+DDR5",
+    "imageUrl": "/images/ram/kingston.png",
     "specs": {
       "type": "DDR5",
       "speed": "5200MHz",
@@ -91,7 +91,7 @@
     "brand": "Kingston",
     "price": 89.99,
     "category": "ram",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Kingston+Fury+16GB+DDR5",
+    "imageUrl": "/images/ram/king16.png",
     "specs": {
       "type": "DDR5",
       "speed": "5200MHz",
@@ -109,7 +109,7 @@
     "brand": "Crucial",
     "price": 55.99,
     "category": "ram",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Crucial+Pro+16GB+DDR5",
+    "imageUrl": "/images/ram/crucial.png",
     "specs": {
       "type": "DDR5",
       "speed": "5600MHz",
@@ -126,7 +126,7 @@
     "brand": "Crucial",
     "price": 109.99,
     "category": "ram",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Crucial+Pro+32GB+DDR5",
+    "imageUrl": "/images/ram/cr16.png",
     "specs": {
       "type": "DDR5",
       "speed": "5600MHz",

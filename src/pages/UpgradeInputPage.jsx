@@ -12,6 +12,7 @@ const CURRENT_RIG_CATEGORIES = [
   { key: "ram", name: "RAM", actualCategory: "ram", isMultiSlot: true },
   { key: "gpu", name: "GPU", actualCategory: "gpu" },
   { key: "storage", name: "Storage", actualCategory: "storage" },
+  { key: "cooler", name: "Cooler", actualCategory: "cooler" },
   { key: "psu", name: "PSU", actualCategory: "psu" },
   { key: "case", name: "Case", actualCategory: "case" },
 ];
@@ -29,7 +30,9 @@ export default function UpgradeInputPage() {
   const location = useLocation();
 
   // Using Zustand store selectors
-  const getProductById = useProductStore(useCallback((s) => s.getProductById, []));
+  const getProductById = useProductStore(
+    useCallback((s) => s.getProductById, [])
+  );
   const hasFetchedInitialData = useProductStore((s) => s.hasFetchedInitialData);
   const isLoadingStoreProducts = useProductStore((s) => s.isLoading);
   const selectedComponents = useProductStore((s) => s.selectedComponents);
@@ -56,44 +59,61 @@ export default function UpgradeInputPage() {
 
   // A single, robust useEffect to handle selections returning from the Spec page
   useEffect(() => {
-    console.log('[UpgradeInputPage] Location state changed:', location.state);
-    
+    console.log("[UpgradeInputPage] Location state changed:", location.state);
+
     // Handle both state formats
-    const { 
+    const {
       selectedComponent,
       categoryName,
       newlySelectedPartId,
-      targetCategoryName
+      targetCategoryName,
     } = location.state || {};
 
     // Determine which format we're dealing with and extract the relevant data
-    const componentToAdd = selectedComponent || (newlySelectedPartId ? getProductById(newlySelectedPartId) : null);
+    const componentToAdd =
+      selectedComponent ||
+      (newlySelectedPartId ? getProductById(newlySelectedPartId) : null);
     const rawCategory = categoryName || targetCategoryName;
 
     if (componentToAdd && rawCategory && !isSubmitting) {
-      console.log('[UpgradeInputPage] Processing component selection:', {
+      console.log("[UpgradeInputPage] Processing component selection:", {
         category: rawCategory,
-        component: componentToAdd
+        component: componentToAdd,
       });
 
       // Find the category config to get the correct key
       const categoryConfig = CURRENT_RIG_CATEGORIES.find(
-        c => c.name === rawCategory || c.actualCategory === componentToAdd.category
+        (c) =>
+          c.name === rawCategory || c.actualCategory === componentToAdd.category
       );
 
       if (!categoryConfig) {
-        console.error('[UpgradeInputPage] Could not find category config for:', rawCategory);
+        console.error(
+          "[UpgradeInputPage] Could not find category config for:",
+          rawCategory
+        );
         return;
       }
 
       // Use the key for storage, but keep track of the display name for logging
-      const targetKey = rawCategory.startsWith('ram_slot_') ? rawCategory : categoryConfig.key;
+      const targetKey = rawCategory.startsWith("ram_slot_")
+        ? rawCategory
+        : categoryConfig.key;
       const displayName = categoryConfig.name;
-      console.log('[UpgradeInputPage] Mapped category:', rawCategory, 'to key:', targetKey, '(display name:', displayName, ')');
+      console.log(
+        "[UpgradeInputPage] Mapped category:",
+        rawCategory,
+        "to key:",
+        targetKey,
+        "(display name:",
+        displayName,
+        ")"
+      );
 
       // If selecting a motherboard, check RAM compatibility
       if (componentToAdd.category === "motherboard") {
-        const currentSelectedComponents = useProductStore.getState().selectedComponents;
+        const currentSelectedComponents =
+          useProductStore.getState().selectedComponents;
         const incompatibleRamSlots = Object.entries(currentSelectedComponents)
           .filter(
             ([key, ramPart]) =>
@@ -113,7 +133,7 @@ export default function UpgradeInputPage() {
 
           if (shouldProceed) {
             // Remove incompatible RAM
-            incompatibleRamSlots.forEach(slotKey => removeComponent(slotKey));
+            incompatibleRamSlots.forEach((slotKey) => removeComponent(slotKey));
             // Add the new motherboard
             selectComponent(targetKey, componentToAdd);
           }
@@ -131,31 +151,47 @@ export default function UpgradeInputPage() {
         navigate(location.pathname, { replace: true, state: {} });
       });
     }
-  }, [location.state, navigate, getProductById, isSubmitting, selectComponent, removeComponent]);
+  }, [
+    location.pathname,
+    location.state,
+    navigate,
+    getProductById,
+    isSubmitting,
+    selectComponent,
+    removeComponent,
+  ]);
 
-  const handleRemoveComponent = useCallback((categoryOrSlotName) => {
-    // If it's a RAM slot, use the slot name directly
-    if (categoryOrSlotName.startsWith('ram_slot_')) {
-      removeComponent(categoryOrSlotName);
-      return;
-    }
+  const handleRemoveComponent = useCallback(
+    (categoryOrSlotName) => {
+      // If it's a RAM slot, use the slot name directly
+      if (categoryOrSlotName.startsWith("ram_slot_")) {
+        removeComponent(categoryOrSlotName);
+        return;
+      }
 
-    // Convert display name to key if needed
-    const category = CURRENT_RIG_CATEGORIES.find(c => c.name === categoryOrSlotName);
-    const key = category ? category.key : categoryOrSlotName.toLowerCase().replace(' ', '_');
-    
-    // If removing motherboard, also remove RAM
-    if (key === "motherboard") {
-      const currentSelectedComponents = useProductStore.getState().selectedComponents;
-      Object.keys(currentSelectedComponents).forEach((k) => {
-        if (k.startsWith("ram_slot_")) {
-          removeComponent(k);
-        }
-      });
-    }
-    
-    removeComponent(key);
-  }, [removeComponent]);
+      // Convert display name to key if needed
+      const category = CURRENT_RIG_CATEGORIES.find(
+        (c) => c.name === categoryOrSlotName
+      );
+      const key = category
+        ? category.key
+        : categoryOrSlotName.toLowerCase().replace(" ", "_");
+
+      // If removing motherboard, also remove RAM
+      if (key === "motherboard") {
+        const currentSelectedComponents =
+          useProductStore.getState().selectedComponents;
+        Object.keys(currentSelectedComponents).forEach((k) => {
+          if (k.startsWith("ram_slot_")) {
+            removeComponent(k);
+          }
+        });
+      }
+
+      removeComponent(key);
+    },
+    [removeComponent]
+  );
 
   const handlePartSelectedFromSearch = useCallback(
     (part) => {
@@ -182,7 +218,8 @@ export default function UpgradeInputPage() {
       if (categoryConfig.isMultiSlot) {
         // This handles RAM
         // Find the first available empty RAM slot
-        const currentSelectedComponents = useProductStore.getState().selectedComponents;
+        const currentSelectedComponents =
+          useProductStore.getState().selectedComponents;
         for (let i = 1; i <= numberOfRamSlots; i++) {
           const slotName = `ram_slot_${i}`;
           if (!currentSelectedComponents[slotName]) {
@@ -204,10 +241,24 @@ export default function UpgradeInputPage() {
   const handleSubmitForUpgrade = useCallback(
     async (e) => {
       e.preventDefault();
-      if (Object.keys(selectedComponents).length === 0) {
-        alert("Please select at least one component from your current rig.");
+
+      const currentSelected = useProductStore.getState().selectedComponents;
+
+      // --- NEW VALIDATION CHECKS ---
+      if (!currentSelected.cpu) {
+        alert(
+          "Please select your current CPU. This is required for compatibility checks."
+        );
         return;
       }
+      if (!currentSelected.motherboard) {
+        alert(
+          "Please select your current Motherboard. This is required for compatibility checks."
+        );
+        return;
+      }
+      // --- END OF NEW CHECKS ---
+
       if (
         !upgradeBudget ||
         isNaN(Number(upgradeBudget)) ||
@@ -225,11 +276,12 @@ export default function UpgradeInputPage() {
       setError(null);
       try {
         const currentUserPartsPayload = { ramIds: [] };
-        Object.entries(selectedComponents).forEach(([key, part]) => {
+        Object.entries(currentSelected).forEach(([key, part]) => {
           if (part?.id) {
             if (key.startsWith("ram_slot_")) {
               currentUserPartsPayload.ramIds.push(part.id);
             } else {
+              // Use the actual category key from the part object
               const idKey = `${part.category?.toLowerCase()}Id`;
               if (idKey) currentUserPartsPayload[idKey] = part.id;
             }
@@ -254,31 +306,33 @@ export default function UpgradeInputPage() {
           );
         }
 
-        navigate("/build", {
+        navigate("/upgrade-result", {
           state: {
             upgradeSuggestion: data,
-            fromUpgradeFlow: true,
+            originalBuild: currentSelected, // Pass the user's original selections
           },
         });
       } catch (err) {
-        setError(err.message || "An unknown error occurred.");
+        setError(err.message);
         console.error("Upgrade submission failed:", err);
       } finally {
         setIsSubmitting(false);
       }
     },
-    [selectedComponents, upgradeBudget, upgradeGoals, navigate]
+    [upgradeBudget, upgradeGoals, navigate]
   );
 
   const handleSelectClick = useCallback(
     (slotIdentifier, componentType) => {
       // If selecting RAM, include the motherboard ID in the URL if one is selected
-      let url = `/spec?category=${componentType}&selectingFor=${encodeURIComponent(slotIdentifier)}&origin=/upgrade`;
-      
-      if (componentType === 'ram' && selectedMotherboard) {
+      let url = `/spec?category=${componentType}&selectingFor=${encodeURIComponent(
+        slotIdentifier
+      )}&origin=/upgrade`;
+
+      if (componentType === "ram" && selectedMotherboard) {
         url += `&motherboardId=${selectedMotherboard.id}`;
       }
-      
+
       navigate(url);
     },
     [navigate, selectedMotherboard]

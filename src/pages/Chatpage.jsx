@@ -1,5 +1,6 @@
 // src/pages/Chatpage.jsx
 import React, { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import Navabar from "../components/Navabar";
 import Sidebar from "../components/Sidebar";
 
@@ -30,7 +31,8 @@ const pastChats = [
 ];
 
 export default function ChatPage() {
-  const [currentMessage, setCurrentMessage] = useState("");
+  const location = useLocation();
+  const [currentMessage, setCurrentMessage] = useState(location.state?.query || "");
   const [chatHistory, setChatHistory] = useState([]);
   const [isLoadingAiResponse, setIsLoadingAiResponse] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);

@@ -1,0 +1,72 @@
+[
+  {
+    "id": "cooler-001",
+    "name": "Noctua NH-D15",
+    "brand": "Noctua",
+    "price": 8999,
+    "rating": { "rate": 4.9, "count": 1500 },
+    "description": "The NH-D15 is Noctua's flagship model, an elite-class dual tower cooler for the highest demands in cooling performance.",
+    "imageUrl": "",
+    "specs": {
+      "type": "Air",
+      "fan_size": "140mm",
+      "socket_compatibility": ["LGA1200", "LGA1151", "AM4"]
+    }
+  },
+  {
+    "id": "cooler-002",
+    "name": "Cooler Master Hyper 212 EVO",
+    "brand": "Cooler Master",
+    "price": 3499,
+    "rating": { "rate": 4.6, "count": 10000 },
+    "description": "A legendary air cooler providing a great balance of performance and price for mainstream builds.",
+    "imageUrl": "",
+    "specs": {
+      "type": "Air",
+      "fan_size": "120mm",
+      "socket_compatibility": ["LGA1200", "LGA1151", "AM4"]
+    }
+  },
+  {
+    "id": "cooler-003",
+    "name": "be quiet! Dark Rock Pro 4",
+    "brand": "be quiet!",
+    "price": 7999,
+    "rating": { "rate": 4.8, "count": 2500 },
+    "description": "No-compromise silent cooling for overclocked systems and demanding workstations.",
+    "imageUrl": "",
+    "specs": {
+      "type": "Air",
+      "fan_size": "135mm",
+      "socket_compatibility": ["LGA1200", "LGA1151", "AM4", "TR4"]
+    }
+  },
+  {
+    "id": "cooler-004",
+    "name": "Corsair H100i RGB PLATINUM",
+    "brand": "Corsair",
+    "price": 12499,
+    "rating": { "rate": 4.7, "count": 5000 },
+    "description": "A 240mm All-In-One liquid CPU cooler with vivid RGB lighting and extreme cooling performance.",
+    "imageUrl": "",
+    "specs": {
+      "type": "Liquid",
+      "fan_size": "120mm",
+      "socket_compatibility": ["LGA1200", "LGA1151", "AM4"]
+    }
+  },
+  {
+    "id": "cooler-005",
+    "name": "NZXT Kraken X63",
+    "brand": "NZXT",
+    "price": 13999,
+    "rating": { "rate": 4.7, "count": 4500 },
+    "description": "This All-in-One (AIO) liquid cooler is designed with the ability to fit comfortably in most cases and features a stunning infinity mirror effect.",
+    "imageUrl": "",
+    "specs": {
+      "type": "Liquid",
+      "fan_size": "140mm",
+      "socket_compatibility": ["LGA1200", "LGA1151", "AM4"]
+    }
+  }
+]

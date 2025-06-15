@@ -5,7 +5,7 @@
     "brand": "Intel",
     "price": 569.99,
     "category": "cpu",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=i9-13900K",
+    "imageUrl": "/images/cpui9.png",
     "specs": {
       "cores": "24 (8P+16E)",
       "threads": "32",
@@ -23,7 +23,7 @@
     "brand": "AMD",
     "price": 649.0,
     "category": "cpu",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Ryzen+9+7950X3D",
+    "imageUrl": "/images/ryzen9.png",
     "specs": {
       "cores": "16",
       "threads": "32",
@@ -41,7 +41,7 @@
     "brand": "Intel",
     "price": 309.99,
     "category": "cpu",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=i5-13600K",
+    "imageUrl": "/images/cpui5.png",
     "specs": {
       "cores": "14 (6P+8E)",
       "threads": "20",
@@ -59,7 +59,7 @@
     "brand": "AMD",
     "price": 439.0,
     "category": "cpu",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Ryzen+7+7800X3D",
+    "imageUrl": "/images/ryzen7.png",
     "specs": {
       "cores": "8",
       "threads": "16",
@@ -77,7 +77,7 @@
     "brand": "Intel",
     "price": 280.0,
     "category": "cpu",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=i7-12700K",
+    "imageUrl": "/images/cpui7.png",
     "specs": {
       "cores": "12 (8P+4E)",
       "threads": "20",
@@ -95,7 +95,7 @@
     "brand": "AMD",
     "price": 229.0,
     "category": "cpu",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Ryzen+5+7600X",
+    "imageUrl": "/images/ryzen5.png",
     "specs": {
       "cores": "6",
       "threads": "12",
@@ -113,7 +113,7 @@
     "brand": "Intel",
     "price": 99.99,
     "category": "cpu",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=i3-12100F",
+    "imageUrl": "/images/cpui3.png",
     "specs": {
       "cores": "4 (4P+0E)",
       "threads": "8",
@@ -131,7 +131,7 @@
     "brand": "AMD",
     "price": 129.0,
     "category": "cpu",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Ryzen+5+5600G",
+    "imageUrl": "/images/ryzen5360.png",
     "specs": {
       "cores": "6",
       "threads": "12",

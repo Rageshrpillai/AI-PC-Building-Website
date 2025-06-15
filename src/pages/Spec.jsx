@@ -1,12 +1,12 @@
 // src/pages/Spec.jsx
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { fetchProducts } from "../services/apiService";
 import useProductStore from "../stores/productStore";
 import Navabar from "../components/Navabar";
 import FiltersSidebar from "../components/FiltersSidebar";
 import PartCard from "../components/PartCard";
 import CompareView from "../components/CompareView";
+import SkeletonPartCard from "../components/SkeletonPartCard"; // Import the new skeleton component
 
 const CATEGORIES = [
   { key: "all", name: "All components" },
@@ -19,12 +19,23 @@ const CATEGORIES = [
   { key: "case", name: "Case" },
   { key: "cooler", name: "Cooler" },
 ];
+
 const DEFAULT_COMPARE_CATEGORY = "cpu";
 const DEFAULT_CATEGORY_KEY = "all";
 
 export default function SpecsPage() {
   const location = useLocation();
   const navigate = useNavigate();
+
+  // --- Get data and ALL loading statuses from the Zustand store ---
+  const {
+    getProductsForCategory,
+    getProductById,
+    isLoading: isLoadingStore,
+    error: storeError,
+    hasFetchedInitialData,
+    selectedComponents,
+  } = useProductStore();
 
   const queryParams = useMemo(
     () => new URLSearchParams(location.search),
@@ -36,44 +47,17 @@ export default function SpecsPage() {
   const originPage = queryParams.get("origin") || "/build";
   const motherboardId = queryParams.get("motherboardId");
 
-  // --- Get motherboard info either from URL param or store ---
-  const getProductById = useProductStore((s) => s.getProductById);
-  const storeHasFetched = useProductStore((s) => s.hasFetchedInitialData);
-  const selectedMotherboardForBuild = useProductStore(
-    (s) => s.selectedComponents["motherboard"]
-  );
-
-  // Use motherboard from URL param if available, otherwise from store
-  const motherboardForRamCheck = useMemo(() => {
-    if (motherboardId) {
-      return getProductById(motherboardId);
-    }
-    return selectedMotherboardForBuild;
-  }, [motherboardId, selectedMotherboardForBuild, getProductById]);
-
   const [currentDisplayCategory, setCurrentDisplayCategory] = useState(
     categoryFromUrl || DEFAULT_CATEGORY_KEY
   );
-  const [products, setProducts] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("components");
-
   const initialFiltersState = useMemo(
     () => ({
       brands: [],
       ratings: [],
       sockets: [],
-      formFactors: [],
-      ramTypes: [],
-      ramCapacities: [],
-      storageTypes: [],
-      storageCapacities: [],
-      psuEfficiencies: [],
-      psuModulars: [],
-      caseTypes: [],
-      caseSidePanels: [],
       priceRange: { min: 0, max: 500000 },
     }),
     []
@@ -98,75 +82,77 @@ export default function SpecsPage() {
     activeTab,
   ]);
 
-  useEffect(() => {
-    const loadProducts = async () => {
-      if (!currentDisplayCategory) {
-        setIsLoading(false);
-        return;
-      }
+  const motherboardForRamCheck = useMemo(() => {
+    if (motherboardId) return getProductById(motherboardId);
+    return selectedComponents["motherboard"];
+  }, [motherboardId, selectedComponents, getProductById]);
 
-      if (
-        currentDisplayCategory === "ram" &&
-        selectingFor &&
-        !storeHasFetched
-      ) {
-        setIsLoading(true);
-        return;
-      }
-
-      let fetchKey = currentDisplayCategory;
-      if (currentDisplayCategory === "cooler") fetchKey = "psu";
-
-      setIsLoading(true);
-      setError(null);
-      try {
-        const data = await fetchProducts(fetchKey);
-        let processedData = Array.isArray(data) ? data : [];
-
-        if (currentDisplayCategory === "ram" && selectingFor) {
-          if (
-            motherboardForRamCheck &&
-            motherboardForRamCheck.specs?.memoryType
-          ) {
-            const moboMemoryType = motherboardForRamCheck.specs.memoryType;
-            processedData = processedData.filter(
-              (ram) => ram.specs?.type === moboMemoryType
-            );
-          } else {
-            processedData = [];
-          }
-        }
-        setProducts(processedData);
-      } catch (err) {
-        setError(err.message || `Failed to fetch ${currentDisplayCategory}.`);
-        setProducts([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadProducts();
+  const products = useMemo(() => {
+    let allCategoryProducts = getProductsForCategory(currentDisplayCategory);
+    if (
+      currentDisplayCategory === "ram" &&
+      selectingFor &&
+      motherboardForRamCheck?.specs?.memoryType
+    ) {
+      const moboMemoryType = motherboardForRamCheck.specs.memoryType;
+      return allCategoryProducts.filter(
+        (ram) => ram.specs?.type === moboMemoryType
+      );
+    }
+    return allCategoryProducts;
   }, [
     currentDisplayCategory,
-    storeHasFetched,
-    motherboardForRamCheck,
+    getProductsForCategory,
     selectingFor,
+    motherboardForRamCheck,
   ]);
+
+  const filteredProducts = useMemo(() => {
+    let productsToFilter = [...products];
+    if (filters.priceRange) {
+      productsToFilter = productsToFilter.filter(
+        (p) => p.price && p.price <= filters.priceRange.max
+      );
+    }
+    if (activeTab === "components" && searchTerm) {
+      const lowerSearchTerm = searchTerm.toLowerCase();
+      productsToFilter = productsToFilter.filter(
+        (p) =>
+          p.name?.toLowerCase().includes(lowerSearchTerm) ||
+          p.brand?.toLowerCase().includes(lowerSearchTerm)
+      );
+    }
+    if (filters.brands.length > 0) {
+      productsToFilter = productsToFilter.filter(
+        (p) => p.brand && filters.brands.includes(p.brand)
+      );
+    }
+    if (filters.sockets.length > 0) {
+      productsToFilter = productsToFilter.filter(
+        (p) => p.specs?.socket && filters.sockets.includes(p.specs.socket)
+      );
+    }
+    if (filters.ratings.length > 0) {
+      productsToFilter = productsToFilter.filter((p) => {
+        if (!p.rating?.rate) return false;
+        const productRating = Math.floor(p.rating.rate);
+        return filters.ratings.some(
+          (rating) => Math.floor(parseFloat(rating)) === productRating
+        );
+      });
+    }
+    return productsToFilter;
+  }, [products, searchTerm, activeTab, filters]);
 
   const handleSelectPartForBuild = useCallback(
     (part) => {
       if (selectingFor && part) {
-        console.log('[Spec] Selecting part:', part);
-        console.log('[Spec] For category:', selectingFor);
-        console.log('[Spec] Origin page:', originPage);
-        
-        const state = {
-          selectedComponent: part,
-          categoryName: selectingFor
-        };
-        
-        console.log('[Spec] Navigating with state:', state);
-        navigate(originPage, { state });
+        navigate(originPage, {
+          state: {
+            selectedComponent: part,
+            categoryName: selectingFor,
+          },
+        });
       }
     },
     [navigate, selectingFor, originPage]
@@ -186,109 +172,13 @@ export default function SpecsPage() {
     [navigate, selectingFor, originPage]
   );
 
-  const filteredProducts = useMemo(() => {
-    let productsToFilter = [...products];
-    
-    if (filters.priceRange) {
-      productsToFilter = productsToFilter.filter(
-        (p) => p.price && p.price <= filters.priceRange.max
-      );
-    }
-
-    if (activeTab === "components" && searchTerm) {
-      const lowerSearchTerm = searchTerm.toLowerCase();
-      productsToFilter = productsToFilter.filter(
-        (p) =>
-          p.name?.toLowerCase().includes(lowerSearchTerm) ||
-          p.brand?.toLowerCase().includes(lowerSearchTerm)
-      );
-    }
-
-    if (filters.brands.length > 0) {
-      productsToFilter = productsToFilter.filter(
-        (p) => p.brand && filters.brands.includes(p.brand)
-      );
-    }
-    if (filters.sockets.length > 0) {
-      productsToFilter = productsToFilter.filter(
-        (p) => p.specs?.socket && filters.sockets.includes(p.specs.socket)
-      );
-    }
-    if (filters.formFactors.length > 0) {
-      productsToFilter = productsToFilter.filter(
-        (p) =>
-          p.specs?.formFactor &&
-          filters.formFactors.includes(p.specs.formFactor)
-      );
-    }
-    if (filters.ramTypes.length > 0) {
-      productsToFilter = productsToFilter.filter(
-        (p) => p.specs?.type && filters.ramTypes.includes(p.specs.type)
-      );
-    }
-    if (filters.ramCapacities.length > 0) {
-      productsToFilter = productsToFilter.filter(
-        (p) =>
-          p.specs?.capacity && filters.ramCapacities.includes(p.specs.capacity)
-      );
-    }
-    if (filters.storageTypes.length > 0) {
-      productsToFilter = productsToFilter.filter(
-        (p) => p.specs?.type && filters.storageTypes.includes(p.specs.type)
-      );
-    }
-    if (filters.storageCapacities.length > 0) {
-      productsToFilter = productsToFilter.filter(
-        (p) =>
-          p.specs?.capacity &&
-          filters.storageCapacities.includes(p.specs.capacity)
-      );
-    }
-    if (filters.psuEfficiencies.length > 0) {
-      productsToFilter = productsToFilter.filter(
-        (p) =>
-          p.specs?.efficiencyRating &&
-          filters.psuEfficiencies.includes(p.specs.efficiencyRating)
-      );
-    }
-    if (filters.psuModulars.length > 0) {
-      productsToFilter = productsToFilter.filter(
-        (p) => p.specs?.modular && filters.psuModulars.includes(p.specs.modular)
-      );
-    }
-    if (filters.caseTypes.length > 0) {
-      productsToFilter = productsToFilter.filter(
-        (p) => p.specs?.type && filters.caseTypes.includes(p.specs.type)
-      );
-    }
-    if (filters.caseSidePanels.length > 0) {
-      productsToFilter = productsToFilter.filter(
-        (p) =>
-          p.specs?.sidePanel &&
-          filters.caseSidePanels.includes(p.specs.sidePanel)
-      );
-    }
-    if (filters.ratings.length > 0) {
-      productsToFilter = productsToFilter.filter((p) => {
-        if (!p.rating?.rate) return false;
-        const productRating = Math.floor(p.rating.rate);
-        return filters.ratings.some(
-          (rating) => Math.floor(parseFloat(rating)) === productRating
-        );
-      });
-    }
-
-    return productsToFilter;
-  }, [products, searchTerm, activeTab, filters]);
-
   const handleFilterChange = useCallback((filterType, newValues) => {
     setFilters((prev) => ({ ...prev, [filterType]: newValues }));
   }, []);
+
   const handleTabChange = useCallback(
     (tab) => {
-      if (selectingFor && tab === "compare") {
-        return;
-      }
+      if (selectingFor && tab === "compare") return;
       setActiveTab(tab);
       if (tab === "compare" && currentDisplayCategory === "all") {
         handleCategoryChange(DEFAULT_COMPARE_CATEGORY);
@@ -305,19 +195,25 @@ export default function SpecsPage() {
           availableProducts={products}
           activeFilters={filters}
           onFilterChange={handleFilterChange}
+          // Pass the global loading state to the sidebar
+          isLoading={isLoadingStore || !hasFetchedInitialData}
         />
       </div>
       <main className="flex-grow">
-        {isLoading && (
-          <div className="text-center py-10 text-gray-300">
-            Loading components...
+        {/* --- THIS IS THE KEY CHANGE: SKELETON LOADING IMPLEMENTATION --- */}
+        {isLoadingStore || !hasFetchedInitialData ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-x-6 gap-y-10">
+            {/* Create an array of 8 items to render skeleton cards */}
+            {Array.from({ length: 8 }).map((_, index) => (
+              <SkeletonPartCard key={index} />
+            ))}
           </div>
-        )}
-        {!isLoading && error && (
-          <div className="text-center py-10 text-red-400">Error: {error}</div>
-        )}
-        {!isLoading && !error && filteredProducts.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+        ) : storeError ? (
+          <div className="text-center py-10 text-red-400">
+            Error: {storeError}
+          </div>
+        ) : filteredProducts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-x-6 gap-y-10">
             {filteredProducts.map((p) => (
               <PartCard
                 key={p.id}
@@ -327,8 +223,7 @@ export default function SpecsPage() {
               />
             ))}
           </div>
-        )}
-        {!isLoading && !error && filteredProducts.length === 0 && (
+        ) : (
           <div className="flex items-center justify-center h-64 bg-[#1A1325] rounded-lg">
             <p className="text-center text-gray-400">
               {currentDisplayCategory === "ram" &&
@@ -447,15 +342,15 @@ export default function SpecsPage() {
             })}
           </div>
         </div>
-            {activeTab === "components" ? (
-              renderComponentsContent()
-            ) : (
-              <CompareView
-                key={currentDisplayCategory}
-                products={products}
-                isLoading={isLoading}
-              />
-            )}
+        {activeTab === "components" ? (
+          renderComponentsContent()
+        ) : (
+          <CompareView
+            key={currentDisplayCategory}
+            products={products}
+            isLoading={isLoadingStore}
+          />
+        )}
       </div>
     </div>
   );

@@ -81,17 +81,18 @@ const CheckboxFilterGroup = ({
   onSelectionChange,
 }) => {
   const [showAll, setShowAll] = useState(false);
+  const displayedOptions = showAll
+    ? options ?? []
+    : (options ?? []).slice(0, ITEMS_TO_SHOW_INITIALLY);
+
   const handleCheckboxChange = (value) => {
-    const newSelection = selectedValues.includes(value)
-      ? selectedValues.filter((v) => v !== value)
-      : [...selectedValues, value];
+    const newSelection = (selectedValues ?? []).includes(value)
+      ? (selectedValues ?? []).filter((v) => v !== value)
+      : [...(selectedValues ?? []), value];
     onSelectionChange(newSelection);
   };
-  const displayedOptions = showAll
-    ? options
-    : options.slice(0, ITEMS_TO_SHOW_INITIALLY);
 
-  if (!options?.length) {
+  if (!(options ?? []).length) {
     return (
       <p className="text-xs text-gray-500 italic">No options available.</p>
     );
@@ -99,40 +100,45 @@ const CheckboxFilterGroup = ({
 
   return (
     <div className="space-y-2 pt-2">
-      {displayedOptions.map((option) => (
+      {(displayedOptions ?? []).map((option) => (
         <FilterCheckbox
           key={option.id}
           id={option.id}
           label={option.name}
-          checked={selectedValues.includes(option.name)}
+          checked={(selectedValues ?? []).includes(option.name)}
           onChange={() => handleCheckboxChange(option.name)}
         />
       ))}
-      {options.length > ITEMS_TO_SHOW_INITIALLY && (
+      {(options ?? []).length > ITEMS_TO_SHOW_INITIALLY && (
         <button
           onClick={() => setShowAll((p) => !p)}
           className="text-xs text-purple-400 hover:text-purple-300 mt-2 focus:outline-none"
         >
           {showAll
             ? "Show less"
-            : `Show more (${options.length - ITEMS_TO_SHOW_INITIALLY})`}
+            : `Show more (${(options ?? []).length - ITEMS_TO_SHOW_INITIALLY})`}
         </button>
       )}
     </div>
   );
 };
 
-const PriceRangeFilter = ({ products, onPriceChange, activePriceRange = { min: 0, max: 5000 } }) => {
+const PriceRangeFilter = ({
+  products,
+  onPriceChange,
+  activePriceRange = { min: 0, max: 500000 },
+}) => {
   const [minPrice, maxPrice] = useMemo(() => {
-    if (!products || products.length === 0) return [0, 5000]; // Default range if no products
-    const prices = products.map((p) => Number(p.price) || 0);
+    if (!products || !products.length) return [0, 500000];
+    const prices = (products ?? []).map((p) => Number(p.price) || 0);
     return [Math.floor(Math.min(...prices)), Math.ceil(Math.max(...prices))];
   }, [products]);
 
-  const [currentValue, setCurrentValue] = useState(activePriceRange?.max || maxPrice);
+  const [currentValue, setCurrentValue] = useState(
+    activePriceRange?.max || maxPrice
+  );
 
   useEffect(() => {
-    // When the maxPrice from products changes, update the slider's value if it's out of bounds
     if (activePriceRange?.max > maxPrice) {
       setCurrentValue(maxPrice);
       onPriceChange?.({ min: minPrice, max: maxPrice });
@@ -174,14 +180,14 @@ const PriceRangeFilter = ({ products, onPriceChange, activePriceRange = { min: 0
 // --- MAIN SIDEBAR COMPONENT ---
 export default function FiltersSidebar({
   currentCategory,
-  availableProducts,
-  activeFilters,
-  onFilterChange,
+  availableProducts = [],
+  activeFilters = {},
+  onFilterChange = () => {},
 }) {
   const filterOptions = useMemo(() => {
     const products = Array.isArray(availableProducts) ? availableProducts : [];
     const getUniqueValues = (keyExtractor) =>
-      [...new Set(products.map(keyExtractor).filter(Boolean))]
+      [...new Set((products ?? []).map(keyExtractor).filter(Boolean))]
         .sort((a, b) =>
           String(a).localeCompare(String(b), undefined, { numeric: true })
         )
@@ -213,12 +219,14 @@ export default function FiltersSidebar({
     categoryFilterConfig[currentCategory] || categoryFilterConfig["all"];
 
   return (
-    <aside className="w-full md:w-72 bg-[#1A1325] p-6 rounded-lg text-gray-300 space-y-6">
+    <aside className="w-full md:w-72 bg-[#100C16] p-6 rounded-lg text-gray-300 space-y-6">
       {activeFilterKeys.includes("price") && (
         <FilterSection title="Price Range">
           <PriceRangeFilter
-            products={availableProducts}
-            activePriceRange={activeFilters.priceRange || { min: 0, max: 500000 }}
+            products={availableProducts ?? []}
+            activePriceRange={
+              activeFilters.priceRange || { min: 0, max: 500000 }
+            }
             onPriceChange={(newRange) => onFilterChange("priceRange", newRange)}
           />
         </FilterSection>
@@ -226,8 +234,8 @@ export default function FiltersSidebar({
       {activeFilterKeys.includes("manufacturer") && (
         <FilterSection title="Manufacturer">
           <CheckboxFilterGroup
-            options={filterOptions.manufacturer}
-            selectedValues={activeFilters.brands}
+            options={filterOptions.manufacturer ?? []}
+            selectedValues={activeFilters.brands ?? []}
             onSelectionChange={(v) => onFilterChange("brands", v)}
           />
         </FilterSection>
@@ -235,8 +243,8 @@ export default function FiltersSidebar({
       {activeFilterKeys.includes("socket") && (
         <FilterSection title="Socket">
           <CheckboxFilterGroup
-            options={filterOptions.socket}
-            selectedValues={activeFilters.sockets}
+            options={filterOptions.socket ?? []}
+            selectedValues={activeFilters.sockets ?? []}
             onSelectionChange={(v) => onFilterChange("sockets", v)}
           />
         </FilterSection>
@@ -244,8 +252,8 @@ export default function FiltersSidebar({
       {activeFilterKeys.includes("formFactor") && (
         <FilterSection title="Form Factor">
           <CheckboxFilterGroup
-            options={filterOptions.formFactor}
-            selectedValues={activeFilters.formFactors}
+            options={filterOptions.formFactor ?? []}
+            selectedValues={activeFilters.formFactors ?? []}
             onSelectionChange={(v) => onFilterChange("formFactors", v)}
           />
         </FilterSection>
@@ -253,8 +261,8 @@ export default function FiltersSidebar({
       {activeFilterKeys.includes("ramType") && (
         <FilterSection title="RAM Type">
           <CheckboxFilterGroup
-            options={filterOptions.ramType}
-            selectedValues={activeFilters.ramTypes || []}
+            options={filterOptions.ramType ?? []}
+            selectedValues={activeFilters.ramTypes ?? []}
             onSelectionChange={(v) => onFilterChange("ramTypes", v)}
           />
         </FilterSection>
@@ -262,8 +270,8 @@ export default function FiltersSidebar({
       {activeFilterKeys.includes("ramCapacity") && (
         <FilterSection title="RAM Capacity">
           <CheckboxFilterGroup
-            options={filterOptions.ramCapacity}
-            selectedValues={activeFilters.ramCapacities || []}
+            options={filterOptions.ramCapacity ?? []}
+            selectedValues={activeFilters.ramCapacities ?? []}
             onSelectionChange={(v) => onFilterChange("ramCapacities", v)}
           />
         </FilterSection>
@@ -271,8 +279,8 @@ export default function FiltersSidebar({
       {activeFilterKeys.includes("storageType") && (
         <FilterSection title="Storage Type">
           <CheckboxFilterGroup
-            options={filterOptions.storageType}
-            selectedValues={activeFilters.storageTypes || []}
+            options={filterOptions.storageType ?? []}
+            selectedValues={activeFilters.storageTypes ?? []}
             onSelectionChange={(v) => onFilterChange("storageTypes", v)}
           />
         </FilterSection>
@@ -280,8 +288,8 @@ export default function FiltersSidebar({
       {activeFilterKeys.includes("storageCapacity") && (
         <FilterSection title="Storage Capacity">
           <CheckboxFilterGroup
-            options={filterOptions.storageCapacity}
-            selectedValues={activeFilters.storageCapacities || []}
+            options={filterOptions.storageCapacity ?? []}
+            selectedValues={activeFilters.storageCapacities ?? []}
             onSelectionChange={(v) => onFilterChange("storageCapacities", v)}
           />
         </FilterSection>
@@ -289,8 +297,8 @@ export default function FiltersSidebar({
       {activeFilterKeys.includes("psuEfficiency") && (
         <FilterSection title="PSU Efficiency">
           <CheckboxFilterGroup
-            options={filterOptions.psuEfficiency}
-            selectedValues={activeFilters.psuEfficiencies || []}
+            options={filterOptions.psuEfficiency ?? []}
+            selectedValues={activeFilters.psuEfficiencies ?? []}
             onSelectionChange={(v) => onFilterChange("psuEfficiencies", v)}
           />
         </FilterSection>
@@ -298,8 +306,8 @@ export default function FiltersSidebar({
       {activeFilterKeys.includes("psuModular") && (
         <FilterSection title="PSU Modular Type">
           <CheckboxFilterGroup
-            options={filterOptions.psuModular}
-            selectedValues={activeFilters.psuModulars || []}
+            options={filterOptions.psuModular ?? []}
+            selectedValues={activeFilters.psuModulars ?? []}
             onSelectionChange={(v) => onFilterChange("psuModulars", v)}
           />
         </FilterSection>
@@ -307,8 +315,8 @@ export default function FiltersSidebar({
       {activeFilterKeys.includes("caseType") && (
         <FilterSection title="Case Type">
           <CheckboxFilterGroup
-            options={filterOptions.caseType}
-            selectedValues={activeFilters.caseTypes || []}
+            options={filterOptions.caseType ?? []}
+            selectedValues={activeFilters.caseTypes ?? []}
             onSelectionChange={(v) => onFilterChange("caseTypes", v)}
           />
         </FilterSection>
@@ -316,8 +324,8 @@ export default function FiltersSidebar({
       {activeFilterKeys.includes("caseSidePanel") && (
         <FilterSection title="Case Side Panel">
           <CheckboxFilterGroup
-            options={filterOptions.caseSidePanel}
-            selectedValues={activeFilters.caseSidePanels || []}
+            options={filterOptions.caseSidePanel ?? []}
+            selectedValues={activeFilters.caseSidePanels ?? []}
             onSelectionChange={(v) => onFilterChange("caseSidePanels", v)}
           />
         </FilterSection>
@@ -325,14 +333,14 @@ export default function FiltersSidebar({
       {activeFilterKeys.includes("rating") && (
         <FilterSection title="Rating">
           <CheckboxFilterGroup
-            options={filterOptions.rating}
-            selectedValues={activeFilters.ratings
+            options={filterOptions.rating ?? []}
+            selectedValues={(activeFilters.ratings ?? [])
               .map((id) => initialRatingsData.find((r) => r.id === id)?.name)
               .filter(Boolean)}
             onSelectionChange={(names) =>
               onFilterChange(
                 "ratings",
-                names
+                (names ?? [])
                   .map(
                     (name) =>
                       initialRatingsData.find((r) => r.name === name)?.id
