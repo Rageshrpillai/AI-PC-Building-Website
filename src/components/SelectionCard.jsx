@@ -108,7 +108,7 @@ export default function SelectionCard({
               <div className="w-full h-[100px] flex items-center justify-center mt-4 mb-1">
                 <img
                   src={
-                    part.imageUrl ||
+                    part.imageUrls?.[0] ||
                     `https://placehold.co/100x80/1e1b22/333?text=${
                       part.category || "N/A"
                     }`

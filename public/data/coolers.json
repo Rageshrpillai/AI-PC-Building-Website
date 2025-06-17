@@ -6,7 +6,7 @@
     "price": 8999,
     "rating": { "rate": 4.9, "count": 1500 },
     "description": "The NH-D15 is Noctua's flagship model, an elite-class dual tower cooler for the highest demands in cooling performance.",
-    "imageUrl": "",
+    "imageUrl": "/images/cooler/nh.png",
     "specs": {
       "type": "Air",
       "fan_size": "140mm",
@@ -20,7 +20,7 @@
     "price": 3499,
     "rating": { "rate": 4.6, "count": 10000 },
     "description": "A legendary air cooler providing a great balance of performance and price for mainstream builds.",
-    "imageUrl": "",
+    "imageUrl": "/images/cooler/cool.png",
     "specs": {
       "type": "Air",
       "fan_size": "120mm",
@@ -34,7 +34,7 @@
     "price": 7999,
     "rating": { "rate": 4.8, "count": 2500 },
     "description": "No-compromise silent cooling for overclocked systems and demanding workstations.",
-    "imageUrl": "",
+    "imageUrl": "/images/cooler/dark.png",
     "specs": {
       "type": "Air",
       "fan_size": "135mm",
@@ -48,7 +48,7 @@
     "price": 12499,
     "rating": { "rate": 4.7, "count": 5000 },
     "description": "A 240mm All-In-One liquid CPU cooler with vivid RGB lighting and extreme cooling performance.",
-    "imageUrl": "",
+    "imageUrl": "/images/cooler/crossair.png",
     "specs": {
       "type": "Liquid",
       "fan_size": "120mm",
@@ -62,7 +62,7 @@
     "price": 13999,
     "rating": { "rate": 4.7, "count": 4500 },
     "description": "This All-in-One (AIO) liquid cooler is designed with the ability to fit comfortably in most cases and features a stunning infinity mirror effect.",
-    "imageUrl": "",
+    "imageUrl": "/images/cooler/kraken.png",
     "specs": {
       "type": "Liquid",
       "fan_size": "140mm",

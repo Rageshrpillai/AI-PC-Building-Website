@@ -28,7 +28,7 @@ const CarouselCard = ({ part }) => {
   return (
     <div className="group relative block w-full h-full rounded-lg overflow-hidden text-white shadow-lg">
       <img
-        src={part.imageUrl || fallbackImage}
+        src={part.imageUrls?.[0] || fallbackImage}
         alt={part.name}
         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
       />

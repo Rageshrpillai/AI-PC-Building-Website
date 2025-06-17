@@ -56,7 +56,8 @@ export default function PartDisplayCard({
       >
         <img
           src={
-            part.imageUrl || "https://placehold.co/80x80/1e1b22/333?text=N/A"
+            part.imageUrls?.[0] ||
+            "https://placehold.co/80x80/1e1b22/333?text=N/A"
           }
           alt={part.name}
           className="max-h-16 h-16 object-contain mb-2 mt-3" // Added mt-3 to give space for tags

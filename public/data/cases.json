@@ -5,7 +5,7 @@
     "brand": "NZXT",
     "price": 89.99,
     "category": "case",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=NZXT+H510+Flow",
+    "imageUrl": "/images/cases/crossair.png",
     "specs": {
       "type": "Mid Tower",
       "motherboardSupport": ["ATX", "Micro-ATX", "Mini-ITX"],
@@ -22,7 +22,7 @@
     "brand": "Lian Li",
     "price": 109.99,
     "category": "case",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Lian+Li+Lancool+II",
+    "imageUrl": "/images/cases/lia.png",
     "specs": {
       "type": "Mid Tower",
       "motherboardSupport": ["E-ATX", "ATX", "Micro-ATX", "Mini-ITX"],
@@ -39,7 +39,7 @@
     "brand": "Fractal Design",
     "price": 99.99,
     "category": "case",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Fractal+Meshify+2C",
+    "imageUrl": "/images/cases/mustf.png",
     "specs": {
       "type": "Mid Tower",
       "motherboardSupport": ["ATX", "Micro-ATX", "Mini-ITX"],
@@ -56,7 +56,7 @@
     "brand": "Cooler Master",
     "price": 49.99,
     "category": "case",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=CM+Q300L",
+    "imageUrl": "/images/cases/nzxt.png",
     "specs": {
       "type": "Mini Tower",
       "motherboardSupport": ["Micro-ATX", "Mini-ITX"],

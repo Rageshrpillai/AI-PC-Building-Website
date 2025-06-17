@@ -5,7 +5,7 @@
     "brand": "Samsung",
     "price": 99.99,
     "category": "storage",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Samsung+980+Pro+1TB",
+    "imageUrl": "/images/storage/sam.png",
     "specs": {
       "type": "NVMe SSD",
       "interface": "PCIe 4.0 x4",
@@ -22,7 +22,7 @@
     "brand": "Western Digital",
     "price": 49.99,
     "category": "storage",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=WD+Blue+SN570+500GB",
+    "imageUrl": "/images/storage/hdd1tb.png",
     "specs": {
       "type": "NVMe SSD",
       "interface": "PCIe 3.0 x4",
@@ -39,7 +39,7 @@
     "brand": "Crucial",
     "price": 129.99,
     "category": "storage",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Crucial+MX500+2TB",
+    "imageUrl": "/images/storage/crucialssd.png",
     "specs": {
       "type": "SATA SSD",
       "interface": "SATA III (6Gb/s)",
@@ -56,7 +56,7 @@
     "brand": "Seagate",
     "price": 79.99,
     "category": "storage",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Seagate+4TB+HDD",
+    "imageUrl": "/images/storage/hdd.png",
     "specs": {
       "type": "HDD",
       "interface": "SATA III (6Gb/s)",

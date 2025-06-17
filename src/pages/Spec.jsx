@@ -1,12 +1,18 @@
 // src/pages/Spec.jsx
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+} from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import useProductStore from "../stores/productStore";
 import Navabar from "../components/Navabar";
 import FiltersSidebar from "../components/FiltersSidebar";
 import PartCard from "../components/PartCard";
 import CompareView from "../components/CompareView";
-import SkeletonPartCard from "../components/SkeletonPartCard"; // Import the new skeleton component
+import SkeletonPartCard from "../components/SkeletonPartCard";
 
 const CATEGORIES = [
   { key: "all", name: "All components" },
@@ -27,7 +33,7 @@ export default function SpecsPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // --- Get data and ALL loading statuses from the Zustand store ---
+  // --- Zustand Store Data ---
   const {
     getProductsForCategory,
     getProductById,
@@ -35,13 +41,17 @@ export default function SpecsPage() {
     error: storeError,
     hasFetchedInitialData,
     selectedComponents,
+    fetchMoreProducts,
+    currentPage,
+    totalPages,
+    isFetchingMore,
+    products,
   } = useProductStore();
 
   const queryParams = useMemo(
     () => new URLSearchParams(location.search),
     [location.search]
   );
-
   const selectingFor = queryParams.get("selectingFor");
   const categoryFromUrl = queryParams.get("category");
   const originPage = queryParams.get("origin") || "/build";
@@ -50,9 +60,9 @@ export default function SpecsPage() {
   const [currentDisplayCategory, setCurrentDisplayCategory] = useState(
     categoryFromUrl || DEFAULT_CATEGORY_KEY
   );
-
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("components");
+
   const initialFiltersState = useMemo(
     () => ({
       brands: [],
@@ -64,6 +74,34 @@ export default function SpecsPage() {
   );
   const [filters, setFilters] = useState(initialFiltersState);
 
+  // --- Infinite Scroll Setup ---
+  const loaderRef = useRef();
+  useEffect(() => {
+    if (!loaderRef.current) return;
+    const observer = new window.IntersectionObserver(
+      (entries) => {
+        if (
+          entries[0].isIntersecting &&
+          currentPage < totalPages &&
+          !isFetchingMore &&
+          !isLoadingStore
+        ) {
+          fetchMoreProducts();
+        }
+      },
+      { threshold: 1.0 }
+    );
+    observer.observe(loaderRef.current);
+    return () => observer.disconnect();
+  }, [
+    currentPage,
+    totalPages,
+    isFetchingMore,
+    isLoadingStore,
+    fetchMoreProducts,
+  ]);
+
+  // --- Category & Filter/Tab Change Logic ---
   useEffect(() => {
     const newCategory = queryParams.get("category") || DEFAULT_CATEGORY_KEY;
     if (newCategory !== currentDisplayCategory) {
@@ -82,12 +120,14 @@ export default function SpecsPage() {
     activeTab,
   ]);
 
+  // --- Motherboard Reference for RAM Filtering ---
   const motherboardForRamCheck = useMemo(() => {
     if (motherboardId) return getProductById(motherboardId);
     return selectedComponents["motherboard"];
   }, [motherboardId, selectedComponents, getProductById]);
 
-  const products = useMemo(() => {
+  // --- Product Data by Category ---
+  const productsForCategory = useMemo(() => {
     let allCategoryProducts = getProductsForCategory(currentDisplayCategory);
     if (
       currentDisplayCategory === "ram" &&
@@ -107,8 +147,9 @@ export default function SpecsPage() {
     motherboardForRamCheck,
   ]);
 
+  // --- All Filter Logic ---
   const filteredProducts = useMemo(() => {
-    let productsToFilter = [...products];
+    let productsToFilter = [...productsForCategory];
     if (filters.priceRange) {
       productsToFilter = productsToFilter.filter(
         (p) => p.price && p.price <= filters.priceRange.max
@@ -142,8 +183,9 @@ export default function SpecsPage() {
       });
     }
     return productsToFilter;
-  }, [products, searchTerm, activeTab, filters]);
+  }, [productsForCategory, searchTerm, activeTab, filters]);
 
+  // --- Selection for Builder ---
   const handleSelectPartForBuild = useCallback(
     (part) => {
       if (selectingFor && part) {
@@ -158,6 +200,7 @@ export default function SpecsPage() {
     [navigate, selectingFor, originPage]
   );
 
+  // --- Category Button Handler ---
   const handleCategoryChange = useCallback(
     (categoryKey) => {
       let targetUrl = `/spec?category=${categoryKey}`;
@@ -172,10 +215,12 @@ export default function SpecsPage() {
     [navigate, selectingFor, originPage]
   );
 
+  // --- Filter Sidebar Handler ---
   const handleFilterChange = useCallback((filterType, newValues) => {
     setFilters((prev) => ({ ...prev, [filterType]: newValues }));
   }, []);
 
+  // --- Tab Handler ---
   const handleTabChange = useCallback(
     (tab) => {
       if (selectingFor && tab === "compare") return;
@@ -187,23 +232,21 @@ export default function SpecsPage() {
     [currentDisplayCategory, selectingFor, handleCategoryChange]
   );
 
+  // --- Render the Grid/Sidebar/Layout ---
   const renderComponentsContent = () => (
     <div className="flex flex-col md:flex-row md:space-x-6 lg:space-x-8">
       <div className="w-full md:w-72 md:flex-shrink-0 mb-6 md:mb-0">
         <FiltersSidebar
           currentCategory={currentDisplayCategory}
-          availableProducts={products}
+          availableProducts={productsForCategory}
           activeFilters={filters}
           onFilterChange={handleFilterChange}
-          // Pass the global loading state to the sidebar
           isLoading={isLoadingStore || !hasFetchedInitialData}
         />
       </div>
       <main className="flex-grow">
-        {/* --- THIS IS THE KEY CHANGE: SKELETON LOADING IMPLEMENTATION --- */}
         {isLoadingStore || !hasFetchedInitialData ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-x-6 gap-y-10">
-            {/* Create an array of 8 items to render skeleton cards */}
             {Array.from({ length: 8 }).map((_, index) => (
               <SkeletonPartCard key={index} />
             ))}
@@ -213,16 +256,29 @@ export default function SpecsPage() {
             Error: {storeError}
           </div>
         ) : filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-x-6 gap-y-10">
-            {filteredProducts.map((p) => (
-              <PartCard
-                key={p.id}
-                product={p}
-                isSelectionMode={!!selectingFor}
-                onSelectForBuild={handleSelectPartForBuild}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-x-6 gap-y-10">
+              {filteredProducts.map((p) => (
+                <PartCard
+                  key={p.id}
+                  product={p}
+                  isSelectionMode={!!selectingFor}
+                  onSelectForBuild={handleSelectPartForBuild}
+                />
+              ))}
+            </div>
+            {/* Infinite scroll trigger/loader */}
+            <div
+              ref={loaderRef}
+              className="h-12 flex justify-center items-center"
+            >
+              {isFetchingMore && (
+                <span className="text-purple-400 text-base">
+                  Loading more...
+                </span>
+              )}
+            </div>
+          </>
         ) : (
           <div className="flex items-center justify-center h-64 bg-[#1A1325] rounded-lg">
             <p className="text-center text-gray-400">
@@ -238,6 +294,7 @@ export default function SpecsPage() {
     </div>
   );
 
+  // --- Main Page Layout ---
   return (
     <div className="min-h-screen bg-[#100C16] text-gray-100 pt-16">
       <Navabar />
@@ -347,7 +404,7 @@ export default function SpecsPage() {
         ) : (
           <CompareView
             key={currentDisplayCategory}
-            products={products}
+            products={productsForCategory}
             isLoading={isLoadingStore}
           />
         )}

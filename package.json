@@ -12,7 +12,9 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@tailwindcss/vite": "^4.1.6",
+    "dotenv": "^16.5.0",
     "framer-motion": "^12.14.0",
+    "mongoose": "^8.15.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-hot-toast": "^2.5.2",

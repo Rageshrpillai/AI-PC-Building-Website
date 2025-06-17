@@ -1,7 +1,7 @@
 // src/pages/CustomBuildPage.jsx
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
-import useProductStore from "../stores/productStore";
+import useProductStore from "../stores/productStore.js";
 import Navabar from "../components/Navabar";
 import ComponentCategoryRow from "../components/ComponentCategoryRow";
 
@@ -49,7 +49,24 @@ export default function CustomBuildPage() {
     removeComponent: storeRemoveComponent,
     clearAllComponents,
     allProducts,
+    fetchAllProductsNoPagination, // PATCH: new action
   } = useProductStore((s) => s);
+
+  // PATCH: Fetch all products (not paginated) for this page
+  useEffect(() => {
+    if (!hasFetchedInitialData || !allProducts || allProducts.length === 0) {
+      fetchAllProductsNoPagination && fetchAllProductsNoPagination();
+    }
+  }, [hasFetchedInitialData, allProducts, fetchAllProductsNoPagination]);
+
+  console.log(
+    "CBP: hasFetchedInitialData:",
+    hasFetchedInitialData,
+    "| allProducts:",
+    allProducts?.length,
+    "| isLoadingStoreProducts:",
+    isLoadingStoreProducts
+  );
 
   const selectedMotherboardFromStore = selectedComponents["Motherboard"];
 

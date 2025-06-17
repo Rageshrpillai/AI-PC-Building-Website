@@ -1,41 +1,53 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { fetchProducts as fetchAllProductsFromAPI } from "../services/apiService";
+import {
+  fetchProducts as fetchProductsFromAPI,
+  fetchPrebuilds as fetchPrebuildsFromAPI,
+} from "../services/apiService";
 
 const getCategoryName = (key) => {
   if (!key) return "Unknown";
   return key.charAt(0).toUpperCase() + key.slice(1).replace(/s$/, "");
 };
-
 const useProductStore = create(
   persist(
     (set, get) => ({
-      // --- STATE ---
-      // The key change is setting isLoading to true by default.
+      // --- MODIFIED STATE FOR PAGINATION ---
+      products: [],
+      allProducts: [], // <--- NEW
+      currentPage: 0,
+      totalPages: 1,
       isLoading: true,
-      hasFetchedInitialData: false,
+      isFetchingMore: false,
+      error: null,
+      hasFetchedInitialData: false, // <--- NEW
 
-      allProducts: [],
+      // --- EXISTING STATE (PRESERVED) ---
       productsByCategory: {},
       uniqueCategoryObjects: [],
       selectedComponents: {},
-      error: null,
-
       prebuilds: [],
       isPrebuildsLoading: false,
       prebuildsError: null,
 
-      // --- ACTIONS ---
+      // --- PAGINATED (DEFAULT) ACTIONS ---
       fetchAllProducts: async () => {
         try {
-          const products = await fetchAllProductsFromAPI("all");
-          if (!Array.isArray(products)) {
-            throw new Error("Fetched products is not an array");
+          // Fetch only the FIRST page
+          const response = await fetchProductsFromAPI("all", 1);
+
+          if (!response.data || !response.pagination) {
+            throw new Error(
+              "Invalid API response format for paginated products"
+            );
           }
 
+          const { data, pagination } = response;
+
+          // --- Categorization logic ---
           const categorized = {};
           const categoryKeys = new Set();
-          products.forEach((product) => {
+          data.forEach((product) => {
             const key = product.category?.toLowerCase() || "unknown";
             if (!categorized[key]) categorized[key] = [];
             categorized[key].push(product);
@@ -52,63 +64,139 @@ const useProductStore = create(
           ];
 
           set({
-            allProducts: products,
+            products: data, // (keep for compatibility)
             productsByCategory: categorized,
             uniqueCategoryObjects: finalCategoriesForUI,
-            isLoading: false, // Turn off loading only AFTER data is ready
+            currentPage: 1,
+            totalPages: 1,
+            isLoading: false,
             hasFetchedInitialData: true,
             error: null,
           });
         } catch (error) {
-          console.error("[ProductStore] Error fetching all products:", error);
-          set({
-            error: error.message,
-            isLoading: false,
-            hasFetchedInitialData: true,
-          });
+          console.error(
+            "[ProductStore] Error fetching initial products:",
+            error
+          );
+          set({ error: error.message, isLoading: false });
         }
       },
 
-      fetchPrebuilds: async () => {
-        if (get().isPrebuildsLoading) return;
-        if (!get().hasFetchedInitialData) {
-          await get().fetchAllProducts();
+      fetchMoreProducts: async () => {
+        const { currentPage, totalPages, isFetchingMore } = get();
+        if (isFetchingMore || currentPage >= totalPages) {
+          return;
         }
-        set({ isPrebuildsLoading: true, prebuildsError: null });
+
         try {
-          const response = await fetch("/data/prebuilds.json");
-          if (!response.ok) {
+          set({ isFetchingMore: true });
+          const nextPage = currentPage + 1;
+          const response = await fetchProductsFromAPI("all", nextPage);
+
+          if (!response.data || !response.pagination) {
             throw new Error(
-              `Failed to fetch prebuilds: ${response.statusText}`
+              "Invalid API response format for paginated products"
             );
           }
-          const prebuildsData = await response.json();
-          const allProducts = get().allProducts;
-          const enrichedPrebuilds = prebuildsData.map((prebuild) => {
-            const resolvedParts = prebuild.parts.map((part) => {
-              const fullPart = allProducts.find((p) => p.id === part.id);
-              return fullPart || part;
+
+          const { data, pagination } = response;
+
+          set((state) => {
+            const newCategorized = { ...state.productsByCategory };
+            data.forEach((product) => {
+              const key = product.category?.toLowerCase() || "unknown";
+              if (!newCategorized[key]) newCategorized[key] = [];
+              newCategorized[key].push(product);
             });
+
+            return {
+              products: [...state.products, ...data],
+              productsByCategory: newCategorized,
+              currentPage: pagination.currentPage,
+              isFetchingMore: false,
+            };
+          });
+        } catch (error) {
+          console.error("[ProductStore] Error fetching more products:", error);
+          set({ error: error.message, isFetchingMore: false });
+        }
+      },
+
+      // --- NEW: Fetch ALL products (no pagination) for CustomBuildPage etc ---
+      fetchAllProductsNoPagination: async () => {
+        set({ isLoading: true, error: null });
+        try {
+          const res = await fetch("/api/products/all");
+          const json = await res.json();
+          const data = json.data || [];
+
+          // Categorize
+          const categorized = {};
+          const categoryKeys = new Set();
+          data.forEach((product) => {
+            const key = product.category?.toLowerCase() || "unknown";
+            if (!categorized[key]) categorized[key] = [];
+            categorized[key].push(product);
+            if (key !== "unknown") categoryKeys.add(key);
+          });
+
+          const uniqueCats = Array.from(categoryKeys)
+            .sort()
+            .map((key) => ({ key, name: getCategoryName(key) }));
+
+          const finalCategoriesForUI = [
+            { key: "all", name: "All components" },
+            ...uniqueCats,
+          ];
+
+          set({
+            allProducts: data, // <-- THIS LINE IS THE FIX!
+            products: data,
+            productsByCategory: categorized,
+            uniqueCategoryObjects: finalCategoriesForUI,
+            currentPage: 1,
+            totalPages: 1,
+            isLoading: false,
+            hasFetchedInitialData: true,
+            error: null,
+          });
+        } catch (error) {
+          set({ isLoading: false, error: "Failed to fetch all products." });
+        }
+      },
+
+      // --- PREBUILD LOGIC (PRESERVED) ---
+      fetchPrebuilds: async () => {
+        if (get().isPrebuildsLoading) return;
+        if (get().products.length === 0) {
+          await get().fetchAllProducts();
+        }
+        const allProducts = get().products;
+
+        set({ isPrebuildsLoading: true, prebuildsError: null });
+        try {
+          const prebuildsData = await fetchPrebuildsFromAPI();
+          const enrichedPrebuilds = prebuildsData.map((prebuild) => {
+            const resolvedParts = prebuild.parts
+              .map((partId) => {
+                return allProducts.find((p) => p._id === partId);
+              })
+              .filter(Boolean);
+            const totalPrice = resolvedParts.reduce(
+              (sum, part) => sum + part.price,
+              0
+            );
             return {
               ...prebuild,
               resolvedParts,
-              name: prebuild.name || "Unnamed Build",
-              description: prebuild.description || "No description available",
-              price: prebuild.price || 0,
-              rating: prebuild.rating || 0,
-              imageUrl: prebuild.imageUrl || "/images/placeholder.jpg",
+              price: prebuild.price || totalPrice,
             };
           });
           set({
             prebuilds: enrichedPrebuilds,
             isPrebuildsLoading: false,
           });
-          console.log(
-            "[ProductStore] Successfully loaded prebuilds:",
-            enrichedPrebuilds
-          );
         } catch (err) {
-          console.error("[ProductStore] Error fetching pre-builds:", err);
           set({
             prebuildsError: err.message,
             isPrebuildsLoading: false,
@@ -116,6 +204,7 @@ const useProductStore = create(
         }
       },
 
+      // --- SELECTION AND UTILITY ---
       selectComponent: (categoryName, component) =>
         set((state) => ({
           selectedComponents: {
@@ -131,14 +220,12 @@ const useProductStore = create(
         }),
       clearAllComponents: () => set({ selectedComponents: {} }),
 
-      // --- SELECTORS ---
       getProductsForCategory: (categoryKey) => {
         const key = categoryKey?.toLowerCase();
-        if (!key || key === "all") return get().allProducts;
+        if (!key || key === "all") return get().products;
         return get().productsByCategory[key] || [];
       },
-      getProductById: (id) =>
-        get().allProducts.find((p) => p.id === id) || null,
+      getProductById: (id) => get().products.find((p) => p.id === id) || null,
     }),
     {
       name: "product-store",

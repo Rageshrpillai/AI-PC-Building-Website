@@ -5,7 +5,7 @@
     "brand": "Corsair",
     "price": 109.99,
     "category": "psu",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=Corsair+RM750x",
+    "imageUrl": "/images/psu/rm.png",
     "specs": {
       "wattage": "750W",
       "efficiencyRating": "80+ Gold",
@@ -21,7 +21,7 @@
     "brand": "EVGA",
     "price": 89.99,
     "category": "psu",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=EVGA+650+G5",
+    "imageUrl": "/images/psu/nova.png",
     "specs": {
       "wattage": "650W",
       "efficiencyRating": "80+ Gold",
@@ -37,7 +37,7 @@
     "brand": "SeaSonic",
     "price": 129.99,
     "category": "psu",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=SeaSonic+FOCUS+850W",
+    "imageUrl": "/images/psu/focus.png",
     "specs": {
       "wattage": "850W",
       "efficiencyRating": "80+ Gold",
@@ -53,7 +53,7 @@
     "brand": "Cooler Master",
     "price": 59.99,
     "category": "psu",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=CM+MWE+550W",
+    "imageUrl": "/images/psu/mwe.png",
     "specs": {
       "wattage": "550W",
       "efficiencyRating": "80+ Bronze",

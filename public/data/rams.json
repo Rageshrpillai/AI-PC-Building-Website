@@ -5,7 +5,7 @@
     "brand": "Corsair",
     "price": 27.99,
     "category": "ram",
-    "imageUrl": "/images/ram/1px8gb.png",
+    "imageUrl": "/images/ram/lpx8gb.png",
     "specs": {
       "type": "DDR4",
       "speed": "3200MHz",
@@ -22,7 +22,7 @@
     "brand": "Corsair",
     "price": 49.99,
     "category": "ram",
-    "imageUrl": "/images/ram/lpx16gb.png",
+    "imageUrl": "/images/ram/lpx16.png",
     "specs": {
       "type": "DDR4",
       "speed": "3200MHz",
@@ -39,7 +39,7 @@
     "brand": "G.Skill",
     "price": 29.99,
     "category": "ram",
-    "imageUrl": "/images/ram/gskill.png",
+    "imageUrl": "/images/ram/kingston.png",
     "specs": {
       "type": "DDR4",
       "speed": "3600MHz",
@@ -56,7 +56,7 @@
     "brand": "G.Skill",
     "price": 52.99,
     "category": "ram",
-    "imageUrl": "/images/ram/gskill16gb.png",
+    "imageUrl": "/images/ram/rip.png",
     "specs": {
       "type": "DDR4",
       "speed": "3600MHz",

@@ -1,5 +1,6 @@
 // src/components/PartCard.jsx
 import React from "react";
+import { Link } from "react-router-dom";
 
 // Helper component for the rating star, taken from BuildCard.jsx
 function StarIcon({ color = "#F87171", size = 18 }) {
@@ -50,55 +51,66 @@ export default function PartCard({
     return `/images/${url.replace("images/", "")}`;
   };
 
-  const imageUrl = getImageUrl(product.imageUrl);
-  // --- End of image handling logic ---
+  // Safely get the first image URL from the array
+  const mainImageUrl =
+    product.imageUrls && product.imageUrls.length > 0
+      ? product.imageUrls[0]
+      : null;
+
+  const imageUrl = getImageUrl(mainImageUrl);
 
   return (
-    <div className="bg-[#100C16] shadow-lg w-[264px] h-auto overflow-hidden rounded-lg  hover:border-purple-500/50 transition-all duration-300 flex flex-col">
-      <div className="relative w-[264px] h-[200px]">
-        <img
-          src={imageUrl}
-          alt={product.name}
-          className="w-full h-full object-cover"
-          loading="lazy"
-          onError={(e) => {
-            e.target.src = getFallbackImage(product.name);
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-      </div>
-      <div className="p-4 gap-2 flex flex-col justify-between flex-1">
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xl font-bold text-[#C399F2]">
-              ₹{product.price?.toLocaleString("en-IN") || "N/A"}
-            </span>
-            <span className="flex items-center gap-1 text-base font-bold text-[#C46A6A]">
-              {ratingValue.toFixed(1)}
-              <StarIcon size={16} />
-            </span>
-          </div>
-          <div
-            className="font-semibold mb-2 text-lg text-[#D9D9D9] truncate h-7"
-            title={product.name}
-          >
-            {product.name}
-          </div>
-          <div className="text-sm text-[#D1D1D1] line-clamp-2">
-            {description}
+    <div className="bg-[#100C16] shadow-lg w-[264px] h-auto overflow-hidden rounded-lg hover:border-purple-500/50 transition-all duration-300 flex flex-col">
+      <Link
+        to={`/products/${product.id}`}
+        className="flex flex-col flex-1 group"
+        tabIndex={-1} // Make card focusable but not the link itself
+        style={{ textDecoration: "none" }}
+      >
+        <div className="relative w-[264px] h-[200px]">
+          <img
+            src={imageUrl}
+            alt={product.name}
+            className="w-full h-full object-cover"
+            loading="lazy"
+            onError={(e) => {
+              e.target.src = getFallbackImage(product.name);
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+        </div>
+        <div className="p-4 gap-2 flex flex-col justify-between flex-1">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xl font-bold text-[#C399F2]">
+                ₹{product.price?.toLocaleString("en-IN") || "N/A"}
+              </span>
+              <span className="flex items-center gap-1 text-base font-bold text-[#C46A6A]">
+                {ratingValue.toFixed(1)}
+                <StarIcon size={16} />
+              </span>
+            </div>
+            <div
+              className="font-semibold mb-2 text-lg text-[#D9D9D9] truncate h-7"
+              title={product.name}
+            >
+              {product.name}
+            </div>
+            <div className="text-sm text-[#D1D1D1] line-clamp-2">
+              {description}
+            </div>
           </div>
         </div>
-
-        {/* --- Preserved Selection Button Functionality --- */}
-        {isSelectionMode && (
-          <button
-            onClick={() => onSelectForBuild(product)}
-            className="mt-4 w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-75"
-          >
-            Select for My Build
-          </button>
-        )}
-      </div>
+      </Link>
+      {/* Selection Button OUTSIDE the Link for builder mode */}
+      {isSelectionMode && (
+        <button
+          onClick={() => onSelectForBuild(product)}
+          className="m-4 mt-0 w-auto bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-75"
+        >
+          Select for My Build
+        </button>
+      )}
     </div>
   );
 }

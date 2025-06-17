@@ -1,29 +1,57 @@
+// /api/buildbot.js (MongoDB Edition — Copy/Paste Ready)
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import fs from "node:fs";
-import path from "node:path";
+import Product from "./models/Product.js";
+import dbConnect from "./lib/dbConnect.js";
 
-function loadMockData(filename) {
-  try {
-    const filePath = path.join(process.cwd(), "public", "data", filename);
-    if (!fs.existsSync(filePath)) {
-      console.error(`[api/buildbot] Mock data file NOT FOUND: ${filePath}`);
-      return [];
+// 1. Helper: Group parts by category (from DB)
+function groupPartsByCategory(parts) {
+  const grouped = {
+    cpus: [],
+    gpus: [],
+    motherboards: [],
+    rams: [],
+    storages: [],
+    psus: [],
+    cases: [],
+    coolers: [],
+  };
+  for (const part of parts) {
+    switch (part.category) {
+      case "cpu":
+        grouped.cpus.push(part);
+        break;
+      case "gpu":
+        grouped.gpus.push(part);
+        break;
+      case "motherboard":
+        grouped.motherboards.push(part);
+        break;
+      case "ram":
+        grouped.rams.push(part);
+        break;
+      case "storage":
+        grouped.storages.push(part);
+        break;
+      case "psu":
+        grouped.psus.push(part);
+        break;
+      case "case":
+        grouped.cases.push(part);
+        break;
+      case "cooler":
+        grouped.coolers.push(part);
+        break;
+      default:
+        break;
     }
-    const jsonData = fs.readFileSync(filePath, "utf-8");
-    return JSON.parse(jsonData);
-  } catch (error) {
-    console.error(
-      `[api/buildbot] Error loading mock data file ${filename}:`,
-      error
-    );
-    return [];
   }
+  return grouped;
 }
 
+// 2. Helper: Build a summary string of all available components for the AI prompt
 function buildMockDataSummary(allPartsCollections) {
   let summary = "";
   const categoriesToSummarize = [
-    // ... (your other categories like CPUs, GPUs are fine) ...
     {
       name: "CPUs",
       data: allPartsCollections.cpus,
@@ -62,7 +90,6 @@ function buildMockDataSummary(allPartsCollections) {
       keySpecs: (p) => `Type: ${p.specs.type}`,
     },
     {
-      // The fully corrected object for Coolers
       name: "Coolers",
       data: allPartsCollections.coolers,
       keySpecs: (p) => {
@@ -77,7 +104,6 @@ function buildMockDataSummary(allPartsCollections) {
     if (category.data && category.data.length > 0) {
       summary += `${category.name}:\n`;
       category.data.forEach((part) => {
-        // Corrected to use category.name instead of the non-existent part.category
         summary += `- ID: ${part.id}, Name: ${
           part.name
         }, Price: ${part.price.toFixed(2)}, Category: ${
@@ -175,8 +201,8 @@ ${mockDataSummary}
 \`\`\`
 `;
 
-// ------- HANDLER ---------
 export default async function handler(req, res) {
+  await dbConnect();
   if (req.method !== "POST") return res.status(405).end();
 
   try {
@@ -194,18 +220,12 @@ export default async function handler(req, res) {
         .status(500)
         .json({ error: "AI service config error. API Key missing." });
 
-    const allLoadedParts = {
-      cpus: loadMockData("cpus.json"),
-      gpus: loadMockData("gpus.json"),
-      motherboards: loadMockData("motherboards.json"),
-      rams: loadMockData("rams.json"),
-      storages: loadMockData("storages.json"),
-      psus: loadMockData("psus.json"),
-      cases: loadMockData("cases.json"),
-      coolers: loadMockData("coolers.json"),
-    };
+    // --- Load All Products from MongoDB ---
+    const allProducts = await Product.find({});
+    const allLoadedParts = groupPartsByCategory(allProducts);
     const mockDataSummary = buildMockDataSummary(allLoadedParts);
 
+    // --- AI Prompt Logic (as before) ---
     let systemInstructionsToUse, effectiveUserMessageForAI;
 
     if (requestType === "upgrade") {
@@ -330,7 +350,6 @@ export default async function handler(req, res) {
         return res
           .status(500)
           .json({ error: "AI response missing 'parts' field." });
-      // Here you can add the validation loop for new build parts if you wish
       return res.status(200).json(aiJsonOutput);
     }
   } catch (error) {

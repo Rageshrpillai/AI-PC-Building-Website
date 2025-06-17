@@ -5,7 +5,7 @@
     "brand": "ASUS",
     "price": 499.99,
     "category": "motherboard",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=ROG+Strix+Z790E+II",
+    "imageUrl": "/images/motherboard/rog.png",
     "specs": {
       "socket": "LGA1700",
       "formFactor": "ATX",
@@ -24,7 +24,7 @@
     "brand": "Gigabyte",
     "price": 289.99,
     "category": "motherboard",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=X670+AORUS+Elite",
+    "imageUrl": "/images/motherboard/gigabyte.png",
     "specs": {
       "socket": "AM5",
       "formFactor": "ATX",
@@ -43,7 +43,7 @@
     "brand": "MSI",
     "price": 219.99,
     "category": "motherboard",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=MAG+B650+Tomahawk",
+    "imageUrl": "/images/motherboard/msi.png",
     "specs": {
       "socket": "AM5",
       "formFactor": "ATX",
@@ -62,7 +62,7 @@
     "brand": "ASRock",
     "price": 149.99,
     "category": "motherboard",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=ASRock+B760M+Riptide",
+    "imageUrl": "/images/motherboard/b450m.png",
     "specs": {
       "socket": "LGA1700",
       "formFactor": "Micro-ATX",
@@ -81,7 +81,7 @@
     "brand": "ASUS",
     "price": 109.99,
     "category": "motherboard",
-    "imageUrl": "https://placehold.co/400x300/1A1325/FFF?text=ASUS+Prime+B550M",
+    "imageUrl": "/images/motherboard/b450m.png",
     "specs": {
       "socket": "AM4",
       "formFactor": "Micro-ATX",

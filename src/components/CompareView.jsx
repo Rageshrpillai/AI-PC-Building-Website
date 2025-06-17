@@ -11,7 +11,7 @@ const ComparisonSlot = ({ product, onSelectClick, onClearClick }) => {
       <div className="relative flex flex-col items-center justify-center w-full min-h-[12rem] p-4 bg-[#1A1325] border-2 border-dashed border-gray-700 rounded-lg text-center">
         <img
           src={
-            product.imageUrl ||
+            product.imageUrls?.[0] ||
             "https://placehold.co/400x300/1e1b22/666666?text=No+Image"
           }
           alt={product.name}

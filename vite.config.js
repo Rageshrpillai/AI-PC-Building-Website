@@ -12,7 +12,6 @@ export default defineConfig({
         target: "https://comppartsapi.herokuapp.com", // The actual API address
         changeOrigin: true, // Recommended for most cases, especially with virtual hosts
         rewrite: (path) => path.replace(/^\/api-proxy/, ""), // Remove the prefix when forwarding
-        // secure: false, // Uncomment if the target API is HTTPS with a self-signed certificate (not usually needed for Heroku)
       },
     },
   },
