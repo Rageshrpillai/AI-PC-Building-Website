@@ -3,6 +3,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navabar from "../components/Navabar";
 import ComponentCarousel from "../components/ComponentCarousel";
+import useProductStore from "../stores/productStore";
+import BuildCard from "../components/BuildCard";
+import MiniBuildCard from "../components/MiniBuildCard";
 
 // --- Reusable Icon Components (No changes here) ---
 const AiIcon = () => (
@@ -13,7 +16,7 @@ const AiIcon = () => (
     xmlns="http://www.w3.org/2000/svg"
   >
     {" "}
-    <path d="M12.5,2.1C12.5,2.1,12.5,2.1,12.5,2.1C12.5,2.1,12.5,2.1,12.5,2.1C12.5,2.1,12.5,2.1,12.5,2.1c-2.3,0-4.5,0.8-6.3,2.2l-0.1,0.1c0,0-0.1,0.1-0.1,0.1c-0.1,0.1-0.1,0.1-0.2,0.2c0,0,0,0,0,0c-0.1,0.1-0.2,0.2-0.3,0.3c0,0,0,0,0,0c-0.1,0.1-0.2,0.2-0.2,0.3l0,0c-1.3,1.8-2,4-2,6.3c0,2.3,0.8,4.5,2.2,6.3l0.1,0.1c0,0,0.1,0.1,0.1,0.1c0.1,0.1,0.1,0.1,0.2,0.2c0,0,0,0,0,0c0.1-0.1,0.2-0.2,0.3-0.3c0,0,0,0,0,0c0.1-0.1,0.2-0.2,0.2-0.3l0,0c1.8,1.3,4,2,6.3,2c2.3,0,4.5-0.8,6.3-2.2l0.1-0.1c0,0,0.1-0.1,0.1-0.1c0.1-0.1,0.1-0.1,0.2-0.2c0,0,0,0,0,0c0.1-0.1,0.2-0.2,0.3-0.3c0,0,0,0,0,0c0.1-0.1,0.2-0.2,0.2-0.3l0,0c1.3-1.8,2-4,2-6.3c0-2.3-0.8-4.5-2.2-6.3l-0.1-0.1c0,0-0.1-0.1-0.1-0.1c-0.1-0.1-0.1-0.1-0.2-0.2c0,0,0,0,0,0c-0.1-0.1-0.2-0.2-0.3-0.3c0,0,0,0,0,0c-0.1-0.1-0.2-0.2-0.2-0.3l0,0C17,2.9,14.8,2.1,12.5,2.1z M12.5,3.9c1.9,0,3.8,0.7,5.3,2l-2,2c-0.8-0.6-1.8-1-2.8-1c-1.2,0-2.3,0.5-3.1,1.3L7,5.3C8.9,4.4,10.7,3.9,12.5,3.9z M19.4,12c-0.4-1.6-1.3-3-2.5-4.1l-2,2c0.4,0.6,0.7,1.2,0.8,1.9h-3.3V9.6h5.4c0.1,0.3,0.1,0.6,0.1,0.9c0,2.9-1.9,5.4-4.7,5.4c-1,0-1.9-0.3-2.7-0.8L8,17.5c1.1,0.9,2.5,1.4,4,1.4c1.9,0,3.8-0.7,5.3-2C18.6,15.6,19.2,13.9,19.4,12z M5.6,12c0.4,1.6,1.3,3,2.5,4.1l2-2c-0.4-0.6-0.7-1.2-0.8-1.9h3.3v2.3H7.1c-0.1-0.3-0.1-0.6-0.1-0.9c0-2.9,1.9-5.4,4.7-5.4c1,0,1.9,0.3,2.7,0.8l1.7-1.7c-1.1-0.9-2.5-1.4-4-1.4C7.8,5.1,6.1,6.5,5.6,8C5.2,9.2,5.1,10.6,5.6,12z" />{" "}
+    <path d="M12.5,2.1C12.5,2.1,12.5,2.1,12.5,2.1C12.5,2.1,12.5,2.1,12.5,2.1C12.5,2.1,12.5,2.1,12.5,2.1c-2.3,0-4.5,0.8-6.3,2.2l-0.1,0.1c0,0-0.1,0.1-0.1,0.1c-0.1,0.1-0.1,0.1-0.2,0.2c0,0,0,0,0,0c-0.1,0.1-0.2,0.2-0.3,0.3c0,0,0,0,0,0c-0.1,0.1-0.2,0.2-0.2,0.3l0,0c-1.3,1.8-2,4-2,6.3c0,2.3,0.8,4.5,2.2,6.3l0.1,0.1c0,0,0.1,0.1,0.1,0.1c0.1,0.1,0.1,0.1,0.2,0.2c0,0,0,0,0,0c0.1-0.1,0.2-0.2,0.3-0.3c0,0,0,0,0,0c0.1-0.1,0.2-0.2,0.2-0.3l0,0c1.8,1.3,4,2,6.3,2c2.3,0,4.5-0.8,6.3-2.2l0.1-0.1c0,0,0.1-0.1,0.1-0.1c0.1-0.1,0.1-0.1,0.2-0.2c0,0,0,0,0,0c0.1-0.1,0.2-0.2,0.3-0.3c0,0,0,0,0,0c0.1-0.1,0.2-0.2,0.2-0.3l0,0C17,2.9,14.8,2.1,12.5,2.1z M12.5,3.9c1.9,0,3.8,0.7,5.3,2l-2,2c-0.8-0.6-1.8-1-2.8-1c-1.2,0-2.3,0.5-3.1,1.3L7,5.3C8.9,4.4,10.7,3.9,12.5,3.9z M19.4,12c-0.4-1.6-1.3-3-2.5-4.1l-2,2c0.4,0.6,0.7,1.2,0.8,1.9h-3.3V9.6h5.4c0.1,0.3,0.1,0.6,0.1,0.9c0,2.9-1.9,5.4-4.7,5.4c-1,0-1.9-0.3-2.7-0.8L8,17.5c1.1,0.9,2.5,1.4,4,1.4c1.9,0,3.8-0.7,5.3-2C18.6,15.6,19.2,13.9,19.4,12z M5.6,12c0.4,1.6,1.3,3,2.5,4.1l2-2c-0.4-0.6-0.7-1.2-0.8-1.9h3.3v2.3H7.1c-0.1-0.3-0.1-0.6-0.1-0.9c0-2.9,1.9-5.4,4.7-5.4c1,0,1.9,0.3,2.7,0.8l1.7-1.7c-1.1-0.9-2.5-1.4-4-1.4C7.8,5.1,6.1,6.5,5.6,8C5.2,9.2,5.1,10.6,5.6,12z" />{" "}
   </svg>
 );
 const ArrowRightIcon = () => (
@@ -38,6 +41,14 @@ const UpgradeIcon = () => (
     <path d="M16,18V12h-3V10h3V4h2v6h3v2h-3v6Zm-8-4H2v2h6v5l6-5H8Z" />{" "}
   </svg>
 );
+// Reusable StarIcon component from BuildCard.jsx
+function StarIcon({ color = "#F87171", size = 18 }) {
+  return (
+    <svg width={size} height={size} fill={color} viewBox="0 0 20 20">
+      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.916c.969 0 1.371 1.24.588 1.81l-3.977 2.89a1 1 0 00-.364 1.118l1.519 4.674c.3.921-.755 1.688-1.539 1.118l-3.977-2.89a1 1 0 00-1.175 0l-3.977 2.89c-.783.57-1.838-.197-1.539-1.118l1.519-4.674a1 1 0 00-.364-1.118L2.048 10.1c-.783-.57-.38-1.81.588-1.81h4.916a1 1 0 00.95-.69l1.519-4.674z" />
+    </svg>
+  );
+}
 
 // --- Section Components ---
 
@@ -134,7 +145,6 @@ const HeroSection = () => {
   );
 };
 
-// ... (ActionCardsSection and SectionWrapper components remain unchanged)
 const ActionCardsSection = () => (
   <div className="relative px-8 md:px-24 py-16 bg-gradient-to-b from-[#100C16] to-[#1A1323] z-20">
     {" "}
@@ -221,6 +231,117 @@ const SectionWrapper = ({ title, viewAllLink, children, className = "" }) => (
 
 // Main Home Page Component
 export default function Home() {
+  const { prebuilds, isPrebuildsLoading, prebuildsError, fetchPrebuilds } =
+    useProductStore();
+
+  useEffect(() => {
+    fetchPrebuilds();
+  }, [fetchPrebuilds]);
+
+  // Find the specific prebuilt for the "Top AI Pick"
+  // Assuming "Gaming Beast Pro" (id: prebuilt-001) is the top pick based on image
+  const topAIPick = prebuilds.find((p) => p.id === "prebuilt-001");
+
+  const PrebuiltPCsContent = () => {
+    if (isPrebuildsLoading) {
+      return (
+        <div className="h-96 bg-[#100C16] rounded-lg flex items-center justify-center text-gray-500">
+          Loading Prebuilt PCs...
+        </div>
+      );
+    }
+
+    if (prebuildsError) {
+      return (
+        <div className="h-96 bg-[#100C16] rounded-lg flex items-center justify-center text-red-500">
+          Error loading prebuilt PCs: {prebuildsError}
+        </div>
+      );
+    }
+
+    if (prebuilds.length === 0) {
+      return (
+        <div className="h-96 bg-[#100C16] rounded-lg flex items-center justify-center text-gray-500">
+          No Prebuilt PCs available at the moment.
+        </div>
+      );
+    }
+
+    // Filter out the topAIPick from the main list of prebuilds to avoid duplication
+    // And get the next 4 for the side cards
+    const otherPrebuilds = prebuilds.filter((p) => p.id !== "prebuilt-001");
+    const sidePrebuilds = otherPrebuilds.slice(0, 4); // Take the first 4 for the side
+
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Section: Top AI Pick */}
+        {topAIPick && (
+          <div className="lg:col-span-2 relative bg-[#1A1323] rounded-lg p-6 border border-gray-800/50 flex flex-col md:flex-row items-center overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-900/10 via-transparent to-purple-900/10 blur-3xl opacity-50 z-0"></div>
+            <div className="relative z-10 md:w-2/3">
+              {" "}
+              {/* Image Container */}
+              <img
+                src={topAIPick.imageUrl}
+                alt={topAIPick.name}
+                className="w-full h-auto object-contain rounded-lg"
+              />
+            </div>
+            <div className="relative z-10 md:w-1/3 p-4 flex flex-col justify-between">
+              {" "}
+              {/* Text Content */}
+              <div>
+                <p className="text-purple-400 font-semibold mb-2">
+                  🔥 Top AI Pick: Performance Meets Value
+                </p>
+                <h3 className="text-3xl font-bold text-white mb-2">
+                  {topAIPick.name}
+                </h3>
+                <p className="text-gray-300 text-base mb-4">
+                  {topAIPick.description}
+                </p>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xl font-bold text-green-400">
+                    ₹{topAIPick.price?.toLocaleString("en-IN")}
+                  </span>
+                  <span className="flex items-center gap-1 text-lg font-bold text-[#C46A6A]">
+                    {typeof topAIPick.rating === "object"
+                      ? (topAIPick.rating.rate || 0).toFixed(1)
+                      : (topAIPick.rating || 0).toFixed(1)}
+                    <StarIcon size={18} />
+                  </span>
+                </div>
+              </div>
+              <Link
+                to={`/builds/${topAIPick.id}`}
+                className="self-start flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-md font-semibold text-white transition-colors no-underline"
+              >
+                View Build <ArrowRightIcon />
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Right Section: Mini Build Cards */}
+        <div className="lg:col-span-1 grid grid-cols-1 gap-6">
+          {sidePrebuilds.map((build) => (
+            <MiniBuildCard key={build.id} build={build} />
+          ))}
+        </div>
+
+        {/* Optional: You can add another section below these two if you want to show
+            more prebuilt cards using the BuildCard component for `otherPrebuilds` */}
+        {/*
+        <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+          {otherPrebuilds.map((prebuilt) => (
+            <BuildCard key={prebuilt.id} build={prebuilt} />
+          ))}
+        </div>
+        */}
+      </div>
+    );
+  };
+
   return (
     <div className="bg-[#100C16]">
       <Navabar />
@@ -229,9 +350,7 @@ export default function Home() {
         <ActionCardsSection />
 
         <SectionWrapper title="Prebuilt PCs" viewAllLink="/builds">
-          <div className="h-96 bg-[#100C16] rounded-lg flex items-center justify-center text-gray-500">
-            Placeholder for Prebuilt PCs section.
-          </div>
+          <PrebuiltPCsContent />
         </SectionWrapper>
         <SectionWrapper
           title="Explore High-Performance Components"
@@ -239,22 +358,48 @@ export default function Home() {
         >
           <ComponentCarousel />
         </SectionWrapper>
-        <SectionWrapper
-          title="Compare PC Builds Like a Pro"
-          viewAllLink="/compare"
-        >
-          <div className="h-64 bg-[#100C16] rounded-lg flex items-center justify-center text-gray-500">
-            Placeholder for Compare Builds section.
+
+        {/* Compare PC Builds Like a Pro Section */}
+        <section className="relative px-8 md:px-24 py-16 bg-[#1A1323] border-t border-gray-800/50 z-20 overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left side: Image Placeholder with curved effect */}
+            <div className="relative flex justify-center lg:justify-start">
+              <img
+                src="comparepic.png" // This is your placeholder image path
+                alt="Compare PC Builds"
+                className="w-full max-w-lg h-auto object-contain rounded-3xl md:rounded-[48px] shadow-2xl transform rotate-3 scale-95 transition-transform duration-500 hover:rotate-0 hover:scale-100"
+              />
+            </div>
+
+            {/* Right side: Text content and button */}
+            <div className="text-center lg:text-left">
+              <p className="text-purple-400 font-semibold mb-2 text-lg">
+                Compare specs
+              </p>
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+                Compare PC Builds Like a Pro
+              </h2>
+              <p className="text-lg text-gray-300 max-w-xl lg:max-w-none mx-auto lg:mx-0 mb-8">
+                Discover the most optimized builds shared by our community.
+                Compare performance, compatibility, and pricing side-by-side to
+                make smarter rig decisions.
+              </p>
+              <Link
+                to="/compare"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-purple-600 hover:bg-purple-700 rounded-md font-semibold text-white transition-colors shadow-lg"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 zm-1 15h-1V7h1v10zm3 0h-1V7h1v10z" />
+                </svg>
+                <span>Compare Builds Now</span>
+              </Link>
+            </div>
           </div>
-        </SectionWrapper>
-        <SectionWrapper
-          title="From Our Smartest PC Builds by Our Users"
-          viewAllLink="/feeds"
-        >
-          <div className="h-64 bg-[#100C16] rounded-lg flex items-center justify-center text-gray-500">
-            Placeholder for User Builds section.
-          </div>
-        </SectionWrapper>
+        </section>
       </main>
       <footer className="px-8 md:px-24 py-16 bg-[#100C16] border-t border-gray-800/50">
         <div className="text-center text-gray-400">

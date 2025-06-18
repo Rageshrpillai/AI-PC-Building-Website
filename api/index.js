@@ -210,5 +210,31 @@ app.get("/api/user/builds", requireAuth(), async (req, res) => {
   }
 });
 
+app.delete("/api/builds/:id", requireAuth(), async (req, res) => {
+  try {
+    const buildId = req.params.id;
+    const userId = req.auth.userId;
+
+    // Only allow deleting builds the user owns
+    const build = await Prebuilt.findById(buildId);
+    if (!build || build.createdBy !== userId) {
+      return res
+        .status(403)
+        .json({ message: "Not allowed to delete this build." });
+    }
+
+    await Prebuilt.deleteOne({ _id: buildId });
+
+    // Optionally: Remove from user's savedBuilds
+    await User.updateOne(
+      { clerkId: userId },
+      { $pull: { savedBuilds: buildId } }
+    );
+
+    res.json({ message: "Build deleted." });
+  } catch (err) {
+    res.status(500).json({ message: "Server error deleting build." });
+  }
+});
 // --- Export for Vercel's serverless environment ---
 export default app;

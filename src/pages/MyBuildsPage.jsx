@@ -10,12 +10,12 @@ export default function MyBuildsPage() {
   const { getToken } = useAuth();
   const [myBuilds, setMyBuilds] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     const loadBuilds = async () => {
       setLoading(true);
       try {
-        // Pass the getToken function to the service
         const builds = await fetchUserBuilds(getToken);
         setMyBuilds(builds);
         console.log("Fetched user builds:", builds);
@@ -28,6 +28,31 @@ export default function MyBuildsPage() {
     loadBuilds();
   }, [getToken]);
 
+  const handleDeleteBuild = async (buildId) => {
+    if (!window.confirm("Are you sure you want to delete this build?")) return;
+    setDeletingId(buildId);
+    try {
+      const token = await getToken();
+      const response = await fetch(`/api/builds/${buildId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        setMyBuilds((prev) =>
+          prev.filter((b) => b._id !== buildId && b.id !== buildId)
+        );
+      } else {
+        alert("Failed to delete build.");
+      }
+    } catch (error) {
+      alert("Delete request failed.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#100C16] text-gray-100">
       <Navabar />
@@ -38,7 +63,22 @@ export default function MyBuildsPage() {
         ) : myBuilds.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {myBuilds.map((build) => (
-              <BuildCard key={build.id} build={build} />
+              <div key={build._id || build.id} className="relative">
+                <BuildCard build={build} />
+                <button
+                  onClick={() => handleDeleteBuild(build._id || build.id)}
+                  className={`absolute top-2 right-2 px-3 py-1 text-xs bg-red-700 text-white rounded hover:bg-red-800 z-10 ${
+                    deletingId === (build._id || build.id)
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
+                  disabled={deletingId === (build._id || build.id)}
+                >
+                  {deletingId === (build._id || build.id)
+                    ? "Deleting..."
+                    : "Delete"}
+                </button>
+              </div>
             ))}
           </div>
         ) : (

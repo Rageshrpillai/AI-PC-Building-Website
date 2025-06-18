@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import Navabar from "../components/Navabar";
+import { useAuth } from "@clerk/clerk-react";
 
 // Helper to convert 'GPUs', 'RAMs', etc. to 'gpu', 'ram'
 function normalizeCategoryKey(category) {
@@ -128,6 +129,7 @@ function UpgradeCategoryRow({
 }
 
 export default function UpgradeResultPage() {
+  const { getToken } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   // Take from location.state for legacy, but support upgrade via Zustand/global if you want
@@ -149,7 +151,30 @@ export default function UpgradeResultPage() {
       };
     });
   };
-
+  function buildMergedParts(originalBuild, selectedUpgrades, categories) {
+    const parts = [];
+    for (const cat of categories) {
+      if (cat.key === "ram") {
+        // Handle all RAM sticks, upgrade only if user picked
+        const selectedRam = selectedUpgrades["ram"];
+        if (selectedRam) {
+          parts.push({ ...selectedRam, category: "ram" });
+        } else if (originalBuild) {
+          Object.entries(originalBuild)
+            .filter(([key]) => key.startsWith("ram_slot_"))
+            .forEach(([_, part]) => parts.push({ ...part, category: "ram" }));
+        }
+      } else {
+        const sel = selectedUpgrades[cat.key];
+        if (sel) {
+          parts.push({ ...sel, category: cat.key });
+        } else if (originalBuild && originalBuild[cat.key]) {
+          parts.push({ ...originalBuild[cat.key], category: cat.key });
+        }
+      }
+    }
+    return parts;
+  }
   const componentCategories = useMemo(
     () => [
       { key: "cpu", name: "CPU" },
@@ -200,6 +225,56 @@ export default function UpgradeResultPage() {
       .map(([_, part]) => part);
   }, [originalBuild]);
 
+  const handleSaveUpgrade = async () => {
+    try {
+      const mergedParts = buildMergedParts(
+        originalBuild,
+        selectedUpgrades,
+        componentCategories
+      );
+
+      // Build the payload
+      const payload = {
+        name: "Upgraded PC",
+        description: upgradeSuggestion.reply,
+        price: mergedParts.reduce((sum, p) => sum + (Number(p.price) || 0), 0),
+        features: [],
+        parts: mergedParts,
+      };
+
+      const token = await getToken();
+
+      const response = await fetch("/api/builds/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          buildName: "Upgraded PC",
+          buildDescription: upgradeSuggestion.reply,
+          parts: mergedParts,
+          totalPrice: mergedParts.reduce(
+            (sum, p) => sum + (Number(p.price) || 0),
+            0
+          ),
+        }),
+      });
+      console.log("Saving upgrade, payload:", payload);
+      console.log("Saving upgrade, token:", token);
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Upgrade build saved!");
+        // Optionally navigate to My Builds
+        // navigate("/my-builds");
+      } else {
+        alert("Failed to save: " + (data.message || "Unknown error"));
+      }
+    } catch (error) {
+      alert("Failed to save: " + error.message);
+    }
+  };
   // Get all selected parts for the summary
   const newParts = useMemo(() => {
     if (!selectedUpgrades) return [];
@@ -332,10 +407,7 @@ export default function UpgradeResultPage() {
                   </div>
 
                   <button
-                    onClick={() => {
-                      // Handle save build
-                      console.log("Saving build...");
-                    }}
+                    onClick={handleSaveUpgrade}
                     className="w-full py-2.5 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors font-medium"
                   >
                     Save This Build
