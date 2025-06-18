@@ -1,3 +1,4 @@
+// src/stores/productStore.js
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import {
@@ -9,120 +10,24 @@ const getCategoryName = (key) => {
   if (!key) return "Unknown";
   return key.charAt(0).toUpperCase() + key.slice(1).replace(/s$/, "");
 };
+
 const useProductStore = create(
   persist(
     (set, get) => ({
-      // --- MODIFIED STATE FOR PAGINATION ---
-      products: [],
-      allProducts: [], // <--- NEW
-      currentPage: 0,
-      totalPages: 1,
+      allProducts: [],
+      allProductsByCategory: {},
       isLoading: true,
-      isFetchingMore: false,
       error: null,
-      hasFetchedInitialData: false, // <--- NEW
+      hasFetchedInitialData: false,
 
-      // --- EXISTING STATE (PRESERVED) ---
-      productsByCategory: {},
+      productsByCategory: {}, // keep for compatibility with code, but not used
       uniqueCategoryObjects: [],
       selectedComponents: {},
       prebuilds: [],
       isPrebuildsLoading: false,
       prebuildsError: null,
 
-      // --- PAGINATED (DEFAULT) ACTIONS ---
-      fetchAllProducts: async () => {
-        try {
-          // Fetch only the FIRST page
-          const response = await fetchProductsFromAPI("all", 1);
-
-          if (!response.data || !response.pagination) {
-            throw new Error(
-              "Invalid API response format for paginated products"
-            );
-          }
-
-          const { data, pagination } = response;
-
-          // --- Categorization logic ---
-          const categorized = {};
-          const categoryKeys = new Set();
-          data.forEach((product) => {
-            const key = product.category?.toLowerCase() || "unknown";
-            if (!categorized[key]) categorized[key] = [];
-            categorized[key].push(product);
-            if (key !== "unknown") categoryKeys.add(key);
-          });
-
-          const uniqueCats = Array.from(categoryKeys)
-            .sort()
-            .map((key) => ({ key, name: getCategoryName(key) }));
-
-          const finalCategoriesForUI = [
-            { key: "all", name: "All components" },
-            ...uniqueCats,
-          ];
-
-          set({
-            products: data, // (keep for compatibility)
-            productsByCategory: categorized,
-            uniqueCategoryObjects: finalCategoriesForUI,
-            currentPage: 1,
-            totalPages: 1,
-            isLoading: false,
-            hasFetchedInitialData: true,
-            error: null,
-          });
-        } catch (error) {
-          console.error(
-            "[ProductStore] Error fetching initial products:",
-            error
-          );
-          set({ error: error.message, isLoading: false });
-        }
-      },
-
-      fetchMoreProducts: async () => {
-        const { currentPage, totalPages, isFetchingMore } = get();
-        if (isFetchingMore || currentPage >= totalPages) {
-          return;
-        }
-
-        try {
-          set({ isFetchingMore: true });
-          const nextPage = currentPage + 1;
-          const response = await fetchProductsFromAPI("all", nextPage);
-
-          if (!response.data || !response.pagination) {
-            throw new Error(
-              "Invalid API response format for paginated products"
-            );
-          }
-
-          const { data, pagination } = response;
-
-          set((state) => {
-            const newCategorized = { ...state.productsByCategory };
-            data.forEach((product) => {
-              const key = product.category?.toLowerCase() || "unknown";
-              if (!newCategorized[key]) newCategorized[key] = [];
-              newCategorized[key].push(product);
-            });
-
-            return {
-              products: [...state.products, ...data],
-              productsByCategory: newCategorized,
-              currentPage: pagination.currentPage,
-              isFetchingMore: false,
-            };
-          });
-        } catch (error) {
-          console.error("[ProductStore] Error fetching more products:", error);
-          set({ error: error.message, isFetchingMore: false });
-        }
-      },
-
-      // --- NEW: Fetch ALL products (no pagination) for CustomBuildPage etc ---
+      // --- MAIN: Fetch all products at once (no pagination) ---
       fetchAllProductsNoPagination: async () => {
         set({ isLoading: true, error: null });
         try {
@@ -130,7 +35,7 @@ const useProductStore = create(
           const json = await res.json();
           const data = json.data || [];
 
-          // Categorize
+          // Categorize for filter UI
           const categorized = {};
           const categoryKeys = new Set();
           data.forEach((product) => {
@@ -150,12 +55,9 @@ const useProductStore = create(
           ];
 
           set({
-            allProducts: data, // <-- THIS LINE IS THE FIX!
-            products: data,
-            productsByCategory: categorized,
+            allProducts: data,
+            allProductsByCategory: categorized,
             uniqueCategoryObjects: finalCategoriesForUI,
-            currentPage: 1,
-            totalPages: 1,
             isLoading: false,
             hasFetchedInitialData: true,
             error: null,
@@ -165,14 +67,12 @@ const useProductStore = create(
         }
       },
 
-      // --- PREBUILD LOGIC (PRESERVED) ---
       fetchPrebuilds: async () => {
         if (get().isPrebuildsLoading) return;
-        if (get().products.length === 0) {
-          await get().fetchAllProducts();
+        if (get().allProducts.length === 0) {
+          await get().fetchAllProductsNoPagination();
         }
-        const allProducts = get().products;
-
+        const allProducts = get().allProducts;
         set({ isPrebuildsLoading: true, prebuildsError: null });
         try {
           const prebuildsData = await fetchPrebuildsFromAPI();
@@ -220,12 +120,14 @@ const useProductStore = create(
         }),
       clearAllComponents: () => set({ selectedComponents: {} }),
 
+      // --- Now always use allProducts/allProductsByCategory ---
       getProductsForCategory: (categoryKey) => {
         const key = categoryKey?.toLowerCase();
-        if (!key || key === "all") return get().products;
-        return get().productsByCategory[key] || [];
+        if (!key || key === "all") return get().allProducts;
+        return get().allProductsByCategory[key] || [];
       },
-      getProductById: (id) => get().products.find((p) => p.id === id) || null,
+      getProductById: (id) =>
+        get().allProducts.find((p) => p.id === id) || null,
     }),
     {
       name: "product-store",

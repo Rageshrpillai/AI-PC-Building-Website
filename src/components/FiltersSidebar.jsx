@@ -155,9 +155,9 @@ const PriceRangeFilter = ({
 
   return (
     <div className="space-y-3 pt-2">
-      <div className="flex justify-between text-xs text-gray-400">
-        <span>₹{minPrice.toLocaleString("en-IN")}</span>
-        <span>₹{maxPrice.toLocaleString("en-IN")}</span>
+      <div className="flex justify-between text-sm text-gray-400">
+        <span>${minPrice.toLocaleString("en-IN")}</span>
+        <span>${maxPrice.toLocaleString("en-IN")}</span>
       </div>
       <input
         type="range"
@@ -170,7 +170,7 @@ const PriceRangeFilter = ({
       <div className="text-center text-sm font-semibold text-white">
         Up to:{" "}
         <span className="text-purple-400">
-          ₹{currentValue.toLocaleString("en-IN")}
+          ${currentValue.toLocaleString("en-IN")}
         </span>
       </div>
     </div>

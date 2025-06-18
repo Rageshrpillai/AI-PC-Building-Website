@@ -4,6 +4,7 @@ import { useLocation, Link, useNavigate } from "react-router-dom";
 import useProductStore from "../stores/productStore.js";
 import Navabar from "../components/Navabar";
 import ComponentCategoryRow from "../components/ComponentCategoryRow";
+import { useUser, useAuth, useClerk } from "@clerk/clerk-react";
 
 const BASE_COMPONENT_CATEGORIES = [
   { key: "cpu", name: "CPU", actualCategory: "cpu", hasQuickPicks: true },
@@ -52,6 +53,11 @@ export default function CustomBuildPage() {
     fetchAllProductsNoPagination, // PATCH: new action
   } = useProductStore((s) => s);
 
+  // --- NEW: Clerk Hooks ---
+  const { isSignedIn } = useUser();
+  const { userId } = useAuth();
+  const { openSignIn } = useClerk();
+
   // PATCH: Fetch all products (not paginated) for this page
   useEffect(() => {
     if (!hasFetchedInitialData || !allProducts || allProducts.length === 0) {
@@ -73,7 +79,7 @@ export default function CustomBuildPage() {
   // Local State
   const [buildName, setBuildName] = useState("");
   const [buildDescription, setBuildDescription] = useState("");
-
+  const [saveAttempted, setSaveAttempted] = useState(false);
   // Set default values only if they haven't been set
   useEffect(() => {
     if (!buildName) setBuildName("My Custom Build");
@@ -337,9 +343,68 @@ export default function CustomBuildPage() {
   );
 
   // Other handlers
+  const executeSave = useCallback(async () => {
+    if (!userId) {
+      alert("Error: You must be signed in to save a build.");
+      return;
+    }
+
+    const parts = Object.values(selectedComponents)
+      .filter((p) => p && p.id && p.category)
+      .map((part) => ({ id: part.id, category: part.category }));
+
+    if (parts.length === 0) {
+      alert("Please select at least one component to save a build.");
+      return;
+    }
+
+    const buildData = {
+      buildName,
+      buildDescription,
+      parts: parts, // Use the new 'parts' variable here
+      totalPrice,
+    };
+
+    try {
+      const response = await fetch("/api/builds/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(buildData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to save the build.");
+      }
+
+      const result = await response.json();
+      alert("Build saved successfully!");
+      // Optionally navigate to a page showing the user's saved builds
+      // navigate(`/user/builds`);
+    } catch (error) {
+      console.error("Error saving build:", error);
+      alert(`Error: ${error.message}`);
+    }
+  }, [buildName, buildDescription, selectedComponents, totalPrice, userId]);
+
+  // --- NEW: useEffect to trigger save after successful sign-in ---
+  useEffect(() => {
+    if (isSignedIn && saveAttempted) {
+      executeSave();
+      setSaveAttempted(false); // Reset the flag
+    }
+  }, [isSignedIn, saveAttempted, executeSave]);
+
+  // --- REPLACED: The Save Build button handler ---
   const handleSaveBuild = useCallback(() => {
-    console.log("Save Build clicked");
-  }, []);
+    if (isSignedIn) {
+      executeSave();
+    } else {
+      setSaveAttempted(true);
+      openSignIn();
+    }
+  }, [isSignedIn, executeSave, openSignIn]);
+
   const handleCancelBuild = useCallback(() => {
     clearAllComponents();
     setBuildName("My Custom Build");
@@ -512,7 +577,7 @@ export default function CustomBuildPage() {
                                 </span>
                               </div>
                               <span className="text-gray-300 font-medium whitespace-nowrap px-2">
-                                ₹
+                                $
                                 {Number(component.price)?.toLocaleString(
                                   "en-IN"
                                 )}
@@ -540,7 +605,7 @@ export default function CustomBuildPage() {
                           : "Total Price:"}
                       </span>
                       <span className="text-2xl font-bold text-purple-400">
-                        ₹{totalPrice.toLocaleString("en-IN")}
+                        ${totalPrice.toLocaleString("en-IN")}
                       </span>
                     </div>
                     <div className="flex gap-3">

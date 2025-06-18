@@ -26,7 +26,7 @@ export default function Builds() {
     brands: [],
     ratings: [],
     sockets: [],
-    formFactors: []
+    formFactors: [],
   });
 
   // Get prebuilds from store
@@ -34,27 +34,36 @@ export default function Builds() {
   const isLoading = useProductStore((state) => state.isPrebuildsLoading);
   const error = useProductStore((state) => state.prebuildsError);
   const fetchPrebuilds = useProductStore((state) => state.fetchPrebuilds);
-  const hasFetchedInitialData = useProductStore((state) => state.hasFetchedInitialData);
+  const hasFetchedInitialData = useProductStore(
+    (state) => state.hasFetchedInitialData
+  );
 
   // Fetch prebuilds on component mount
   useEffect(() => {
-    console.log('[Build] Component mounted, hasFetchedInitialData:', hasFetchedInitialData);
+    console.log(
+      "[Build] Component mounted, hasFetchedInitialData:",
+      hasFetchedInitialData
+    );
     if (!hasFetchedInitialData) {
-      console.log('[Build] Fetching prebuilds...');
+      console.log("[Build] Fetching prebuilds...");
       fetchPrebuilds();
     }
   }, [fetchPrebuilds, hasFetchedInitialData]);
 
   // Log prebuilds whenever they change
   useEffect(() => {
-    console.log('[Build] Prebuilds updated:', prebuilds);
+    console.log("[Build] Prebuilds updated:", prebuilds);
   }, [prebuilds]);
 
   const handleFilterChange = (key, value) => {
-    console.log('[Build] Filter changed:', key, value);
-    setActiveFilters(prev => {
+    console.log("[Build] Filter changed:", key, value);
+    setActiveFilters((prev) => {
       const newState = { ...prev };
-      if (value === undefined || value === null || (Array.isArray(value) && value.length === 0)) {
+      if (
+        value === undefined ||
+        value === null ||
+        (Array.isArray(value) && value.length === 0)
+      ) {
         delete newState[key];
       } else {
         newState[key] = value;
@@ -67,47 +76,52 @@ export default function Builds() {
     setSearchTerm(event.target.value);
   };
 
+  useEffect(() => {
+    console.log("Loaded prebuilds:", prebuilds);
+  }, [prebuilds]);
   const buildsToShow = useMemo(() => {
-    console.log('[Build] Calculating builds to show. Prebuilds:', prebuilds);
+    console.log("[Build] Calculating builds to show. Prebuilds:", prebuilds);
     if (!prebuilds?.length) {
-      console.log('[Build] No prebuilds available');
+      console.log("[Build] No prebuilds available");
       return [];
     }
-    
-    let filteredBuilds = [...prebuilds];
-    console.log('[Build] Initial filtered builds:', filteredBuilds);
+
+    let filteredBuilds = prebuilds?.filter((b) => b.isOfficial) || [];
+    console.log("[Build] Initial filtered builds:", filteredBuilds);
 
     // Apply search filter
     if (searchTerm.trim()) {
       const searchLower = searchTerm.toLowerCase();
-      filteredBuilds = filteredBuilds.filter(build => 
-        build.name.toLowerCase().includes(searchLower) ||
-        build.description.toLowerCase().includes(searchLower)
+      filteredBuilds = filteredBuilds.filter(
+        (build) =>
+          build.name.toLowerCase().includes(searchLower) ||
+          build.description.toLowerCase().includes(searchLower)
       );
-      console.log('[Build] After search filter:', filteredBuilds);
+      console.log("[Build] After search filter:", filteredBuilds);
     }
 
     // Apply price range filter
     if (activeFilters.priceRange) {
-      filteredBuilds = filteredBuilds.filter(build =>
-        build.price >= activeFilters.priceRange.min &&
-        build.price <= activeFilters.priceRange.max
+      filteredBuilds = filteredBuilds.filter(
+        (build) =>
+          build.price >= activeFilters.priceRange.min &&
+          build.price <= activeFilters.priceRange.max
       );
-      console.log('[Build] After price filter:', filteredBuilds);
+      console.log("[Build] After price filter:", filteredBuilds);
     }
 
     // Apply rating filter
     if (activeFilters.ratings?.length) {
-      filteredBuilds = filteredBuilds.filter(build => {
-        return activeFilters.ratings.some(ratingId => {
+      filteredBuilds = filteredBuilds.filter((build) => {
+        return activeFilters.ratings.some((ratingId) => {
           const minRating = parseInt(ratingId, 10);
           return build.rating >= minRating;
         });
       });
-      console.log('[Build] After rating filter:', filteredBuilds);
+      console.log("[Build] After rating filter:", filteredBuilds);
     }
 
-    console.log('[Build] Final builds to show:', filteredBuilds);
+    console.log("[Build] Final builds to show:", filteredBuilds);
     return filteredBuilds;
   }, [prebuilds, searchTerm, activeFilters]);
 
@@ -128,13 +142,15 @@ export default function Builds() {
 
   // Error state
   if (error) {
-    console.error('[Build] Error loading prebuilds:', error);
+    console.error("[Build] Error loading prebuilds:", error);
     return (
       <div className="bg-[#100C16] min-h-screen">
         <Navabar />
         <div className="w-full flex justify-center items-center pt-24">
           <div className="text-center max-w-lg mx-auto p-6 bg-red-900/20 rounded-lg">
-            <p className="text-red-400 text-lg mb-4">Error loading prebuilt PCs</p>
+            <p className="text-red-400 text-lg mb-4">
+              Error loading prebuilt PCs
+            </p>
             <p className="text-gray-400 text-sm mb-4">{error}</p>
             <button
               onClick={() => fetchPrebuilds()}
@@ -197,13 +213,15 @@ export default function Builds() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 justify-items-center sm:justify-items-start gap-x-6 gap-y-10">
             {buildsToShow.length > 0 ? (
               buildsToShow.map((build) => {
-                console.log('[Build] Rendering BuildCard for:', build);
+                console.log("[Build] Rendering BuildCard for:", build);
                 return <BuildCard key={build.id} build={build} />;
               })
             ) : (
               <div className="col-span-full h-64 flex justify-center items-center">
                 <p className="text-gray-400 text-lg">
-                  {searchTerm ? "No prebuilt PCs match your search." : "No prebuilt PCs found."}
+                  {searchTerm
+                    ? "No prebuilt PCs match your search."
+                    : "No prebuilt PCs found."}
                 </p>
               </div>
             )}

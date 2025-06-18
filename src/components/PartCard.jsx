@@ -36,7 +36,7 @@ export default function PartCard({
   const getFallbackImage = (productName) => {
     const text = encodeURIComponent(productName || "PC Component");
     const price = product.price
-      ? `\n₹${product.price.toLocaleString("en-IN")}`
+      ? `\n${product.price.toLocaleString("en-IN")}`
       : "";
     return `https://placehold.co/400x300/1A1325/FFF?text=${text}${price}`;
   };
@@ -82,8 +82,8 @@ export default function PartCard({
         <div className="p-4 gap-2 flex flex-col justify-between flex-1">
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xl font-bold text-[#C399F2]">
-                ₹{product.price?.toLocaleString("en-IN") || "N/A"}
+              <span className="text-lg font-semibold text-purple-400">
+                ${product.price?.toLocaleString("en-IN") || "N/A"}
               </span>
               <span className="flex items-center gap-1 text-base font-bold text-[#C46A6A]">
                 {ratingValue.toFixed(1)}

@@ -69,9 +69,9 @@ export default function PartDisplayCard({
           {part.name}
         </p>
       </div>
-      <p className="text-sm font-semibold text-purple-400 text-center mt-1">
-        ₹{part.price?.toLocaleString("en-IN") || "N/A"}
-      </p>
+      <span className="text-lg font-semibold text-purple-400">
+        ${part.price?.toLocaleString("en-IN") || "N/A"}
+      </span>
     </div>
   );
 }

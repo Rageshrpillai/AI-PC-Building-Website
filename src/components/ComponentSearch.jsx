@@ -90,9 +90,9 @@ export default function ComponentSearch({ onPartSelected }) {
                     </p>
                     <p className="text-xs text-gray-400">{part.brand}</p>
                   </div>
-                  <p className="ml-auto text-sm font-bold text-purple-400 pl-3">
-                    ₹{part.price.toLocaleString("en-IN")}
-                  </p>
+                  <span className="text-lg font-semibold text-purple-400">
+                    ${part.price.toLocaleString("en-IN")}
+                  </span>
                 </button>
               </li>
             ))}

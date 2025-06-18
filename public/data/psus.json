@@ -13,7 +13,32 @@
       "formFactor": "ATX",
       "fanSize": "135mm"
     },
-    "rating": { "rate": 4.8, "count": 1500 }
+    "rating": { "rate": 4.8, "count": 1500 },
+    "description": "A premium, fully modular power supply for enthusiast builds. Delivers reliable, quiet 750W output with 80+ Gold efficiency.",
+    "features": [
+      "750W continuous power",
+      "80+ Gold certified efficiency",
+      "Fully modular cabling",
+      "Zero RPM fan mode",
+      "Long-life Japanese capacitors"
+    ],
+    "galleryImages": ["/images/psu/rm.png"],
+    "compatibleDevices": [
+      "gpu-001",
+      "gpu-002",
+      "gpu-003",
+      "gpu-004",
+      "gpu-005",
+      "gpu-006",
+      "cpu-001",
+      "cpu-002",
+      "cpu-003",
+      "cpu-004",
+      "cpu-005",
+      "cpu-006",
+      "cpu-007",
+      "cpu-008"
+    ]
   },
   {
     "id": "psu-002",
@@ -29,7 +54,31 @@
       "formFactor": "ATX",
       "fanSize": "135mm"
     },
-    "rating": { "rate": 4.7, "count": 1100 }
+    "rating": { "rate": 4.7, "count": 1100 },
+    "description": "Trusted 650W Gold-rated PSU with a quiet fan and fully modular cables—great for mid-range and some high-end builds.",
+    "features": [
+      "650W output",
+      "Fully modular",
+      "Compact ATX size",
+      "Fluid dynamic bearing fan",
+      "10-year warranty"
+    ],
+    "galleryImages": ["/images/psu/nova.png"],
+    "compatibleDevices": [
+      "gpu-002",
+      "gpu-003",
+      "gpu-004",
+      "gpu-005",
+      "gpu-006",
+      "cpu-001",
+      "cpu-002",
+      "cpu-003",
+      "cpu-004",
+      "cpu-005",
+      "cpu-006",
+      "cpu-007",
+      "cpu-008"
+    ]
   },
   {
     "id": "psu-003",
@@ -45,7 +94,32 @@
       "formFactor": "ATX",
       "fanSize": "120mm"
     },
-    "rating": { "rate": 4.9, "count": 950 }
+    "rating": { "rate": 4.9, "count": 950 },
+    "description": "Top-tier 850W modular power supply, great for multi-GPU or overclocked systems. Gold certified and extremely reliable.",
+    "features": [
+      "850W high output",
+      "80+ Gold, full modularity",
+      "Premium components",
+      "Hybrid silent fan control",
+      "10-year warranty"
+    ],
+    "galleryImages": ["/images/psu/focus.png"],
+    "compatibleDevices": [
+      "gpu-001",
+      "gpu-002",
+      "gpu-003",
+      "gpu-004",
+      "gpu-005",
+      "gpu-006",
+      "cpu-001",
+      "cpu-002",
+      "cpu-003",
+      "cpu-004",
+      "cpu-005",
+      "cpu-006",
+      "cpu-007",
+      "cpu-008"
+    ]
   },
   {
     "id": "psu-004",
@@ -61,6 +135,27 @@
       "formFactor": "ATX",
       "fanSize": "120mm"
     },
-    "rating": { "rate": 4.5, "count": 700 }
+    "rating": { "rate": 4.5, "count": 700 },
+    "description": "Affordable 550W Bronze PSU for entry-level and budget builds, providing stable and efficient power for mainstream parts.",
+    "features": [
+      "550W Bronze certified",
+      "Quiet 120mm fan",
+      "Reliable circuit design",
+      "3-year warranty",
+      "Perfect for entry builds"
+    ],
+    "galleryImages": ["/images/psu/mwe.png"],
+    "compatibleDevices": [
+      "gpu-005",
+      "gpu-006",
+      "cpu-001",
+      "cpu-002",
+      "cpu-003",
+      "cpu-004",
+      "cpu-005",
+      "cpu-006",
+      "cpu-007",
+      "cpu-008"
+    ]
   }
 ]

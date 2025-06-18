@@ -1,5 +1,13 @@
 import mongoose from "mongoose";
 
+const PrebuiltPartSchema = new mongoose.Schema(
+  {
+    category: { type: String, required: true }, // e.g. 'cpu', 'ram'
+    id: { type: String, required: true },
+  },
+  { _id: false }
+);
+
 const PrebuiltSchema = new mongoose.Schema({
   id: {
     type: String,
@@ -10,6 +18,10 @@ const PrebuiltSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  category: {
+    type: [String],
+    required: true, // e.g. ['gaming', 'workstation']
+  },
   price: {
     type: Number,
     required: true,
@@ -17,22 +29,23 @@ const PrebuiltSchema = new mongoose.Schema({
   rating: {
     type: Number,
   },
-  // This will be the main card image
   imageUrl: {
     type: String,
   },
-  // An array of strings for the smaller gallery images on the detail page
-  galleryImages: [{ type: String }],
+  galleryImages: [{ type: String, default: [] }],
   description: {
     type: String,
   },
-  // This will store an array of the parts that make up the prebuilt PC
-  parts: [
-    {
-      category: String,
-      id: String,
-    },
-  ],
+  createdBy: {
+    type: String,
+    required: true,
+  },
+  isOfficial: {
+    type: Boolean,
+    default: false,
+  },
+  features: [{ type: String, default: [] }],
+  parts: [PrebuiltPartSchema],
 });
 
 export default mongoose.models.Prebuilt ||

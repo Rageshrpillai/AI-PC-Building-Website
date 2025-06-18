@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-// The final, robust blueprint for all individual components
+// Updated Product schema including the new fields
 const ProductSchema = new mongoose.Schema({
   id: {
     type: String,
@@ -35,11 +35,13 @@ const ProductSchema = new mongoose.Schema({
     ],
   },
   imageUrls: [{ type: String }],
+  galleryImages: [{ type: String }], // ✅ new field added
   description: {
     type: String,
     default: "No detailed description available.",
   },
-  // We use Mixed to handle different spec structures (e.g., some have arrays, some have strings)
+  features: [{ type: String }], // ✅ new field added
+  compatibleDevices: [{ type: String }], // ✅ new field added
   technicalSpecs: {
     type: mongoose.Schema.Types.Mixed,
   },
@@ -51,6 +53,7 @@ const ProductSchema = new mongoose.Schema({
     count: Number,
   },
 });
+
 ProductSchema.index({ id: 1 });
 
 export default mongoose.models.Product ||

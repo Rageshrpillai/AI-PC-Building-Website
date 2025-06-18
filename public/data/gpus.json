@@ -3,7 +3,7 @@
     "id": "gpu-001",
     "name": "NVIDIA GeForce RTX 4090 Founders Edition",
     "brand": "NVIDIA",
-    "price": 1599.0,
+    "price": 1799.99,
     "category": "gpu",
     "imageUrl": "/images/gpu/rtx3080.png",
     "specs": {
@@ -12,15 +12,38 @@
       "coreClock": "2235 MHz",
       "boostClock": "2520 MHz",
       "interface": "PCIe 4.0 x16",
-      "tdp": "450W"
+      "tdp": "450W",
+      "length": "304mm"
     },
-    "rating": { "rate": 4.9, "count": 600 }
+    "rating": { "rate": 4.9, "count": 600 },
+    "description": "The NVIDIA GeForce RTX 4090 is the ultimate enthusiast GPU. Powered by the Ada Lovelace architecture, it delivers a quantum leap in performance and AI-powered graphics. Experience virtual worlds with ray tracing and ultra-high FPS gaming with the lowest latency.",
+    "features": [
+      "NVIDIA Ada Lovelace Architecture",
+      "24GB GDDR6X Memory",
+      "DLSS 3 AI-Powered Performance",
+      "4th Generation Tensor Cores & 3rd Generation RT Cores",
+      "Game Ready and NVIDIA Studio Drivers"
+    ],
+    "galleryImages": ["/images/gpu/rtx3080.png"],
+    "compatibleDevices": [
+      "cpu-001",
+      "cpu-002",
+      "mobo-001",
+      "mobo-002",
+      "mobo-003",
+      "mobo-004",
+      "mobo-005",
+      "case-002",
+      "case-003",
+      "psu-001",
+      "psu-003"
+    ]
   },
   {
     "id": "gpu-002",
     "name": "AMD Radeon RX 7900 XTX",
     "brand": "AMD",
-    "price": 949.0,
+    "price": 949.99,
     "category": "gpu",
     "imageUrl": "/images/gpu/rx6700.png",
     "specs": {
@@ -29,15 +52,39 @@
       "coreClock": "2000 MHz",
       "boostClock": "2500 MHz",
       "interface": "PCIe 4.0 x16",
-      "tdp": "355W"
+      "tdp": "355W",
+      "length": "287mm"
     },
-    "rating": { "rate": 4.8, "count": 550 }
+    "rating": { "rate": 4.8, "count": 550 },
+    "description": "Built on the groundbreaking AMD RDNA 3 architecture, the Radeon RX 7900 XTX delivers next-generation performance, visuals, and efficiency for 4K and beyond gaming. Features advanced chiplet design and AMD Radiance Display Engine.",
+    "features": [
+      "AMD RDNA 3 Architecture",
+      "24GB GDDR6 Memory",
+      "AMD Radiance Display Engine with DisplayPort 2.1",
+      "AMD FidelityFX Super Resolution technology",
+      "Advanced Chiplet Design"
+    ],
+    "galleryImages": ["/images/gpu/rx6700.png"],
+    "compatibleDevices": [
+      "cpu-002",
+      "cpu-001",
+      "mobo-001",
+      "mobo-002",
+      "mobo-003",
+      "mobo-004",
+      "mobo-005",
+      "case-001",
+      "case-002",
+      "case-003",
+      "psu-001",
+      "psu-003"
+    ]
   },
   {
     "id": "gpu-003",
     "name": "NVIDIA GeForce RTX 4070 Ti SUPER",
     "brand": "NVIDIA",
-    "price": 799.0,
+    "price": 799.99,
     "category": "gpu",
     "imageUrl": "/images/gpu/rtx4070ti.png",
     "specs": {
@@ -46,15 +93,43 @@
       "coreClock": "2340 MHz",
       "boostClock": "2610 MHz",
       "interface": "PCIe 4.0 x16",
-      "tdp": "285W"
+      "tdp": "285W",
+      "length": "285mm"
     },
-    "rating": { "rate": 4.8, "count": 430 }
+    "rating": { "rate": 4.8, "count": 430 },
+    "description": "Step up to SUPER with the GeForce RTX 4070 Ti SUPER. It’s powered by the ultra-efficient Ada Lovelace architecture and is perfect for maxed-out gaming at 1440p and even 4K. Get super-fast ray tracing and AI-accelerated performance with DLSS 3.",
+    "features": [
+      "16GB GDDR6X Memory for high-resolution textures",
+      "NVIDIA Ada Lovelace Architecture & DLSS 3",
+      "Ideal for 1440p and 4K Gaming",
+      "3rd Generation RT Cores",
+      "NVIDIA Encoder (NVENC) for high-quality streaming"
+    ],
+    "galleryImages": ["/images/gpu/rtx4070ti.png"],
+    "compatibleDevices": [
+      "cpu-001",
+      "cpu-002",
+      "cpu-003",
+      "cpu-004",
+      "cpu-005",
+      "mobo-001",
+      "mobo-002",
+      "mobo-003",
+      "mobo-004",
+      "mobo-005",
+      "case-001",
+      "case-002",
+      "case-003",
+      "psu-001",
+      "psu-002",
+      "psu-003"
+    ]
   },
   {
     "id": "gpu-004",
     "name": "AMD Radeon RX 6800 XT",
     "brand": "AMD",
-    "price": 499.0,
+    "price": 479.99,
     "category": "gpu",
     "imageUrl": "/images/gpu/rx6800.png",
     "specs": {
@@ -63,15 +138,43 @@
       "coreClock": "1825 MHz",
       "boostClock": "2250 MHz",
       "interface": "PCIe 4.0 x16",
-      "tdp": "300W"
+      "tdp": "300W",
+      "length": "267mm"
     },
-    "rating": { "rate": 4.7, "count": 1200 }
+    "rating": { "rate": 4.7, "count": 1200 },
+    "description": "The AMD Radeon RX 6800 XT graphics card, powered by AMD RDNA 2 architecture, features 72 powerful enhanced Compute Units, 128 MB of all new AMD Infinity Cache and 16GB of dedicated GDDR6 memory. It is engineered to deliver ultra-high frame rates and serious 4K resolution gaming.",
+    "features": [
+      "AMD RDNA 2 Architecture",
+      "16GB GDDR6 Memory",
+      "AMD Infinity Cache",
+      "DirectX 12 Ultimate Support",
+      "Hardware Raytracing"
+    ],
+    "galleryImages": ["/images/gpu/rx6800.png"],
+    "compatibleDevices": [
+      "cpu-002",
+      "cpu-004",
+      "cpu-003",
+      "cpu-001",
+      "cpu-005",
+      "mobo-001",
+      "mobo-002",
+      "mobo-003",
+      "mobo-004",
+      "mobo-005",
+      "case-001",
+      "case-002",
+      "case-003",
+      "psu-001",
+      "psu-002",
+      "psu-003"
+    ]
   },
   {
     "id": "gpu-005",
     "name": "NVIDIA GeForce RTX 3060 12GB",
     "brand": "NVIDIA",
-    "price": 329.0,
+    "price": 289.99,
     "category": "gpu",
     "imageUrl": "/images/gpu/rtx3060ti.png",
     "specs": {
@@ -80,15 +183,45 @@
       "coreClock": "1320 MHz",
       "boostClock": "1777 MHz",
       "interface": "PCIe 4.0 x16",
-      "tdp": "170W"
+      "tdp": "170W",
+      "length": "242mm"
     },
-    "rating": { "rate": 4.6, "count": 2500 }
+    "rating": { "rate": 4.6, "count": 2500 },
+    "description": "The GeForce RTX 3060 lets you take on the latest games using the power of Ampere—NVIDIA’s 2nd generation RTX architecture. Get incredible performance with enhanced Ray Tracing Cores and Tensor Cores, new streaming multiprocessors, and high-speed G6 memory.",
+    "features": [
+      "NVIDIA Ampere Architecture",
+      "12GB GDDR6 Memory",
+      "2nd Generation RT Cores",
+      "3rd Generation Tensor Cores",
+      "NVIDIA DLSS support"
+    ],
+    "galleryImages": ["/images/gpu/rtx3060ti.png"],
+    "compatibleDevices": [
+      "cpu-003",
+      "cpu-004",
+      "cpu-005",
+      "cpu-006",
+      "cpu-002",
+      "mobo-001",
+      "mobo-002",
+      "mobo-003",
+      "mobo-004",
+      "mobo-005",
+      "case-001",
+      "case-002",
+      "case-003",
+      "case-004",
+      "psu-001",
+      "psu-002",
+      "psu-003",
+      "psu-004"
+    ]
   },
   {
     "id": "gpu-006",
     "name": "AMD Radeon RX 6600",
     "brand": "AMD",
-    "price": 229.0,
+    "price": 199.99,
     "category": "gpu",
     "imageUrl": "/images/gpu/rx6700.png",
     "specs": {
@@ -97,8 +230,39 @@
       "coreClock": "1626 MHz",
       "boostClock": "2491 MHz",
       "interface": "PCIe 4.0 x8",
-      "tdp": "132W"
+      "tdp": "132W",
+      "length": "190mm"
     },
-    "rating": { "rate": 4.5, "count": 1700 }
+    "rating": { "rate": 4.5, "count": 1700 },
+    "description": "Introducing AMD Radeon RX 6600 series graphics cards, featuring the breakthrough AMD RDNA 2 architecture. Engineered to deliver an incredible 1080p gaming experience, the AMD Radeon RX 6600 series powers the next generation of gaming with vivid visuals and elevated experiences.",
+    "features": [
+      "AMD RDNA 2 Architecture",
+      "8GB GDDR6 Memory",
+      "AMD Smart Access Memory",
+      "Optimized for 1080p gaming performance",
+      "AMD FidelityFX support"
+    ],
+    "galleryImages": ["/images/gpu/rx6700.png"],
+    "compatibleDevices": [
+      "cpu-003",
+      "cpu-004",
+      "cpu-005",
+      "cpu-006",
+      "cpu-007",
+      "cpu-008",
+      "mobo-001",
+      "mobo-002",
+      "mobo-003",
+      "mobo-004",
+      "mobo-005",
+      "case-001",
+      "case-002",
+      "case-003",
+      "case-004",
+      "psu-001",
+      "psu-002",
+      "psu-003",
+      "psu-004"
+    ]
   }
 ]

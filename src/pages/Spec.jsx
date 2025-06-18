@@ -1,11 +1,5 @@
 // src/pages/Spec.jsx
-import React, {
-  useState,
-  useEffect,
-  useMemo,
-  useCallback,
-  useRef,
-} from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import useProductStore from "../stores/productStore";
 import Navabar from "../components/Navabar";
@@ -37,15 +31,12 @@ export default function SpecsPage() {
   const {
     getProductsForCategory,
     getProductById,
-    isLoading: isLoadingStore,
+    isLoading,
     error: storeError,
     hasFetchedInitialData,
     selectedComponents,
-    fetchMoreProducts,
-    currentPage,
-    totalPages,
-    isFetchingMore,
-    products,
+    fetchAllProductsNoPagination,
+    allProducts,
   } = useProductStore();
 
   const queryParams = useMemo(
@@ -74,32 +65,12 @@ export default function SpecsPage() {
   );
   const [filters, setFilters] = useState(initialFiltersState);
 
-  // --- Infinite Scroll Setup ---
-  const loaderRef = useRef();
+  // --- Fetch all products on mount (no pagination)
   useEffect(() => {
-    if (!loaderRef.current) return;
-    const observer = new window.IntersectionObserver(
-      (entries) => {
-        if (
-          entries[0].isIntersecting &&
-          currentPage < totalPages &&
-          !isFetchingMore &&
-          !isLoadingStore
-        ) {
-          fetchMoreProducts();
-        }
-      },
-      { threshold: 1.0 }
-    );
-    observer.observe(loaderRef.current);
-    return () => observer.disconnect();
-  }, [
-    currentPage,
-    totalPages,
-    isFetchingMore,
-    isLoadingStore,
-    fetchMoreProducts,
-  ]);
+    if (!hasFetchedInitialData || !allProducts || allProducts.length === 0) {
+      fetchAllProductsNoPagination();
+    }
+  }, [hasFetchedInitialData, allProducts, fetchAllProductsNoPagination]);
 
   // --- Category & Filter/Tab Change Logic ---
   useEffect(() => {
@@ -147,7 +118,7 @@ export default function SpecsPage() {
     motherboardForRamCheck,
   ]);
 
-  // --- All Filter Logic ---
+  // --- All Filter Logic (Client-side only now) ---
   const filteredProducts = useMemo(() => {
     let productsToFilter = [...productsForCategory];
     if (filters.priceRange) {
@@ -241,11 +212,11 @@ export default function SpecsPage() {
           availableProducts={productsForCategory}
           activeFilters={filters}
           onFilterChange={handleFilterChange}
-          isLoading={isLoadingStore || !hasFetchedInitialData}
+          isLoading={isLoading || !hasFetchedInitialData}
         />
       </div>
       <main className="flex-grow">
-        {isLoadingStore || !hasFetchedInitialData ? (
+        {isLoading || !hasFetchedInitialData ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-x-6 gap-y-10">
             {Array.from({ length: 8 }).map((_, index) => (
               <SkeletonPartCard key={index} />
@@ -266,17 +237,6 @@ export default function SpecsPage() {
                   onSelectForBuild={handleSelectPartForBuild}
                 />
               ))}
-            </div>
-            {/* Infinite scroll trigger/loader */}
-            <div
-              ref={loaderRef}
-              className="h-12 flex justify-center items-center"
-            >
-              {isFetchingMore && (
-                <span className="text-purple-400 text-base">
-                  Loading more...
-                </span>
-              )}
             </div>
           </>
         ) : (
@@ -405,7 +365,7 @@ export default function SpecsPage() {
           <CompareView
             key={currentDisplayCategory}
             products={productsForCategory}
-            isLoading={isLoadingStore}
+            isLoading={isLoading}
           />
         )}
       </div>

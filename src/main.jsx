@@ -4,24 +4,31 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./index.css";
-import useProductStore from "./stores/productStore"; // Import the store
+import useProductStore from "./stores/productStore";
+import { ClerkProvider } from "@clerk/clerk-react";
 
-// --- THE FINAL SOLUTION: FETCH DATA BEFORE RENDERING ---
-// Get the fetch function directly from the store's initial state
-const { fetchAllProducts, fetchPrebuilds } = useProductStore.getState();
-
-// Start fetching data immediately
+// Only fetch all products (no pagination)
+const { fetchAllProductsNoPagination, fetchPrebuilds } =
+  useProductStore.getState();
 const initializeData = async () => {
-  await fetchAllProducts();
+  await fetchAllProductsNoPagination();
   await fetchPrebuilds();
 };
 initializeData();
-// ---------------------------------------------------------
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
+if (!PUBLISHABLE_KEY) {
+  throw new Error(
+    "Missing Clerk Publishable Key. Please set VITE_CLERK_PUBLISHABLE_KEY in .env.local"
+  );
+}
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
-      <App />
+      <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+        <App />
+      </ClerkProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

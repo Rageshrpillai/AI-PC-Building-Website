@@ -52,9 +52,22 @@ const migrateData = async () => {
       const processedData = data.map((product) => ({
         ...product,
         category: categoryKey,
-        description: `This is a detailed description for ${product.name}.`,
+        description:
+          product.description ||
+          `This is a detailed description for ${product.name}.`,
         technicalSpecs: product.specs,
-        imageUrls: product.imageUrl ? [product.imageUrl] : [],
+        imageUrls: product.imageUrl
+          ? [product.imageUrl]
+          : product.imageUrls || [],
+        galleryImages: Array.isArray(product.galleryImages)
+          ? product.galleryImages
+          : product.imageUrls
+          ? [...product.imageUrls]
+          : [],
+        features: Array.isArray(product.features) ? product.features : [],
+        compatibleDevices: Array.isArray(product.compatibleDevices)
+          ? product.compatibleDevices
+          : [],
       }));
 
       allProductsToInsert = allProductsToInsert.concat(processedData);
@@ -77,10 +90,25 @@ const migrateData = async () => {
     const prebuiltFileContent = fs.readFileSync(prebuiltFilePath, "utf-8");
     const prebuiltData = JSON.parse(prebuiltFileContent);
 
+    // NEW: process to match new schema, keep galleryImages, category, features, parts as-is from file!
     const processedPrebuilts = prebuiltData.map((p) => ({
-      ...p,
-      heroImage: p.imageUrl,
-      galleryImages: p.imageUrl ? [p.imageUrl] : [],
+      id: p.id,
+      name: p.name,
+      category: Array.isArray(p.category) ? p.category : [p.category],
+      price: p.price,
+      rating: p.rating,
+      imageUrl: p.imageUrl,
+      galleryImages: Array.isArray(p.galleryImages)
+        ? p.galleryImages
+        : p.imageUrl
+        ? [p.imageUrl]
+        : [],
+      description: p.description,
+      features: Array.isArray(p.features) ? p.features : [],
+      parts: Array.isArray(p.parts) ? p.parts : [],
+      // 👇 ADD THESE LINES!
+      createdBy: p.createdBy || "admin",
+      isOfficial: typeof p.isOfficial === "boolean" ? p.isOfficial : true,
     }));
 
     console.log(`Total prebuilt PCs to insert: ${processedPrebuilts.length}`);

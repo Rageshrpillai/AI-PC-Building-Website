@@ -2,6 +2,12 @@ import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import Navabar from "../components/Navabar";
 
+// Helper to convert 'GPUs', 'RAMs', etc. to 'gpu', 'ram'
+function normalizeCategoryKey(category) {
+  if (!category) return "";
+  return category.toLowerCase().replace(/s$/, "");
+}
+
 function PartCard({ part, label, onClick, isSelected }) {
   const borderColor = isSelected ? "border-pink-500" : "border-cyan-700";
   const cursorStyle = onClick ? "cursor-pointer hover:border-pink-400" : "";
@@ -37,7 +43,7 @@ function PartCard({ part, label, onClick, isSelected }) {
       </div>
       <div className="p-3 flex flex-col">
         <span className="text-base text-purple-300 font-bold">
-          ₹{Number(part.price).toLocaleString("en-IN")}
+          ${Number(part.price).toLocaleString("en-IN")}
         </span>
         <span className="text-xs text-gray-400 truncate">{part.category}</span>
       </div>
@@ -62,7 +68,6 @@ function UpgradeCategoryRow({
       ? [existingPart]
       : [];
 
-  // Don't render the row if there's nothing to show for this category
   if (
     existingParts.length === 0 &&
     !priorityUpgrade &&
@@ -125,6 +130,7 @@ function UpgradeCategoryRow({
 export default function UpgradeResultPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  // Take from location.state for legacy, but support upgrade via Zustand/global if you want
   const { upgradeSuggestion, originalBuild } = location.state || {};
 
   const [costNewParts, setCostNewParts] = useState(0);
@@ -132,13 +138,11 @@ export default function UpgradeResultPage() {
 
   const handleSelectUpgrade = (categoryKey, part) => {
     setSelectedUpgrades((prev) => {
-      // If the clicked part is already selected, unselect it
       if (prev[categoryKey]?.id === part.id) {
         const newSelections = { ...prev };
         delete newSelections[categoryKey];
         return newSelections;
       }
-      // Otherwise, select the new part
       return {
         ...prev,
         [categoryKey]: part,
@@ -160,31 +164,27 @@ export default function UpgradeResultPage() {
     []
   );
 
-  // --- Log API shape for debugging!
-  useEffect(() => {
-    if (upgradeSuggestion) {
-      console.log("Upgrade API response:", upgradeSuggestion);
-      console.log("Original build:", originalBuild);
-    }
-  }, [upgradeSuggestion, originalBuild]);
-
-  // Build a quick category->upgrade map
+  // --- AI Data Normalization ---
   const priorityMap = useMemo(() => {
     if (!upgradeSuggestion?.priorityUpgrades) return {};
     const m = {};
     for (const up of upgradeSuggestion.priorityUpgrades) {
       if (up && up.category) {
-        const category = up.category.toLowerCase();
-        m[category] = up; // Just store the upgrade, we'll handle RAM separately
+        const category = normalizeCategoryKey(up.category);
+        m[category] = up;
       }
     }
     return m;
   }, [upgradeSuggestion]);
 
-  const alternativesMap = useMemo(
-    () => upgradeSuggestion?.alternatives || {},
-    [upgradeSuggestion]
-  );
+  const alternativesMap = useMemo(() => {
+    if (!upgradeSuggestion?.alternatives) return {};
+    const m = {};
+    Object.entries(upgradeSuggestion.alternatives).forEach(([k, v]) => {
+      m[normalizeCategoryKey(k)] = v;
+    });
+    return m;
+  }, [upgradeSuggestion]);
 
   useEffect(() => {
     if (priorityMap) {
@@ -203,7 +203,6 @@ export default function UpgradeResultPage() {
   // Get all selected parts for the summary
   const newParts = useMemo(() => {
     if (!selectedUpgrades) return [];
-    // We filter by part.id to ensure we only have actual parts
     return Object.values(selectedUpgrades).filter((part) => part && part.id);
   }, [selectedUpgrades]);
 
@@ -263,6 +262,8 @@ export default function UpgradeResultPage() {
             </Link>
           </div>
 
+          {/* AI upgrade description/reply */}
+
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
             <div className="lg:w-[calc(66.666%-1rem)]">
               {componentCategories.map((cat) => {
@@ -291,14 +292,16 @@ export default function UpgradeResultPage() {
                 <h2 className="text-xl font-semibold text-white mb-4">
                   Upgrade Summary
                 </h2>
-
+                <div className="mt-6 p-4 rounded-lg bg-purple-900/40 border-l-4 border-purple-500 text-purple-100 text-base font-medium shadow-sm">
+                  {upgradeSuggestion.reply}
+                </div>
                 <div className="space-y-4">
                   <div className="p-3 bg-purple-900/40 rounded-md">
                     <p className="text-sm text-gray-300 mb-1">
                       Total Cost of New Parts
                     </p>
-                    <p className="text-2xl font-bold text-purple-300">
-                      ₹{costNewParts.toLocaleString("en-IN")}
+                    <p className="text-2xl font-bold text-purple-400">
+                      ${costNewParts.toLocaleString("en-IN")}
                     </p>
                   </div>
 
@@ -315,8 +318,8 @@ export default function UpgradeResultPage() {
                           <span className="text-gray-300 truncate pr-2">
                             {part.name}
                           </span>
-                          <span className="text-purple-300 whitespace-nowrap">
-                            ₹{Number(part.price).toLocaleString("en-IN")}
+                          <span className="text-lg font-semibold text-purple-400">
+                            ${Number(part.price).toLocaleString("en-IN")}
                           </span>
                         </div>
                       ))}

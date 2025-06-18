@@ -1,5 +1,6 @@
 // BuildCard.jsx
 import React from "react";
+import { Link } from "react-router-dom"; // Step 1: Import Link
 
 function StarIcon({ color = "#F87171", size = 18 }) {
   return (
@@ -10,12 +11,12 @@ function StarIcon({ color = "#F87171", size = 18 }) {
 }
 
 export default function BuildCard({ build }) {
+  console.log("Rendering build:", build);
   if (!build) {
     console.warn("[BuildCard] No build data provided");
     return null;
   }
 
-  // Extract rating value safely
   const ratingValue =
     typeof build.rating === "object"
       ? build.rating.rate || 0
@@ -23,101 +24,64 @@ export default function BuildCard({ build }) {
       ? build.rating
       : 0;
 
-  // Create a fallback image URL using placehold.co with the build's name
   const getFallbackImage = (buildName) => {
     const text = encodeURIComponent(buildName || "Prebuilt PC");
-    const price = build.price
-      ? `\n₹${build.price.toLocaleString("en-IN")}`
-      : "";
+    const price = build.price ? `\n${build.price.toLocaleString("en-IN")}` : "";
     return `https://placehold.co/400x300/1A1325/FFF?text=${text}${price}`;
   };
 
-  // Handle image URL with better path resolution and logging
   const getImageUrl = (url) => {
     if (!url) {
-      console.log(
-        `[BuildCard] No image URL provided for ${build.name}, using fallback`
-      );
       return getFallbackImage(build.name);
     }
-
-    console.log(`[BuildCard] Processing image URL for ${build.name}:`, url);
-
-    try {
-      // If it's already a full URL (including https:// or data:)
-      if (url.match(/^(https?:\/\/|data:)/)) {
-        console.log(`[BuildCard] Using absolute URL: ${url}`);
-        return url;
-      }
-
-      // If it's an absolute path starting with /
-      if (url.startsWith("/")) {
-        console.log(`[BuildCard] Using root-relative path: ${url}`);
-        return url;
-      }
-
-      // If it's in the images directory but doesn't have the full path
-      if (url.match(/^(images\/|prebuilt)/)) {
-        const newUrl = `/images/${url.replace("images/", "")}`;
-        console.log(`[BuildCard] Converted to images path: ${newUrl}`);
-        return newUrl;
-      }
-
-      // Default case: assume it's a relative path and add /images/
-      const defaultUrl = `/images/${url}`;
-      console.log(`[BuildCard] Using default path: ${defaultUrl}`);
-      return defaultUrl;
-    } catch (error) {
-      console.error(
-        `[BuildCard] Error processing image URL for ${build.name}:`,
-        error
-      );
-      return getFallbackImage(build.name);
+    if (url.match(/^(https?:\/\/|data:)/) || url.startsWith("/")) {
+      return url;
     }
+    return `/images/${url.replace("images/", "")}`;
   };
 
-  // Get the final image URL
   const imageUrl = getImageUrl(build.imageUrl);
-  console.log(`[BuildCard] Final image URL for ${build.name}:`, imageUrl);
 
+  // Step 2: Wrap the entire output in a Link component
   return (
-    <div className="bg-[#100C16] shadow-lg w-[264px] h-auto overflow-hidden rounded-lg border border-gray-800/50 hover:border-purple-500/50 transition-all duration-300">
-      <div className="relative w-[264px] h-[200px]">
-        <img
-          src={imageUrl}
-          alt={build.name}
-          className="w-full h-full object-cover"
-          loading="lazy"
-          onError={(e) => {
-            console.warn(
-              `[BuildCard] Failed to load image for ${build.name}, using fallback`
-            );
-            e.target.src = getFallbackImage(build.name);
-            // Add a class to the image to indicate it's a fallback
-            e.target.classList.add("fallback-image");
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-      </div>
-      <div className="p-4 gap-2 flex flex-col justify-between flex-1">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[18px] font-bold text-[#C399F2]">
-            ₹{build.price?.toLocaleString("en-IN") || 0}
-          </span>
-          <span className="flex items-center gap-1 text-[16px] font-bold text-[#C46A6A]">
-            {ratingValue.toFixed(1)}
-            <StarIcon size={16} />
-          </span>
+    <Link
+      to={`/builds/${build.id}`}
+      className="no-underline transition-transform duration-200 hover:scale-[1.02]"
+    >
+      <div className="bg-[#100C16] shadow-lg w-[264px] h-full overflow-hidden rounded-lg border border-gray-800/50 hover:border-purple-500/50 transition-all duration-300 flex flex-col">
+        <div className="relative w-[264px] h-[200px]">
+          <img
+            src={imageUrl}
+            alt={build.name}
+            className="w-full h-full object-cover"
+            loading="lazy"
+            onError={(e) => {
+              e.target.src = getFallbackImage(build.name);
+              e.target.classList.add("fallback-image");
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
         </div>
-        <div>
-          <div className="font-semibold mb-2 text-[#D9D9D9] text-[18px] truncate">
-            {build.name}
+        <div className="p-4 gap-2 flex flex-col justify-between flex-1">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-lg font-semibold text-purple-400">
+              ${build.price?.toLocaleString("en-IN") || 0}
+            </span>
+            <span className="flex items-center gap-1 text-[16px] font-bold text-[#C46A6A]">
+              {ratingValue.toFixed(1)}
+              <StarIcon size={16} />
+            </span>
           </div>
-          <div className="text-[13px] text-[#D1D1D1] line-clamp-3">
-            {build.description}
+          <div>
+            <div className="font-semibold mb-2 text-[#D9D9D9] text-[18px] truncate">
+              {build.name}
+            </div>
+            <div className="text-[13px] text-[#D1D1D1] line-clamp-3">
+              {build.description}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

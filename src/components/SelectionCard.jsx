@@ -117,9 +117,9 @@ export default function SelectionCard({
                   className="max-h-full max-w-full object-contain"
                 />
               </div>
-              <p className="font-bold text-white text-sm">
-                ₹{part.price?.toLocaleString("en-IN") || "N/A"}
-              </p>
+              <span className="text-lg font-semibold text-purple-400">
+                ${part.price?.toLocaleString("en-IN") || "N/A"}
+              </span>
               <p
                 className="font-mono text-xs text-gray-300 text-center w-full truncate px-1"
                 title={part.name}

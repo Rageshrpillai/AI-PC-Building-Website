@@ -14,7 +14,24 @@
       "latency": "CL16",
       "color": "Black"
     },
-    "rating": { "rate": 4.8, "count": 1250 }
+    "rating": { "rate": 4.8, "count": 1250 },
+    "description": "Compact and high-performance DDR4 memory ideal for mainstream Intel and AMD platforms. Reliable for gaming and content creation.",
+    "features": [
+      "High-speed DDR4 performance",
+      "Low-profile heatspreader",
+      "Ideal for small form factor builds"
+    ],
+    "galleryImages": ["/images/ram/lpx8gb.png"],
+    "compatibleDevices": [
+      "cpu-008",
+      "mobo-005",
+      "gpu-001",
+      "gpu-002",
+      "gpu-003",
+      "gpu-004",
+      "gpu-005",
+      "gpu-006"
+    ]
   },
   {
     "id": "ram-stick-002",
@@ -31,7 +48,24 @@
       "latency": "CL16",
       "color": "Black"
     },
-    "rating": { "rate": 4.8, "count": 900 }
+    "rating": { "rate": 4.8, "count": 900 },
+    "description": "Reliable single-stick 16GB DDR4 RAM for multitasking and gaming. Works with all modern DDR4 motherboards.",
+    "features": [
+      "DDR4 3200MHz frequency",
+      "XMP 2.0 support",
+      "Trusted Corsair build quality"
+    ],
+    "galleryImages": ["/images/ram/lpx16.png"],
+    "compatibleDevices": [
+      "cpu-008",
+      "mobo-005",
+      "gpu-001",
+      "gpu-002",
+      "gpu-003",
+      "gpu-004",
+      "gpu-005",
+      "gpu-006"
+    ]
   },
   {
     "id": "ram-stick-003",
@@ -48,7 +82,24 @@
       "latency": "CL18",
       "color": "Red"
     },
-    "rating": { "rate": 4.7, "count": 980 }
+    "rating": { "rate": 4.7, "count": 980 },
+    "description": "High-frequency DDR4 module for enthusiast builds. Features low-latency performance and eye-catching design.",
+    "features": [
+      "3600MHz fast speed",
+      "Vibrant heatspreader",
+      "Compatible with most DDR4 motherboards"
+    ],
+    "galleryImages": ["/images/ram/kingston.png"],
+    "compatibleDevices": [
+      "cpu-008",
+      "mobo-005",
+      "gpu-001",
+      "gpu-002",
+      "gpu-003",
+      "gpu-004",
+      "gpu-005",
+      "gpu-006"
+    ]
   },
   {
     "id": "ram-stick-004",
@@ -65,7 +116,24 @@
       "latency": "CL18",
       "color": "Red"
     },
-    "rating": { "rate": 4.7, "count": 750 }
+    "rating": { "rate": 4.7, "count": 750 },
+    "description": "Single 16GB stick designed for overclocking and stable DDR4 performance. Great for gaming or workstation use.",
+    "features": [
+      "16GB high-density kit",
+      "Performance XMP profiles",
+      "Compatible with most DDR4 systems"
+    ],
+    "galleryImages": ["/images/ram/rip.png"],
+    "compatibleDevices": [
+      "cpu-008",
+      "mobo-005",
+      "gpu-001",
+      "gpu-002",
+      "gpu-003",
+      "gpu-004",
+      "gpu-005",
+      "gpu-006"
+    ]
   },
   {
     "id": "ram-stick-005",
@@ -83,7 +151,33 @@
       "color": "Black",
       "rgb": true
     },
-    "rating": { "rate": 4.6, "count": 350 }
+    "rating": { "rate": 4.6, "count": 350 },
+    "description": "Entry-level DDR5 stick with RGB lighting, great for next-gen Intel and AMD systems.",
+    "features": [
+      "5200MHz DDR5 speed",
+      "RGB customizable lighting",
+      "Designed for latest platforms"
+    ],
+    "galleryImages": ["/images/ram/kingston.png"],
+    "compatibleDevices": [
+      "cpu-001",
+      "cpu-002",
+      "cpu-003",
+      "cpu-004",
+      "cpu-005",
+      "cpu-006",
+      "cpu-007",
+      "mobo-001",
+      "mobo-002",
+      "mobo-003",
+      "mobo-004",
+      "gpu-001",
+      "gpu-002",
+      "gpu-003",
+      "gpu-004",
+      "gpu-005",
+      "gpu-006"
+    ]
   },
   {
     "id": "ram-stick-006",
@@ -101,7 +195,33 @@
       "color": "Black",
       "rgb": true
     },
-    "rating": { "rate": 4.6, "count": 420 }
+    "rating": { "rate": 4.6, "count": 420 },
+    "description": "Single 16GB DDR5 RAM stick with fast speeds and bright RGB, ideal for heavy multitasking or gaming.",
+    "features": [
+      "16GB high-density DDR5",
+      "Vivid RGB effects",
+      "Stable overclocking"
+    ],
+    "galleryImages": ["/images/ram/king16.png"],
+    "compatibleDevices": [
+      "cpu-001",
+      "cpu-002",
+      "cpu-003",
+      "cpu-004",
+      "cpu-005",
+      "cpu-006",
+      "cpu-007",
+      "mobo-001",
+      "mobo-002",
+      "mobo-003",
+      "mobo-004",
+      "gpu-001",
+      "gpu-002",
+      "gpu-003",
+      "gpu-004",
+      "gpu-005",
+      "gpu-006"
+    ]
   },
   {
     "id": "ram-stick-007",
@@ -118,7 +238,33 @@
       "latency": "CL46",
       "color": "Grey"
     },
-    "rating": { "rate": 4.5, "count": 210 }
+    "rating": { "rate": 4.5, "count": 210 },
+    "description": "Professional-grade DDR5 memory module, optimized for speed and reliability on latest Intel/AMD builds.",
+    "features": [
+      "5600MHz ultra-fast speed",
+      "Grey heatspreader design",
+      "Backed by Crucial reliability"
+    ],
+    "galleryImages": ["/images/ram/crucial.png"],
+    "compatibleDevices": [
+      "cpu-001",
+      "cpu-002",
+      "cpu-003",
+      "cpu-004",
+      "cpu-005",
+      "cpu-006",
+      "cpu-007",
+      "mobo-001",
+      "mobo-002",
+      "mobo-003",
+      "mobo-004",
+      "gpu-001",
+      "gpu-002",
+      "gpu-003",
+      "gpu-004",
+      "gpu-005",
+      "gpu-006"
+    ]
   },
   {
     "id": "ram-stick-008",
@@ -135,6 +281,32 @@
       "latency": "CL46",
       "color": "Grey"
     },
-    "rating": { "rate": 4.5, "count": 150 }
+    "rating": { "rate": 4.5, "count": 150 },
+    "description": "32GB high-performance DDR5 stick for content creators and professionals needing top-tier multitasking.",
+    "features": [
+      "Large 32GB single stick",
+      "DDR5-5600 speeds",
+      "Rock-solid stability"
+    ],
+    "galleryImages": ["/images/ram/cr16.png"],
+    "compatibleDevices": [
+      "cpu-001",
+      "cpu-002",
+      "cpu-003",
+      "cpu-004",
+      "cpu-005",
+      "cpu-006",
+      "cpu-007",
+      "mobo-001",
+      "mobo-002",
+      "mobo-003",
+      "mobo-004",
+      "gpu-001",
+      "gpu-002",
+      "gpu-003",
+      "gpu-004",
+      "gpu-005",
+      "gpu-006"
+    ]
   }
 ]

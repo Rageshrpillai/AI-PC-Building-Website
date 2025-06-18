@@ -1,14 +1,11 @@
-// src/services/apiService.js
-
 /**
  * Fetches products from your backend API.
  * It can fetch all products or filter by a specific category.
  * @param {string} category - The category to fetch (e.g., 'cpu', 'gpu', or 'all').
- * @returns {Promise<Array>} - A promise that resolves to an array of products.
+ * @param {number} page - The page number for pagination.
+ * @returns {Promise<Object>} - A promise that resolves to a result object with data and pagination info.
  */
-
 export const fetchProducts = async (category = "all", page = 1) => {
-  // The endpoint now includes the page number
   const endpoint =
     category === "all"
       ? `/api/products?page=${page}`
@@ -21,7 +18,6 @@ export const fetchProducts = async (category = "all", page = 1) => {
     if (!response.ok) {
       throw new Error(`API call failed with status: ${response.status}`);
     }
-    // We now return the entire result object, which includes data and pagination info
     const result = await response.json();
     return result;
   } catch (error) {
@@ -77,7 +73,55 @@ export const fetchProductById = async (productId) => {
     return result.data; // Return the single product object
   } catch (error) {
     console.error(`[apiService] Failed to fetch product ${productId}:`, error);
-    // Re-throw the error so the component can catch it and display an error message
+    throw error;
+  }
+};
+
+/**
+ * Fetches a single prebuilt PC by its ID from the backend API.
+ * The backend will resolve the parts for us.
+ * @param {string} buildId - The ID of the prebuilt to fetch.
+ * @returns {Promise<Object>} - A promise that resolves to the prebuilt object with resolved parts.
+ */
+export const fetchPrebuiltById = async (buildId) => {
+  const endpoint = `/api/builds/${buildId}`;
+  try {
+    console.log(`[apiService] Fetching prebuilt PC: ${endpoint}`);
+    const response = await fetch(endpoint);
+    if (!response.ok) {
+      throw new Error(`API call failed with status: ${response.status}`);
+    }
+    const result = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error(
+      `[apiService] Failed to fetch prebuilt PC ${buildId}:`,
+      error
+    );
+    throw error;
+  }
+};
+
+/**
+ * Fetches all saved builds for the currently logged-in user.
+ * @param {function} getToken - The getToken function from Clerk's useAuth hook.
+ * @returns {Promise<Array>} - A promise that resolves to an array of the user's saved builds.
+ */
+export const fetchUserBuilds = async (getToken) => {
+  const endpoint = "/api/user/builds";
+  try {
+    const token = await getToken(); // Get the session token from Clerk
+    const response = await fetch(endpoint, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!response.ok) {
+      throw new Error(`API call failed with status: ${response.status}`);
+    }
+    const result = await response.json();
+    return result.data || [];
+  } catch (error) {
+    console.error(`[apiService] Failed to fetch user builds:`, error);
     throw error;
   }
 };

@@ -14,7 +14,27 @@
       "maxGPULength": "360mm",
       "maxCoolerHeight": "165mm"
     },
-    "rating": { "rate": 4.7, "count": 1300 }
+    "rating": { "rate": 4.7, "count": 1300 },
+    "description": "Airflow-focused ATX mid-tower with tempered glass side panel. Clean NZXT design and roomy layout for modern builds.",
+    "features": [
+      "Supports ATX, Micro-ATX, Mini-ITX motherboards",
+      "Up to 360mm GPU length",
+      "Removable filters for easy cleaning",
+      "Front panel USB-C",
+      "Tool-less SSD trays"
+    ],
+    "galleryImages": ["/images/cases/crossair.png"],
+    "compatibleDevices": [
+      "gpu-001",
+      "gpu-002",
+      "gpu-003",
+      "gpu-004",
+      "gpu-005",
+      "gpu-006",
+      "mobo-001",
+      "mobo-002",
+      "mobo-003"
+    ]
   },
   {
     "id": "case-002",
@@ -31,7 +51,27 @@
       "maxGPULength": "384mm",
       "maxCoolerHeight": "176mm"
     },
-    "rating": { "rate": 4.9, "count": 950 }
+    "rating": { "rate": 4.9, "count": 950 },
+    "description": "Premium airflow case for high-end and E-ATX motherboards, fits even the biggest GPUs. Easy cable management and modular panels.",
+    "features": [
+      "Full mesh front panel for airflow",
+      "Dual tempered glass side panels",
+      "Fits E-ATX boards and >380mm GPUs",
+      "Modular drive cages",
+      "Integrated cable channels"
+    ],
+    "galleryImages": ["/images/cases/lia.png"],
+    "compatibleDevices": [
+      "gpu-001",
+      "gpu-002",
+      "gpu-003",
+      "gpu-004",
+      "gpu-005",
+      "gpu-006",
+      "mobo-001",
+      "mobo-002",
+      "mobo-003"
+    ]
   },
   {
     "id": "case-003",
@@ -48,7 +88,26 @@
       "maxGPULength": "341mm (360mm without front fan)",
       "maxCoolerHeight": "169mm"
     },
-    "rating": { "rate": 4.8, "count": 880 }
+    "rating": { "rate": 4.8, "count": 880 },
+    "description": "Fractal’s award-winning compact ATX tower with dark glass and advanced airflow for modern GPUs.",
+    "features": [
+      "Iconic mesh front for airflow",
+      "Tool-less tempered glass panel",
+      "PSU shroud and drive cages",
+      "Supports up to 341mm GPUs with front fans",
+      "Removable top panel"
+    ],
+    "galleryImages": ["/images/cases/mustf.png"],
+    "compatibleDevices": [
+      "gpu-002",
+      "gpu-003",
+      "gpu-004",
+      "gpu-005",
+      "gpu-006",
+      "mobo-001",
+      "mobo-002",
+      "mobo-003"
+    ]
   },
   {
     "id": "case-004",
@@ -65,6 +124,26 @@
       "maxGPULength": "360mm",
       "maxCoolerHeight": "159mm"
     },
-    "rating": { "rate": 4.5, "count": 2100 }
+    "rating": { "rate": 4.5, "count": 2100 },
+    "description": "Compact Micro-ATX case with high airflow mesh panels. Easily fits modern GPUs and keeps things cool and quiet.",
+    "features": [
+      "High airflow, magnetic dust filters",
+      "Flexible I/O panel placement",
+      "Supports up to 360mm GPU",
+      "Perforated top, front, and bottom",
+      "Budget-friendly design"
+    ],
+    "galleryImages": ["/images/cases/nzxt.png"],
+    "compatibleDevices": [
+      "gpu-001",
+      "gpu-002",
+      "gpu-003",
+      "gpu-004",
+      "gpu-005",
+      "gpu-006",
+      "mobo-003",
+      "mobo-004",
+      "mobo-005"
+    ]
   }
 ]
