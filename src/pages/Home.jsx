@@ -385,7 +385,7 @@ export default function Home() {
                 make smarter rig decisions.
               </p>
               <Link
-                to="/compare"
+                to="/spec?category=cpu&origin=/build"
                 className="inline-flex items-center gap-2 px-8 py-4 bg-purple-600 hover:bg-purple-700 rounded-md font-semibold text-white transition-colors shadow-lg"
               >
                 <svg
