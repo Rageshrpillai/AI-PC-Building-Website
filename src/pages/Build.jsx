@@ -33,7 +33,7 @@ export default function Builds() {
 
   // --- Data Fetching with TanStack Query ---
   const {
-    data: prebuilds, // The data from the API is the array itself
+    data: responseData, // Get the full response object { data: [...] }
     isLoading,
     error,
     refetch,
@@ -42,6 +42,8 @@ export default function Builds() {
     queryFn: fetchPrebuilds,
   });
 
+  // Extract the array of prebuilds from the response data
+  const prebuilds = useMemo(() => responseData?.data || [], [responseData]);
   // --- Filter and Search Handlers (Preserved) ---
   const handleFilterChange = (key, value) => {
     setActiveFilters((prev) => ({ ...prev, [key]: value }));
@@ -51,7 +53,7 @@ export default function Builds() {
   // --- CORRECTED Client-Side Filtering Logic ---
   const buildsToShow = useMemo(() => {
     // Here's the fix: We use `prebuilds` directly, which is the array.
-    const allBuilds = prebuilds || [];
+    const allBuilds = prebuilds;
 
     if (!allBuilds.length) return [];
 

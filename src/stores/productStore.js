@@ -16,7 +16,7 @@ const useProductStore = create(
     (set, get) => ({
       allProducts: [],
       allProductsByCategory: {},
-      isLoading: true,
+      isLoading: false,
       error: null,
       hasFetchedInitialData: false,
 
@@ -75,7 +75,9 @@ const useProductStore = create(
         const allProducts = get().allProducts;
         set({ isPrebuildsLoading: true, prebuildsError: null });
         try {
-          const prebuildsData = await fetchPrebuildsFromAPI();
+          const prebuildsResponse = await fetchPrebuildsFromAPI(); // This returns { data: [...] }
+          const prebuildsData = prebuildsResponse.data || []; // Extract the array from the 'data' key
+
           const enrichedPrebuilds = prebuildsData.map((prebuild) => {
             const resolvedParts = prebuild.parts
               .map((partId) => {

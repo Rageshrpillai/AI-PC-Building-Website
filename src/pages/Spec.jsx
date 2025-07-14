@@ -160,6 +160,14 @@ export default function SpecsPage() {
   const handleSelectPartForBuild = useCallback(
     (part) => {
       if (selectingFor && part) {
+        // --- ADD THIS LINE ---
+        console.log(
+          "DEBUG: Spec.jsx - Navigating to:",
+          originPage,
+          "with state:",
+          { selectedComponent: part, categoryName: selectingFor }
+        );
+        // --- END ADD ---
         navigate(originPage, {
           state: {
             selectedComponent: part,
