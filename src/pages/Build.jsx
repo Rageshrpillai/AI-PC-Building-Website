@@ -1,18 +1,19 @@
 // src/pages/Builds.jsx
-import React, { useState, useMemo, useEffect } from "react";
+
+import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { fetchPrebuilds } from "../services/apiService";
 import BuildCard from "../components/BuildCard";
 import FiltersSidebar from "../components/FiltersSidebar";
 import Navabar from "../components/Navabar";
-import useProductStore from "../stores/productStore";
 
-// --- Icon Components for Action Buttons ---
+// --- Icon Components (Preserved) ---
 const BuildIcon = () => (
   <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
     <path d="M22,7.24a1,1,0,0,0-.29-.71l-4.24-4.24a1,1,0,0,0-.71-.29H7.24a1,1,0,0,0-.71.29L2.29,6.53a1,1,0,0,0-.29.71V16.76a1,1,0,0,0,.29.71l4.24,4.24a1,1,0,0,0,.71.29h9.52a1,1,0,0,0,.71-.29l4.24-4.24a1,1,0,0,0,.29-.71V7.24ZM19.59,16.05l-3.54,3.54H7.95L4.41,16.05V7.95L7.95,4.41h8.1L19.59,7.95ZM9,12h2v2H9Zm4,0h2v2H13Zm-4-4h2v2H9Zm4,0h2v2H13Z" />
   </svg>
 );
-
 const UpgradeIcon = () => (
   <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
     <path d="M16,18V12h-3V10h3V4h2v6h3v2h-3v6Zm-8-4H2v2h6v5l6-5H8Z" />
@@ -20,6 +21,7 @@ const UpgradeIcon = () => (
 );
 
 export default function Builds() {
+  // --- Local State for Filters and Search (Preserved) ---
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilters, setActiveFilters] = useState({
     priceRange: { min: 0, max: 500000 },
@@ -29,67 +31,32 @@ export default function Builds() {
     formFactors: [],
   });
 
-  // Get prebuilds from store
-  const prebuilds = useProductStore((state) => state.prebuilds);
-  const isLoading = useProductStore((state) => state.isPrebuildsLoading);
-  const error = useProductStore((state) => state.prebuildsError);
-  const fetchPrebuilds = useProductStore((state) => state.fetchPrebuilds);
-  const hasFetchedInitialData = useProductStore(
-    (state) => state.hasFetchedInitialData
-  );
+  // --- Data Fetching with TanStack Query ---
+  const {
+    data: prebuilds, // The data from the API is the array itself
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["prebuilds"],
+    queryFn: fetchPrebuilds,
+  });
 
-  // Fetch prebuilds on component mount
-  useEffect(() => {
-    console.log(
-      "[Build] Component mounted, hasFetchedInitialData:",
-      hasFetchedInitialData
-    );
-    if (!hasFetchedInitialData) {
-      console.log("[Build] Fetching prebuilds...");
-      fetchPrebuilds();
-    }
-  }, [fetchPrebuilds, hasFetchedInitialData]);
-
-  // Log prebuilds whenever they change
-  useEffect(() => {
-    console.log("[Build] Prebuilds updated:", prebuilds);
-  }, [prebuilds]);
-
+  // --- Filter and Search Handlers (Preserved) ---
   const handleFilterChange = (key, value) => {
-    console.log("[Build] Filter changed:", key, value);
-    setActiveFilters((prev) => {
-      const newState = { ...prev };
-      if (
-        value === undefined ||
-        value === null ||
-        (Array.isArray(value) && value.length === 0)
-      ) {
-        delete newState[key];
-      } else {
-        newState[key] = value;
-      }
-      return newState;
-    });
+    setActiveFilters((prev) => ({ ...prev, [key]: value }));
   };
+  const handleSearch = (event) => setSearchTerm(event.target.value);
 
-  const handleSearch = (event) => {
-    setSearchTerm(event.target.value);
-  };
-
-  useEffect(() => {
-    console.log("Loaded prebuilds:", prebuilds);
-  }, [prebuilds]);
+  // --- CORRECTED Client-Side Filtering Logic ---
   const buildsToShow = useMemo(() => {
-    console.log("[Build] Calculating builds to show. Prebuilds:", prebuilds);
-    if (!prebuilds?.length) {
-      console.log("[Build] No prebuilds available");
-      return [];
-    }
+    // Here's the fix: We use `prebuilds` directly, which is the array.
+    const allBuilds = prebuilds || [];
 
-    let filteredBuilds = prebuilds?.filter((b) => b.isOfficial) || [];
-    console.log("[Build] Initial filtered builds:", filteredBuilds);
+    if (!allBuilds.length) return [];
 
-    // Apply search filter
+    let filteredBuilds = allBuilds.filter((b) => b.isOfficial);
+
     if (searchTerm.trim()) {
       const searchLower = searchTerm.toLowerCase();
       filteredBuilds = filteredBuilds.filter(
@@ -97,35 +64,29 @@ export default function Builds() {
           build.name.toLowerCase().includes(searchLower) ||
           build.description.toLowerCase().includes(searchLower)
       );
-      console.log("[Build] After search filter:", filteredBuilds);
     }
 
-    // Apply price range filter
     if (activeFilters.priceRange) {
       filteredBuilds = filteredBuilds.filter(
         (build) =>
           build.price >= activeFilters.priceRange.min &&
           build.price <= activeFilters.priceRange.max
       );
-      console.log("[Build] After price filter:", filteredBuilds);
     }
 
-    // Apply rating filter
     if (activeFilters.ratings?.length) {
-      filteredBuilds = filteredBuilds.filter((build) => {
-        return activeFilters.ratings.some((ratingId) => {
+      filteredBuilds = filteredBuilds.filter((build) =>
+        activeFilters.ratings.some((ratingId) => {
           const minRating = parseInt(ratingId, 10);
           return build.rating >= minRating;
-        });
-      });
-      console.log("[Build] After rating filter:", filteredBuilds);
+        })
+      );
     }
 
-    console.log("[Build] Final builds to show:", filteredBuilds);
     return filteredBuilds;
   }, [prebuilds, searchTerm, activeFilters]);
 
-  // Loading state
+  // --- Loading and Error State UI (Preserved) ---
   if (isLoading) {
     return (
       <div className="bg-[#100C16] min-h-screen">
@@ -139,10 +100,7 @@ export default function Builds() {
       </div>
     );
   }
-
-  // Error state
   if (error) {
-    console.error("[Build] Error loading prebuilds:", error);
     return (
       <div className="bg-[#100C16] min-h-screen">
         <Navabar />
@@ -151,9 +109,9 @@ export default function Builds() {
             <p className="text-red-400 text-lg mb-4">
               Error loading prebuilt PCs
             </p>
-            <p className="text-gray-400 text-sm mb-4">{error}</p>
+            <p className="text-gray-400 text-sm mb-4">{error.message}</p>
             <button
-              onClick={() => fetchPrebuilds()}
+              onClick={() => refetch()}
               className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
             >
               Try Again
@@ -164,25 +122,21 @@ export default function Builds() {
     );
   }
 
+  // --- Full Page Render (Preserved and Corrected) ---
   return (
     <div className="bg-[#100C16] min-h-screen">
       <Navabar />
       <div className="w-full flex flex-col lg:flex-row px-6 md:px-10 lg:px-12 pt-24 pb-8 gap-8">
-        {/* Filters Sidebar */}
         <aside className="hidden lg:block w-full lg:w-64 xl:w-72 flex-shrink-0">
           <FiltersSidebar
             currentCategory="prebuilt"
-            availableProducts={prebuilds}
+            availableProducts={prebuilds || []} // Pass the correct array
             activeFilters={activeFilters}
             onFilterChange={handleFilterChange}
           />
         </aside>
-
-        {/* Main Content Area */}
         <main className="flex-1 min-w-0">
-          {/* Header: Search Bar and Action Buttons */}
           <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-            {/* Search Input */}
             <div className="w-full md:w-auto md:flex-grow md:max-w-xs">
               <input
                 className="w-full rounded-md px-4 py-2.5 text-base bg-[#20182C] text-white placeholder-[#7E6C99] border border-transparent outline-none transition-all focus:ring-2 focus:ring-[#A084FD] shadow-sm"
@@ -191,7 +145,6 @@ export default function Builds() {
                 onChange={handleSearch}
               />
             </div>
-            {/* Action Buttons */}
             <div className="flex items-center gap-4 flex-shrink-0">
               <Link
                 to="/build"
@@ -209,13 +162,11 @@ export default function Builds() {
               </Link>
             </div>
           </div>
-          {/* Grid of Build Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 justify-items-center sm:justify-items-start gap-x-6 gap-y-10">
             {buildsToShow.length > 0 ? (
-              buildsToShow.map((build) => {
-                console.log("[Build] Rendering BuildCard for:", build);
-                return <BuildCard key={build.id} build={build} />;
-              })
+              buildsToShow.map((build) => (
+                <BuildCard key={build.id || build._id} build={build} />
+              ))
             ) : (
               <div className="col-span-full h-64 flex justify-center items-center">
                 <p className="text-gray-400 text-lg">

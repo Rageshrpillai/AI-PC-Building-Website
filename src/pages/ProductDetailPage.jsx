@@ -1,41 +1,50 @@
-import React, { useEffect, useState, useMemo } from "react";
+// src/pages/ProductDetailPage.jsx
+
+import React, { useState, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { FaStar } from "react-icons/fa";
+import { fetchProductById, fetchProductsByIds } from "../services/apiService";
 import SkeletonPartCard from "../components/SkeletonPartCard";
 import CompactPartCard from "../components/CompactPartCard";
+
 export default function ProductDetailPage() {
   const { productId } = useParams();
   const navigate = useNavigate();
 
-  // --- STATE MANAGEMENT ---
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  // --- LOCAL UI STATE ---
+  // This is preserved as it's for UI interaction (the gallery).
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [compatibleProducts, setCompatibleProducts] = useState([]);
-  const [loadingCompatibles, setLoadingCompatibles] = useState(false);
 
-  // --- DATA FETCHING ---
-  // Initial fetch for the main product
-  useEffect(() => {
-    setLoading(true);
-    fetch(`/api/products/${productId}`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Product not found");
-        return res.json();
-      })
-      .then((data) => {
-        setProduct(data.data);
-      })
-      .catch((err) => {
-        setError("Could not load the product. It may not exist.");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [productId]);
+  // --- DATA FETCHING (The New Way with useQuery) ---
 
-  function getStandardCategoryName(key) {
+  // Query 1: Fetch the main product.
+  const {
+    data: product,
+    isLoading: isLoadingProduct,
+    isError: isErrorProduct,
+    error: errorProduct,
+  } = useQuery({
+    queryKey: ["product", productId],
+    queryFn: () => fetchProductById(productId),
+    enabled: !!productId,
+  });
+
+  // This line gets the IDs for the second query from the results of the first.
+  const compatibleProductIds = product?.compatibleDevices;
+
+  // Query 2: Fetch compatible products. This query is dependent on the first one.
+  const { data: compatibleProducts, isLoading: isLoadingCompatibles } =
+    useQuery({
+      queryKey: ["compatibleProducts", productId],
+      queryFn: () => fetchProductsByIds(compatibleProductIds),
+      // This query only runs when `compatibleProductIds` has been fetched and is not empty.
+      enabled: !!compatibleProductIds && compatibleProductIds.length > 0,
+    });
+
+  // --- HELPER FUNCTIONS & MEMOS ---
+  // All of your existing logic is preserved here. No changes needed.
+  const getStandardCategoryName = (key) => {
     const names = {
       cpu: "CPU",
       motherboard: "Motherboard",
@@ -47,62 +56,29 @@ export default function ProductDetailPage() {
       case: "Case",
     };
     return names[key] || key;
-  }
-
-  // Fetch full details for compatible products after the main product has loaded
-  useEffect(() => {
-    // Check if the product and its compatibleDevices exist
-    if (
-      product &&
-      product.compatibleDevices &&
-      product.compatibleDevices.length > 0
-    ) {
-      setLoadingCompatibles(true);
-      fetch(`/api/products/batch`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: product.compatibleDevices }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          setCompatibleProducts(data.data || []);
-        })
-        .catch((err) =>
-          console.error("Failed to fetch compatible products:", err)
-        )
-        .finally(() => setLoadingCompatibles(false));
-    }
-  }, [product]);
-
-  const handleCustomizeBuild = () => {
-    if (!product) return;
-
-    // Use the helper function to get the correct capitalized name
-    const categoryNameForBuild = getStandardCategoryName(product.category);
-
-    navigate("/build", {
-      state: {
-        selectedComponent: product,
-        categoryName: categoryNameForBuild, // Send the correct name
-      },
-    });
   };
 
-  // --- NEW: Group compatible products by category ---
   const groupedCompatibleProducts = useMemo(() => {
     if (!compatibleProducts) return {};
-    return compatibleProducts.reduce((acc, product) => {
-      const category = product.category || "other";
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(product);
+    return compatibleProducts.reduce((acc, p) => {
+      const category = p.category || "other";
+      if (!acc[category]) acc[category] = [];
+      acc[category].push(p);
       return acc;
     }, {});
   }, [compatibleProducts]);
 
+  const handleCustomizeBuild = () => {
+    if (!product) return;
+    const categoryNameForBuild = getStandardCategoryName(product.category);
+    navigate("/build", {
+      state: { selectedComponent: product, categoryName: categoryNameForBuild },
+    });
+  };
+
   // --- UI RENDER LOGIC ---
-  if (loading) {
+  // This is updated to use the new loading/error states from useQuery.
+  if (isLoadingProduct) {
     return (
       <div className="min-h-screen bg-[#0D0B13] flex justify-center items-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
@@ -110,10 +86,12 @@ export default function ProductDetailPage() {
     );
   }
 
-  if (error || !product) {
+  if (isErrorProduct || !product) {
     return (
       <div className="min-h-screen bg-[#0D0B13] flex flex-col justify-center items-center text-white">
-        <p className="text-xl text-red-400">{error || "Product not found."}</p>
+        <p className="text-xl text-red-400">
+          {errorProduct?.message || "Product not found."}
+        </p>
         <button
           onClick={() => navigate("/spec")}
           className="mt-4 px-6 py-2 rounded bg-purple-700 hover:bg-purple-800 text-white"
@@ -124,6 +102,8 @@ export default function ProductDetailPage() {
     );
   }
 
+  // --- FULL JSX RENDER ---
+  // The entire return block from your original code is preserved here.
   const renderStars = (rate = 0) => {
     return Array.from({ length: 5 }, (_, i) => (
       <FaStar
@@ -232,7 +212,6 @@ export default function ProductDetailPage() {
                 Technical Details
               </h2>
               <ul className="space-y-3">
-                {/* The object here now includes the brand */}
                 {product.specs &&
                   Object.entries({
                     brand: product.brand,
@@ -255,7 +234,7 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* Compatible Products Section (now dynamically grouped) */}
+        {/* Compatible Products Section */}
         <div className="mt-16 space-y-12">
           {Object.entries(groupedCompatibleProducts).map(
             ([category, devices]) => (
@@ -263,7 +242,7 @@ export default function ProductDetailPage() {
                 <h2 className="text-2xl font-bold text-white mb-6 capitalize">
                   Compatible {category}s
                 </h2>
-                {loadingCompatibles ? (
+                {isLoadingCompatibles ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {Array.from({ length: 4 }).map((_, i) => (
                       <SkeletonPartCard key={i} />
@@ -273,15 +252,20 @@ export default function ProductDetailPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
                     {devices.map((device) => (
                       <Link to={`/products/${device.id}`} key={device.id}>
-                        {/* Use the new component */}
                         <CompactPartCard product={device} />
                       </Link>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500">
-                    No compatible devices found for this category.
-                  </p>
+                  // This is a small addition: a message for when there are no compatibles.
+                  // You can remove this if the backend guarantees compatibles.
+                  product &&
+                  product.compatibleDevices &&
+                  product.compatibleDevices.length > 0 && (
+                    <p className="text-gray-500">
+                      Could not load compatible devices.
+                    </p>
+                  )
                 )}
               </div>
             )

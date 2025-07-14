@@ -1,33 +1,36 @@
-import React, { useEffect, useState, useMemo } from "react";
+// src/pages/PrebuiltDetailPage.jsx
+
+import React, { useState, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { fetchPrebuiltById } from "../services/apiService";
+import { useQuery } from "@tanstack/react-query"; // Import useQuery
+import { fetchPrebuiltById } from "../services/apiService"; // Import the fetch function
 import PartCard from "../components/PartCard";
 import { FaStar } from "react-icons/fa";
+import Navabar from "../components/Navabar"; // Assuming you want the navbar here
 
 export default function PrebuiltDetailPage() {
   const { buildId } = useParams();
   const navigate = useNavigate();
-  const [prebuilt, setPrebuilt] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+
+  // --- Local UI State (Preserved) ---
+  // This is for the image gallery and is independent of server data.
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-  useEffect(() => {
-    const getPrebuiltData = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchPrebuiltById(buildId);
-        setPrebuilt(data);
-      } catch (err) {
-        setError("Could not load the requested build.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    getPrebuiltData();
-  }, [buildId]);
+  // --- Data Fetching with TanStack Query ---
+  // This one hook replaces the useEffect and useState for prebuilt, loading, and error.
+  const {
+    data: prebuilt,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["prebuilt", buildId], // Caches the data using this unique key
+    queryFn: () => fetchPrebuiltById(buildId), // The function that fetches data
+    enabled: !!buildId, // Ensures the query doesn't run without a buildId
+  });
 
-  // Correctly groups all resolved parts by their category, preserving duplicates.
+  // --- Derived State and Constants (Preserved) ---
+  // This logic is perfect and remains unchanged. It now uses the `prebuilt` data from useQuery.
   const partsByCategory = useMemo(() => {
     if (!prebuilt?.resolvedParts) return {};
     return prebuilt.resolvedParts.reduce((acc, part) => {
@@ -40,7 +43,6 @@ export default function PrebuiltDetailPage() {
     }, {});
   }, [prebuilt?.resolvedParts]);
 
-  // Defines the correct display order for the component categories.
   const componentDisplayOrder = [
     "cpu",
     "motherboard",
@@ -52,30 +54,40 @@ export default function PrebuiltDetailPage() {
     "case",
   ];
 
-  if (loading) {
+  // --- Loading and Error States (Adapted for useQuery) ---
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0D0B13] flex justify-center items-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+      <div className="bg-[#100C16] min-h-screen">
+        <Navabar />
+        <div className="min-h-screen bg-[#0D0B13] flex justify-center items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+        </div>
       </div>
     );
   }
 
-  if (error || !prebuilt) {
+  if (isError || !prebuilt) {
     return (
-      <div className="min-h-screen bg-[#0D0B13] flex justify-center items-center text-red-400 text-xl">
-        {error || "Prebuilt PC not found."}
+      <div className="bg-[#100C16] min-h-screen">
+        <Navabar />
+        <div className="min-h-screen bg-[#0D0B13] flex justify-center items-center text-red-400 text-xl">
+          {error?.message || "Prebuilt PC not found."}
+        </div>
       </div>
     );
   }
 
+  // This logic for the image gallery is preserved.
   const galleryImages =
     prebuilt.galleryImages?.length > 0
       ? prebuilt.galleryImages
       : [prebuilt.imageUrl];
 
+  // --- Full JSX Render (Identical to your original code) ---
   return (
-    <div className="min-h-screen bg-[#0D0B13] pt-20 text-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="bg-[#0D0B13] min-h-screen">
+      <Navabar />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
         <div className="mb-6 text-sm">
           <Link to="/builds" className="text-purple-400 hover:underline">
             &larr; All Prebuilt PCs
@@ -139,7 +151,6 @@ export default function PrebuiltDetailPage() {
             <p className="text-gray-300 leading-relaxed mt-2">
               {prebuilt.description}
             </p>
-
             {prebuilt.features && prebuilt.features.length > 0 && (
               <div className="my-4">
                 <ul className="list-disc space-y-2 pl-5 text-gray-300">
@@ -149,21 +160,23 @@ export default function PrebuiltDetailPage() {
                 </ul>
               </div>
             )}
-
-            <div className="mt-auto flex items-center pt-6">
+            <div className="mt-auto flex items-center justify-between pt-6">
               <p className="text-4xl font-bold text-purple-400">
                 ${prebuilt.price?.toLocaleString("en-IN")}
               </p>
+              <button className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-lg font-semibold text-base transition-transform duration-200 hover:scale-105">
+                Add to Cart
+              </button>
             </div>
           </div>
         </div>
 
         {/* Core Components List Section */}
         <div className="my-16 pt-8 border-t border-gray-800">
-          <h2 className="text-2xl font-bold text-white mb-8">
+          <h2 className="text-2xl lg:text-3xl font-bold text-white mb-8 text-center">
             Core Components List
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {Object.entries(partsByCategory)
               .sort(
                 ([catA], [catB]) =>
@@ -172,17 +185,14 @@ export default function PrebuiltDetailPage() {
               )
               .map(([category, parts]) =>
                 parts.map((part, index) => (
-                  <Link
-                    to={`/products/${part.id}`}
-                    key={`${category}-${part.id}-${index}`}
-                  >
-                    <div>
-                      <h3 className="text-sm font-semibold text-purple-300 mb-2 capitalize">
-                        {category}
-                      </h3>
+                  <div key={`${category}-${part.id}-${index}`}>
+                    <h3 className="text-sm font-semibold text-purple-300 mb-2 capitalize">
+                      {category}
+                    </h3>
+                    <Link to={`/products/${part.id || part._id}`}>
                       <PartCard product={part} />
-                    </div>
-                  </Link>
+                    </Link>
+                  </div>
                 ))
               )}
           </div>

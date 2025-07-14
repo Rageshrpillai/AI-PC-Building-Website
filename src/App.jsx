@@ -3,11 +3,14 @@ import React, { Suspense, useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import useProductStore from "./stores/productStore";
 import Navabar from "./components/Navabar";
+import AdminRoute from "./components/AdminRoute";
 import { ClerkLoading, ClerkLoaded } from "@clerk/clerk-react";
 import "./App.css";
 
 // Lazy-loaded page components
 const Home = React.lazy(() => import("./pages/Home"));
+const AdminDashboard = React.lazy(() => import("./pages/AdminDashboard")); // Import admin page
+
 const SpecsListPage = React.lazy(() => import("./pages/Spec"));
 const Builds = React.lazy(() => import("./pages/Build"));
 const MyBuildsPage = React.lazy(() => import("./pages/MyBuildsPage"));
@@ -83,6 +86,10 @@ function App() {
                 <Route path="/chat" element={<ChatPage />} />
                 <Route path="/upgrade" element={<UpgradeInputPage />} />
                 <Route path="/upgrade-result" element={<UpgradeResultPage />} />
+                <Route element={<AdminRoute />}>
+                  <Route path="/admin" element={<AdminDashboard />} />
+                  {/* You can add more admin routes here later, e.g., /admin/products/new */}
+                </Route>
               </Routes>
             </Suspense>
           </>
