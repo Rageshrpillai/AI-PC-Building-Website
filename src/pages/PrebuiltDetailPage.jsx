@@ -6,11 +6,13 @@ import { useQuery } from "@tanstack/react-query"; // Import useQuery
 import { fetchPrebuiltById } from "../services/apiService"; // Import the fetch function
 import PartCard from "../components/PartCard";
 import { FaStar } from "react-icons/fa";
-import Navabar from "../components/Navabar"; // Assuming you want the navbar here
+import Navabar from "../components/Navabar";
+import { useAuth } from "@clerk/clerk-react"; // Assuming you want the navbar here
 
 export default function PrebuiltDetailPage() {
   const { buildId } = useParams();
   const navigate = useNavigate();
+  const { getToken } = useAuth();
 
   // --- Local UI State (Preserved) ---
   // This is for the image gallery and is independent of server data.
@@ -25,7 +27,7 @@ export default function PrebuiltDetailPage() {
     error,
   } = useQuery({
     queryKey: ["prebuilt", buildId], // Caches the data using this unique key
-    queryFn: () => fetchPrebuiltById(buildId), // The function that fetches data
+    queryFn: () => fetchPrebuiltById(buildId, getToken), // The function that fetches data
     enabled: !!buildId, // Ensures the query doesn't run without a buildId
   });
 

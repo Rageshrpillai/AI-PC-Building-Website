@@ -32,7 +32,7 @@ const ArrowRightIcon = () => (
 const BuildIcon = () => (
   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
     {" "}
-    <path d="M22,7.24a1,1,0,0,0-.29-.71l-4.24-4.24a1,1,0,0,0-.71-.29H7.24a1,1,0,0,0-.71.29L2.29,6.53a1,1,0,0,0-.29.71V16.76a1,1,0,0,0,.29.71l4.24,4.24a1,1,0,0,0,.71.29h9.52a1,1,0,0,0,.71-.29l4.24-4.24a1,1,0,0,0,.29-.71V7.24ZM19.59,16.05l-3.54,3.54H7.95L4.41,16.05V7.95L7.95,4.41h8.1L19.59,7.95ZM9,12h2v2H9Zm4,0h2v2H13Zm-4-4h2v2H9Zm4,0h2v2H13Z" />{" "}
+    <path d="M19 12h-2V7h-3V4h-2v3h-3v5H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-6c0-1.1-.9-2-2-2zM9 14h2v2H9v-2zm4 0h2v2h-2v-2zm-4-4h2v2H9V10zm4 0h2v2h-2V10z" />{" "}
   </svg>
 );
 const UpgradeIcon = () => (
@@ -240,8 +240,8 @@ export default function Home() {
 
   // Find the specific prebuilt for the "Top AI Pick"
   // Assuming "Gaming Beast Pro" (id: prebuilt-001) is the top pick based on image
-  const topAIPick = prebuilds.find((p) => p.id === "prebuilt-001");
-
+  const topAIPick =
+    prebuilds.find((p) => p.id === "prebuilt-001") || prebuilds[0];
   const PrebuiltPCsContent = () => {
     if (isPrebuildsLoading) {
       return (
@@ -269,8 +269,12 @@ export default function Home() {
 
     // Filter out the topAIPick from the main list of prebuilds to avoid duplication
     // And get the next 4 for the side cards
-    const otherPrebuilds = prebuilds.filter((p) => p.id !== "prebuilt-001");
-    const sidePrebuilds = otherPrebuilds.slice(0, 4); // Take the first 4 for the side
+    const otherPrebuilds = prebuilds.filter((p) =>
+      topAIPick ? p.id !== topAIPick.id : true
+    );
+
+    // Take the first 4 for the side cards from the remaining prebuilds
+    const sidePrebuilds = otherPrebuilds.slice(0, 4);
 
     return (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

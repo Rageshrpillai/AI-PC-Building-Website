@@ -14,11 +14,17 @@ import "./App.css";
 
 // Lazy-loaded page components
 const Home = React.lazy(() => import("./pages/Home"));
-// const AdminDashboard = React.lazy(() => import("./pages/AdminDashboard")); // Removed: If this file no longer exists
 const AdminLoginPage = React.lazy(() => import("./pages/AdminLoginPage"));
 const AdminDashboardPage = React.lazy(() =>
   import("./pages/AdminDashboardPage")
 ); // Your primary admin page
+
+// New lazy-loaded admin pages for management
+const AdminProductsPage = React.lazy(() => import("./pages/AdminProductsPage"));
+const AdminPrebuiltsPage = React.lazy(() =>
+  import("./pages/AdminPrebuiltsPage")
+);
+const AdminUsersPage = React.lazy(() => import("./pages/AdminUsersPage"));
 
 const SpecsListPage = React.lazy(() => import("./pages/Spec"));
 const Builds = React.lazy(() => import("./pages/Build"));
@@ -77,7 +83,7 @@ function App() {
   useEffect(() => {
     console.log("App useEffect triggered.");
     console.log(
-      "  -- Inside useEffect conditions: !isAdminPath:",
+      "   -- Inside useEffect conditions: !isAdminPath:",
       !isAdminPath,
       "!hasFetchedInitialData:",
       !hasFetchedInitialData,
@@ -90,10 +96,10 @@ function App() {
       fetchAllProductsNoPagination();
     } else {
       console.log("fetchAllProductsNoPagination NOT called. Reasons:");
-      if (isAdminPath) console.log("  - Currently on an admin path.");
+      if (isAdminPath) console.log("   - Currently on an admin path.");
       if (hasFetchedInitialData)
-        console.log("  - Initial data already fetched.");
-      if (isLoadingStore) console.log("  - Store is already loading.");
+        console.log("   - Initial data already fetched.");
+      if (isLoadingStore) console.log("   - Store is already loading.");
     }
   }, [
     isAdminPath,
@@ -127,7 +133,8 @@ function App() {
         ) : (
           <>
             {console.log("Rendering main app content (not AppLoader).")}
-            <Navabar />
+            {/* Navabar is now conditionally rendered based on whether it's an admin path or not */}
+            {!isAdminPath && <Navabar />}
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 {/* Public Routes */}
@@ -167,8 +174,15 @@ function App() {
                 <Route path="/admin/*" element={<AdminProtectedRoute />}>
                   <Route index element={<AdminDashboardPage />} />
                   <Route path="dashboard" element={<AdminDashboardPage />} />
-                  {/* <Route path="products" element={<AdminDashboard />} /> // Removed: Causes ReferenceError if file doesn't exist */}
-                  {/* If you need product listing, integrate it into AdminDashboardPage or create a new dedicated page for it. */}
+                  <Route path="products" element={<AdminProductsPage />} />{" "}
+                  {/* New: Route for Product Management */}
+                  <Route
+                    path="prebuilds"
+                    element={<AdminPrebuiltsPage />}
+                  />{" "}
+                  {/* New: Route for Prebuilt PC Management */}
+                  <Route path="users" element={<AdminUsersPage />} />{" "}
+                  {/* New: Route for User Management */}
                 </Route>
 
                 {/* Catch-all Route */}

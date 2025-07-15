@@ -3,28 +3,18 @@ import dbConnect from "./lib/dbConnect.js";
 import Product from "./models/Product.js";
 import Prebuilt from "./models/Prebuilt.js";
 import User from "./models/User.js";
-import { clerkClient } from "@clerk/clerk-sdk-node";
 import { clerkMiddleware, requireAuth } from "@clerk/express";
-import requireAdmin from "./lib/middleware/requireAdmin.js";
+import buildBotHandler from "./buildbot.js"; // 1. IMPORT THE AI HANDLER
 
 const app = express();
 
+// --- Middleware ---
 app.use(
   clerkMiddleware({
     secretKey: process.env.CLERK_SECRET_KEY,
     publishableKey: process.env.VITE_CLERK_PUBLISHABLE_KEY,
   })
 );
-
-console.log("--- VERCEL ENV CHECK ---");
-console.log(
-  "Publishable Key:",
-  process.env.VITE_CLERK_PUBLISHABLE_KEY ? "Loaded" : "MISSING"
-);
-console.log("Secret Key:", process.env.CLERK_SECRET_KEY ? "Loaded" : "MISSING");
-console.log("JWT Key:", process.env.CLERK_JWT_KEY ? "Loaded" : "MISSING");
-console.log("--- END VERCEL ENV CHECK ---");
-
 app.use(express.json());
 app.use(async (req, res, next) => {
   try {
@@ -36,6 +26,7 @@ app.use(async (req, res, next) => {
   }
 });
 
+// --- Product Routes ---
 app.get("/api/products/all", async (req, res) => {
   try {
     const products = await Product.find({});
@@ -91,18 +82,6 @@ app.get("/api/products", async (req, res) => {
   }
 });
 
-app.get("/api/builds", async (req, res) => {
-  try {
-    const builds = await Prebuilt.find({});
-    res.status(200).json({ data: builds });
-  } catch (error) {
-    console.error("API Error fetching prebuilt PCs:", error);
-    res
-      .status(500)
-      .json({ message: "Server error while fetching prebuilt PCs." });
-  }
-});
-
 app.get("/api/products/:productId", async (req, res) => {
   try {
     const { productId } = req.params;
@@ -119,11 +98,21 @@ app.get("/api/products/:productId", async (req, res) => {
   }
 });
 
+// --- Prebuilt PC Routes ---
+app.get("/api/builds", async (req, res) => {
+  try {
+    const builds = await Prebuilt.find({});
+    res.status(200).json({ data: builds });
+  } catch (error) {
+    console.error("API Error fetching prebuilt PCs:", error);
+    res
+      .status(500)
+      .json({ message: "Server error while fetching prebuilt PCs." });
+  }
+});
+
 app.get("/api/builds/:buildId", requireAuth(), async (req, res) => {
   try {
-    const auth = req.auth(); // Get auth object
-    const userId = auth.userId; // Get userId
-
     const { buildId } = req.params;
     const prebuilt = await Prebuilt.findOne({ id: buildId });
     if (!prebuilt) {
@@ -131,11 +120,8 @@ app.get("/api/builds/:buildId", requireAuth(), async (req, res) => {
     }
 
     const partIds = prebuilt.parts.map((part) => part.id);
-
     const uniqueParts = await Product.find({ id: { $in: partIds } });
-
     const partsMap = new Map(uniqueParts.map((p) => [p.id, p]));
-
     const resolvedParts = prebuilt.parts
       .map((partRef) => partsMap.get(partRef.id))
       .filter(Boolean);
@@ -153,77 +139,10 @@ app.get("/api/builds/:buildId", requireAuth(), async (req, res) => {
   }
 });
 
+// --- User Build Routes ---
 app.post("/api/builds/save", requireAuth(), async (req, res) => {
-  // --- START DEBUG LOGS FOR BUILD SAVE ---
-  console.log("\n--- DEBUG: Inside POST /api/builds/save route ---");
-
-  // Log the raw req.auth object (the function itself)
-  console.log("DEBUG: req.auth is type:", typeof req.auth);
-  const auth = req.auth(); // Call auth as a function to get the auth object
-  console.log("DEBUG: auth() result:", auth);
-  console.log("DEBUG: auth().userId:", auth.userId);
-  console.log("DEBUG: auth().user (from auth() object):", auth.user); // Check this value directly from auth()
-
-  // Log req.clerk object details
-  console.log("DEBUG: req.clerk is type:", typeof req.clerk);
-  if (req.clerk) {
-    console.log("DEBUG: req.clerk object keys:", Object.keys(req.clerk));
-    console.log("DEBUG: req.clerk.users is type:", typeof req.clerk.users);
-    if (req.clerk.users) {
-      console.log(
-        "DEBUG: req.clerk.users.getUser is type:",
-        typeof req.clerk.users.getUser
-      );
-    }
-  } else {
-    console.log("DEBUG: req.clerk is undefined or null.");
-  }
-  // --- END DEBUG LOGS FOR BUILD SAVE ---
-
   try {
-    const userId = auth.userId; // Get userId from the result of auth()
-
-    // Defensive check for userId
-    if (!userId) {
-      console.error(
-        "API Error saving build: userId is missing from auth(). Cannot proceed."
-      );
-      return res
-        .status(401)
-        .json({ message: "Unauthorized: User ID not available." });
-    }
-
-    // Explicitly fetch the full user object using clerkClient.users.getUser
-    // This is the most reliable method for getting full user data including metadata and emails.
-    const clerkUser = await clerkClient.users.getUser(userId);
-
-    if (!clerkUser) {
-      console.error(
-        "API Error saving build: Clerk user object not found for userId:",
-        userId
-      );
-      return res
-        .status(500)
-        .json({
-          message: "Server error: User data could not be retrieved from Clerk.",
-        });
-    }
-
-    const userEmail = clerkUser.emailAddresses?.[0]?.emailAddress;
-
-    if (!userEmail) {
-      console.warn(
-        "API Error saving build: User has no primary email address in Clerk for userId:",
-        userId
-      );
-      return res
-        .status(400)
-        .json({
-          message:
-            "A primary email address is required to save a build. Please ensure your Clerk account has a verified email.",
-        });
-    }
-
+    const userId = req.auth.userId;
     const { buildName, buildDescription, parts, totalPrice } = req.body;
 
     if (!buildName || !parts || !totalPrice) {
@@ -246,13 +165,8 @@ app.post("/api/builds/save", requireAuth(), async (req, res) => {
 
     await User.findOneAndUpdate(
       { clerkId: userId },
-      {
-        $push: { savedBuilds: savedBuild._id },
-        email: userEmail,
-        firstName: clerkUser.firstName || null,
-        lastName: clerkUser.lastName || null,
-      },
-      { new: true, upsert: true, runValidators: true }
+      { $push: { savedBuilds: savedBuild._id } },
+      { new: true, upsert: true }
     );
 
     res
@@ -263,10 +177,10 @@ app.post("/api/builds/save", requireAuth(), async (req, res) => {
     res.status(500).json({ message: "Server error while saving build." });
   }
 });
+
 app.get("/api/user/builds", requireAuth(), async (req, res) => {
   try {
-    const auth = req.auth(); // Get auth object
-    const userId = auth.userId; // Get userId
+    const userId = req.auth.userId;
     const userBuilds = await Prebuilt.find({ createdBy: userId }).sort({
       createdAt: -1,
     });
@@ -276,44 +190,10 @@ app.get("/api/user/builds", requireAuth(), async (req, res) => {
   }
 });
 
-app.post(
-  "/api/admin/products",
-  requireAuth(),
-  requireAdmin,
-  async (req, res) => {
-    try {
-      res
-        .status(201)
-        .json({ message: "Product created successfully by admin." });
-    } catch (error) {
-      console.error("Error creating product:", error);
-      res.status(500).json({ error: "Failed to create product." });
-    }
-  }
-);
-
-app.delete(
-  "/api/admin/products/:id",
-  requireAuth(),
-  requireAdmin,
-  async (req, res) => {
-    try {
-      res
-        .status(200)
-        .json({ message: "Product deleted successfully by admin." });
-    } catch (error) {
-      console.error("Error deleting product:", error);
-      res.status(500).json({ error: "Failed to delete product." });
-    }
-  }
-);
-
 app.delete("/api/builds/:id", requireAuth(), async (req, res) => {
   try {
-    const auth = req.auth(); // Get auth object
-    const userId = auth.userId; // Get userId
-
     const buildId = req.params.id;
+    const userId = req.auth.userId;
 
     const build = await Prebuilt.findById(buildId);
     if (!build || build.createdBy !== userId) {
@@ -335,4 +215,8 @@ app.delete("/api/builds/:id", requireAuth(), async (req, res) => {
   }
 });
 
+// --- AI BuildBot Route ---
+app.post("/api/buildbot", buildBotHandler); // 2. REGISTER THE ROUTE
+
+// --- Export for Vercel ---
 export default app;

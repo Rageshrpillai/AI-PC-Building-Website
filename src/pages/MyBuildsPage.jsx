@@ -1,88 +1,96 @@
 // src/pages/MyBuildsPage.jsx
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { fetchUserBuilds } from "../services/apiService";
 import Navabar from "../components/Navabar";
-import BuildCard from "../components/BuildCard";
+import MiniBuildCard from "../components/MiniBuildCard"; // Assuming this component exists
 import { Link } from "react-router-dom";
 
 export default function MyBuildsPage() {
-  const { getToken } = useAuth();
-  const [myBuilds, setMyBuilds] = useState([]);
+  const { isLoaded, isSignedIn, getToken } = useAuth();
+  const [userBuilds, setUserBuilds] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [deletingId, setDeletingId] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const loadBuilds = async () => {
+    const loadUserBuilds = async () => {
+      if (!isLoaded || !isSignedIn) {
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
+      setError(null);
       try {
         const builds = await fetchUserBuilds(getToken);
-        setMyBuilds(builds);
-        console.log("Fetched user builds:", builds);
-      } catch (error) {
-        console.error("Failed to load user builds", error);
+        // REMOVED FILTER: Now shows all builds where createdBy matches userId
+        setUserBuilds(builds); // Directly set the builds without filtering by isUserBuild
+      } catch (err) {
+        console.error("Error fetching user builds:", err);
+        setError("Failed to load your saved builds. Please try again.");
       } finally {
         setLoading(false);
       }
     };
-    loadBuilds();
-  }, [getToken]);
 
-  const handleDeleteBuild = async (buildId) => {
-    if (!window.confirm("Are you sure you want to delete this build?")) return;
-    setDeletingId(buildId);
-    try {
-      const token = await getToken();
-      const response = await fetch(`/api/builds/${buildId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (response.ok) {
-        setMyBuilds((prev) =>
-          prev.filter((b) => b._id !== buildId && b.id !== buildId)
-        );
-      } else {
-        alert("Failed to delete build.");
-      }
-    } catch (error) {
-      alert("Delete request failed.");
-    } finally {
-      setDeletingId(null);
-    }
-  };
+    loadUserBuilds();
+  }, [isLoaded, isSignedIn, getToken]); // Re-run when auth state changes
+
+  if (!isLoaded || !isSignedIn) {
+    return (
+      <div className="min-h-screen bg-[#100C16] flex justify-center items-center text-white">
+        <p>Please sign in to view your builds.</p>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#100C16] flex justify-center items-center text-white">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+        <p className="text-xl ml-4">Loading your builds...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#100C16] flex flex-col justify-center items-center text-white p-4">
+        <p className="text-red-500 text-xl mb-4">{error}</p>
+        <button
+          onClick={() => window.location.reload()} // Simple retry by reloading page
+          className="px-6 py-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors duration-200"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#100C16] text-gray-100">
+    <div className="bg-[#0D0B13] min-h-screen">
       <Navabar />
-      <div className="pt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
         <h1 className="text-3xl font-bold text-white mb-8">My Saved Builds</h1>
-        {loading ? (
-          <p>Loading your builds...</p>
-        ) : myBuilds.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {myBuilds.map((build) => (
-              <div key={build._id || build.id} className="relative">
-                <BuildCard build={build} />
-                <button
-                  onClick={() => handleDeleteBuild(build._id || build.id)}
-                  className={`absolute top-2 right-2 px-3 py-1 text-xs bg-red-700 text-white rounded hover:bg-red-800 z-10 ${
-                    deletingId === (build._id || build.id)
-                      ? "opacity-50 cursor-not-allowed"
-                      : ""
-                  }`}
-                  disabled={deletingId === (build._id || build.id)}
-                >
-                  {deletingId === (build._id || build.id)
-                    ? "Deleting..."
-                    : "Delete"}
-                </button>
-              </div>
-            ))}
+
+        {userBuilds.length === 0 ? (
+          <div className="text-center text-gray-400 py-10">
+            <p className="text-lg mb-4">
+              You haven't saved any custom builds yet!
+            </p>
+            <Link
+              to="/build"
+              className="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-transform duration-200 hover:scale-105"
+            >
+              Start a Custom Build
+            </Link>
           </div>
         ) : (
-          <p className="text-gray-400">You haven't saved any builds yet.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {userBuilds.map((build) => (
+              <MiniBuildCard key={build.id || build._id} build={build} />
+            ))}
+          </div>
         )}
       </div>
     </div>
