@@ -55,48 +55,58 @@ function buildMockDataSummary(allPartsCollections) {
     {
       name: "CPUs",
       data: allPartsCollections.cpus,
-      keySpecs: (p) => `Socket: ${p.specs.socket}, Cores: ${p.specs.cores}`,
+      keySpecs: (p) =>
+        `Socket: ${p.specs?.socket || "N/A"}, Cores: ${
+          p.specs?.cores || "N/A"
+        }`,
     },
     {
       name: "GPUs",
       data: allPartsCollections.gpus,
-      keySpecs: (p) => `Memory: ${p.specs.memory}`,
+      keySpecs: (p) => `Memory: ${p.specs?.memory || "N/A"}`,
     },
     {
       name: "Motherboards",
       data: allPartsCollections.motherboards,
       keySpecs: (p) =>
-        `Socket: ${p.specs.socket}, Memory Type: ${p.specs.memoryType}, Memory Slots: ${p.specs.memorySlots}`,
+        `Socket: ${p.specs?.socket || "N/A"}, Memory Type: ${
+          p.specs?.memoryType || "N/A"
+        }, Memory Slots: ${p.specs?.memorySlots || "N/A"}`,
     },
     {
       name: "RAMs",
       data: allPartsCollections.rams,
       keySpecs: (p) =>
-        `Capacity: ${p.specs.capacity} (per stick), Type: ${p.specs.type}, Speed: ${p.specs.speed}`,
+        `Capacity: ${p.specs?.capacity || "N/A"} (per stick), Type: ${
+          p.specs?.type || "N/A"
+        }, Speed: ${p.specs?.speed || "N/A"}`,
     },
     {
       name: "Storage",
       data: allPartsCollections.storages,
-      keySpecs: (p) => `Type: ${p.specs.type}, Capacity: ${p.specs.capacity}`,
+      keySpecs: (p) =>
+        `Type: ${p.specs?.type || "N/A"}, Capacity: ${
+          p.specs?.capacity || "N/A"
+        }`,
     },
     {
       name: "PSUs",
       data: allPartsCollections.psus,
-      keySpecs: (p) => `Wattage: ${p.specs.wattage}`,
+      keySpecs: (p) => `Wattage: ${p.specs?.wattage || "N/A"}`,
     },
     {
       name: "Cases",
       data: allPartsCollections.cases,
-      keySpecs: (p) => `Type: ${p.specs.type}`,
+      keySpecs: (p) => `Type: ${p.specs?.type || "N/A"}`,
     },
     {
       name: "Coolers",
       data: allPartsCollections.coolers,
       keySpecs: (p) => {
-        if (p.type === "AIO Liquid Cooler") {
-          return `Type: AIO, Radiator: ${p.specs.radiator_size}`;
+        if (p.specs?.type === "AIO Liquid Cooler") {
+          return `Type: AIO, Radiator: ${p.specs.radiator_size || "N/A"}`;
         }
-        return `Type: Air, Fan Size: ${p.specs.fan_size}`;
+        return `Type: Air, Fan Size: ${p.specs?.fan_size || "N/A"}`;
       },
     },
   ];
@@ -107,7 +117,7 @@ function buildMockDataSummary(allPartsCollections) {
         summary += `- ID: ${part.id}, Name: ${
           part.name
         }, Price: ${part.price.toFixed(2)}, Category: ${
-          category.name
+          part.category // Use the actual category from the part
         }, ${category.keySpecs(part)}\n`;
       });
       summary += "\n";
@@ -252,15 +262,25 @@ export default async function handler(req, res) {
         mockDataSummary,
         upgradeBudget
       );
+      // Corrected logic to build the description
       const currentPartsDescription = Object.entries(currentUserParts)
-        .map(
-          ([key, value]) =>
-            `${key.replace(/Id$|Ids$/, "")}: ${
-              Array.isArray(value) ? value.join(", ") : value
-            }`
-        )
+        .map(([key, value]) => {
+          const category = key.replace(/Id$|Ids$/, "");
+          if (Array.isArray(value)) {
+            const partNames = value
+              .map((partId) => {
+                const part = allProducts.find((p) => p.id === partId);
+                return part ? part.name : partId;
+              })
+              .join(", ");
+            return `${category}: ${partNames}`;
+          } else {
+            const part = allProducts.find((p) => p.id === value);
+            return `${category}: ${part ? part.name : value}`;
+          }
+        })
         .join("\n");
-      effectiveUserMessageForAI = `INPUT (for an UPGRADE):\nExisting components: ${currentPartsDescription}\nUpgrade budget: $${upgradeBudget}\nGoal: "${userNaturalLanguageQuery}"`;
+      effectiveUserMessageForAI = `INPUT (for an UPGRADE):\nExisting components:\n${currentPartsDescription}\n\nUpgrade budget: $${upgradeBudget}\nGoal: "${userNaturalLanguageQuery}"`;
     } else if (requestType === "newBuild") {
       const budgetMatch = userNaturalLanguageQuery.match(
         /(?:for|under|budget|less than|around)\s*\$?(\d+)/i

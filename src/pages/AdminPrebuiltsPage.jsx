@@ -134,12 +134,12 @@ export default function AdminPrebuiltsPage() {
     if (!selectedPartCategory) return [];
     // If RAM is selected, use the special RAM filter
     if (selectedPartCategory === "ram") {
-      return filteredRamModules;
+      return filteredRamModules; // <--- This now correctly refers to the defined memo
     }
     return products.filter(
       (p) => p.category?.toLowerCase() === selectedPartCategory
     );
-  }, [products, selectedPartCategory, filteredRamModules]);
+  }, [products, selectedPartCategory, filteredRamModules]); // Added filteredRamModules to dependencies
 
   // --- Delete Prebuilt Handlers (unchanged) ---
   const handleDeletePrebuilt = async (prebuiltId) => {
@@ -234,44 +234,22 @@ export default function AdminPrebuiltsPage() {
         return;
       }
 
-      // Get total current RAM quantity
-      const currentRamTotalQuantity = newPrebuilt.parts
-        .filter((p) => p.category === "ram")
-        .reduce((sum, p) => sum + p.quantity, 0);
-
-      // Get motherboard's max memory slots
-      const motherboardMemorySlots =
-        selectedMotherboard.specifications?.memorySlots || 4; // Default to 4 if not specified
-
-      // Check if adding this quantity exceeds motherboard's slots
-      if (currentRamTotalQuantity + currentQuantity > motherboardMemorySlots) {
-        setAddPrebuiltError(
-          `Adding ${currentQuantity} RAM modules would exceed the motherboard's ${motherboardMemorySlots} memory slots. Currently added: ${currentRamTotalQuantity}.`
-        );
-        return;
-      }
-
-      // Check if this specific RAM module (by ID) is already added
-      const existingRamModuleIndex = newPrebuilt.parts.findIndex(
+      // For RAM, allow multiple instances of the same ID (by quantity)
+      const existingRamIndex = newPrebuilt.parts.findIndex(
         (p) => p.id === partToAdd.id && p.category === "ram"
       );
-
-      if (existingRamModuleIndex > -1) {
-        // If the exact same RAM module is already added, update its quantity
+      if (existingRamIndex > -1) {
+        // Update quantity of existing RAM module
         setNewPrebuilt((prev) => {
           const updatedParts = [...prev.parts];
-          updatedParts[existingRamModuleIndex] = {
-            ...updatedParts[existingRamModuleIndex],
-            quantity:
-              updatedParts[existingRamModuleIndex].quantity + currentQuantity,
+          updatedParts[existingRamIndex] = {
+            ...updatedParts[existingRamIndex],
+            quantity: updatedParts[existingRamIndex].quantity + currentQuantity,
           };
           return { ...prev, parts: updatedParts };
         });
       } else {
-        // If it's a new RAM module (different ID), add it.
-        // IMPORTANT: If you want to enforce *only one unique RAM module ID* per build,
-        // regardless of quantity, you would add a check here to see if any RAM is already present.
-        // For now, this allows different RAM sticks as long as total quantity is within slots.
+        // Add new RAM module
         setNewPrebuilt((prev) => ({
           ...prev,
           parts: [
