@@ -475,9 +475,6 @@ export default function AdminPrebuiltsPage() {
                         {prebuilt.rating?.toFixed(1) || "N/A"}
                       </td>
                       <td className="py-3 px-4 flex space-x-2">
-                        <button className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">
-                          Edit
-                        </button>
                         <button
                           onClick={() =>
                             handleDeletePrebuilt(prebuilt.id || prebuilt._id)

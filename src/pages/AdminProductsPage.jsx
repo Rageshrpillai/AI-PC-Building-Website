@@ -258,9 +258,6 @@ export default function AdminProductsPage() {
                       </td>
                       <td className="py-3 px-4">{product.brand}</td>
                       <td className="py-3 px-4 flex space-x-2">
-                        <button className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">
-                          Edit
-                        </button>
                         <button
                           onClick={() =>
                             handleDeleteProduct(product.id || product._id)

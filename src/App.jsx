@@ -17,9 +17,8 @@ const Home = React.lazy(() => import("./pages/Home"));
 const AdminLoginPage = React.lazy(() => import("./pages/AdminLoginPage"));
 const AdminDashboardPage = React.lazy(() =>
   import("./pages/AdminDashboardPage")
-); // Your primary admin page
+);
 
-// New lazy-loaded admin pages for management
 const AdminProductsPage = React.lazy(() => import("./pages/AdminProductsPage"));
 const AdminPrebuiltsPage = React.lazy(() =>
   import("./pages/AdminPrebuiltsPage")
@@ -38,7 +37,6 @@ const ChatPage = React.lazy(() => import("./pages/Chatpage"));
 const UpgradeInputPage = React.lazy(() => import("./pages/UpgradeInputPage"));
 const UpgradeResultPage = React.lazy(() => import("./pages/UpgradeResultPage"));
 
-// A loader for when a page's code is being downloaded
 function PageLoader() {
   return (
     <div className="min-h-screen bg-[#100C16] flex justify-center items-center text-white">
@@ -47,7 +45,6 @@ function PageLoader() {
   );
 }
 
-// A loader for the initial data fetch OR Clerk loading
 function AppLoader() {
   return (
     <div className="min-h-screen bg-[#100C16] flex flex-col justify-center items-center text-white">
@@ -133,11 +130,10 @@ function App() {
         ) : (
           <>
             {console.log("Rendering main app content (not AppLoader).")}
-            {/* Navabar is now conditionally rendered based on whether it's an admin path or not */}
             {!isAdminPath && <Navabar />}
             <Suspense fallback={<PageLoader />}>
               <Routes>
-                {/* Public Routes */}
+                {/* Public Routes - Anyone can access these */}
                 <Route path="/" element={<Home />} />
                 <Route path="/spec" element={<SpecsListPage />} />
                 <Route path="/builds" element={<Builds />} />
@@ -152,9 +148,13 @@ function App() {
                 <Route path="/chat" element={<ChatPage />} />
                 <Route path="/upgrade" element={<UpgradeInputPage />} />
                 <Route path="/upgrade-result" element={<UpgradeResultPage />} />
+
+                {/* FIXED: /build is now public - only save requires auth */}
+                <Route path="/build" element={<CustomBuildPage />} />
+
                 <Route path="/admin/login" element={<AdminLoginPage />} />
 
-                {/* Authenticated User Routes */}
+                {/* Protected Routes - Require Sign In */}
                 <Route
                   element={
                     <SignedIn>
@@ -162,8 +162,8 @@ function App() {
                     </SignedIn>
                   }
                 >
+                  {/* Only My Builds requires authentication */}
                   <Route path="/my-builds" element={<MyBuildsPage />} />
-                  <Route path="/build" element={<CustomBuildPage />} />
                 </Route>
 
                 {/* Clerk's default sign-in/sign-up routes */}
@@ -174,15 +174,9 @@ function App() {
                 <Route path="/admin/*" element={<AdminProtectedRoute />}>
                   <Route index element={<AdminDashboardPage />} />
                   <Route path="dashboard" element={<AdminDashboardPage />} />
-                  <Route path="products" element={<AdminProductsPage />} />{" "}
-                  {/* New: Route for Product Management */}
-                  <Route
-                    path="prebuilds"
-                    element={<AdminPrebuiltsPage />}
-                  />{" "}
-                  {/* New: Route for Prebuilt PC Management */}
-                  <Route path="users" element={<AdminUsersPage />} />{" "}
-                  {/* New: Route for User Management */}
+                  <Route path="products" element={<AdminProductsPage />} />
+                  <Route path="prebuilds" element={<AdminPrebuiltsPage />} />
+                  <Route path="users" element={<AdminUsersPage />} />
                 </Route>
 
                 {/* Catch-all Route */}

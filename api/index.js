@@ -9,6 +9,22 @@ import requireAdmin from "./lib/middleware/requireAdmin.js";
 
 const app = express();
 
+// TEMPORARY DEBUG - Remove after testing
+console.log("\n=== ENVIRONMENT VARIABLE TEST ===");
+console.log(
+  "All CLERK vars:",
+  Object.keys(process.env).filter((k) => k.includes("CLERK"))
+);
+console.log(
+  "VITE_CLERK_PUBLISHABLE_KEY:",
+  process.env.VITE_CLERK_PUBLISHABLE_KEY?.substring(0, 20) + "..."
+);
+console.log(
+  "CLERK_PUBLISHABLE_KEY:",
+  process.env.CLERK_PUBLISHABLE_KEY?.substring(0, 20) + "..."
+);
+console.log("=================================\n");
+
 app.use(
   clerkMiddleware({
     secretKey: process.env.CLERK_SECRET_KEY,

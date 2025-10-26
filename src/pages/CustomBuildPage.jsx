@@ -4,9 +4,8 @@ import { useLocation, Link, useNavigate } from "react-router-dom";
 import useProductStore from "../stores/productStore.js";
 import Navabar from "../components/Navabar";
 import ComponentCategoryRow from "../components/ComponentCategoryRow";
-import PartDisplayCard from "../components/PartDisplayCard";
 import SelectionCard from "../components/SelectionCard";
-import { useUser, useAuth, useClerk } from "@clerk/clerk-react"; // keep imports but destructure carefully
+import { useUser, useAuth, useClerk } from "@clerk/clerk-react";
 import toast, { Toaster } from "react-hot-toast";
 
 const ArrowRightIcon = () => (
@@ -18,6 +17,7 @@ const ArrowRightIcon = () => (
     />
   </svg>
 );
+
 const SaveIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -33,6 +33,7 @@ const SaveIcon = () => (
     />
   </svg>
 );
+
 const SpinnerIcon = () => (
   <svg
     className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
@@ -90,7 +91,6 @@ export default function CustomBuildPage() {
 
   // Zustand Store Hooks
   const {
-    // getProductById, // Not used directly in this file
     isLoading: isLoadingStoreProducts,
     error: storeError,
     hasFetchedInitialData,
@@ -102,36 +102,53 @@ export default function CustomBuildPage() {
     fetchAllProductsNoPagination,
   } = useProductStore((s) => s);
 
-  // Clerk Hooks - Destructure only what's used
-  const { isSignedIn, user } = useUser(); // Using isSignedIn, user
-  const { userId } = useAuth(); // Using userId
-  const { openSignIn } = useClerk(); // Using openSignIn
+  // Clerk Hooks
+  const { isSignedIn, user } = useUser();
+  const { userId } = useAuth();
+  const { openSignIn } = useClerk();
 
-  // Local State Declarations
+  // Local State
   const [buildName, setBuildName] = useState("");
   const [buildDescription, setBuildDescription] = useState("");
-  const [isSaving, setIsSaving] = useState(false); // For save button loading state
-  // Removed isProcessingSelection state: Simplify state management to avoid conflicts
-  const [upgradeData, setUpgradeData] = useState(null); // Keep if used for upgrade flow UI
-  const [processingError, setProcessingError] = useState(null); // Keep if used for deep linking error display
+  const [isSaving, setIsSaving] = useState(false);
+  const [upgradeData, setUpgradeData] = useState(null);
+  const [processingError, setProcessingError] = useState(null);
 
-  // Set default values for build name/description on initial render
+  // NEW: Add initialization tracking
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Set default values for build name/description
   useEffect(() => {
     if (!buildName) setBuildName("My Custom Build");
     if (!buildDescription)
       setBuildDescription(
         "A collection of selected components for a custom PC build."
       );
-  }, [buildName, buildDescription]); // Added dependencies to fix exhaustive-deps warning
+  }, [buildName, buildDescription]);
 
-  // Fetch all products (not paginated) for this page
+  // CRITICAL FIX: Wait for products to load before processing anything
   useEffect(() => {
-    if (!hasFetchedInitialData || !allProducts || allProducts.length === 0) {
-      fetchAllProductsNoPagination && fetchAllProductsNoPagination();
-    }
-  }, [hasFetchedInitialData, allProducts, fetchAllProductsNoPagination]);
+    console.log("[CustomBuildPage] Initialization check:", {
+      hasFetchedInitialData,
+      productsCount: allProducts?.length,
+      isInitialized,
+    });
 
-  // Derived state for Motherboard selection (used for RAM filtering)
+    if (!hasFetchedInitialData || !allProducts || allProducts.length === 0) {
+      console.log("[CustomBuildPage] Products not loaded, fetching...");
+      fetchAllProductsNoPagination?.();
+    } else if (!isInitialized) {
+      console.log("[CustomBuildPage] Products loaded, marking as initialized");
+      setIsInitialized(true);
+    }
+  }, [
+    hasFetchedInitialData,
+    allProducts,
+    fetchAllProductsNoPagination,
+    isInitialized,
+  ]);
+
+  // Derived state for Motherboard selection
   const selectedMotherboardFromStore = selectedComponents["Motherboard"];
 
   // Derived state: details of selected components and total price
@@ -173,14 +190,14 @@ export default function CustomBuildPage() {
     );
   }, [resolvedSelectedComponents]);
 
-  // Derives the category structure based on the currently selected motherboard in the store
+  // Dynamic category structure based on selected motherboard
   const dynamicComponentCategoryObjects = useMemo(() => {
     return BASE_COMPONENT_CATEGORIES.map((cat) => {
       if (cat.key === "ram") {
         const numberOfRamSlots = selectedMotherboardFromStore?.specs
           ?.memorySlots
           ? parseInt(selectedMotherboardFromStore.specs.memorySlots, 10)
-          : 2; // Default to 2 slots if no motherboard
+          : 2;
         return {
           ...cat,
           isMultiSlot: true,
@@ -192,7 +209,7 @@ export default function CustomBuildPage() {
     });
   }, [selectedMotherboardFromStore]);
 
-  // Prepares the list of items for the quick pick UI
+  // Quick pick data
   const quickPickData = useMemo(() => {
     if (!allProducts || allProducts.length === 0 || !hasFetchedInitialData)
       return {};
@@ -218,26 +235,17 @@ export default function CustomBuildPage() {
     hasFetchedInitialData,
   ]);
 
-  // --- CONSOLIDATED Component Selection Handler ---
-  // This is the single source for adding a component to selectedComponents.
+  // CONSOLIDATED Component Selection Handler
   const handleSelectComponent = useCallback(
     (categoryOrSlotName, partToSelect, sourceLocationState = null) => {
-      console.log(
-        "[CustomBuildPage] handleSelectComponent called (Consolidated)"
-      );
-      console.log(
-        "[CustomBuildPage] Args: categoryOrSlotName:",
+      console.log("[CustomBuildPage] handleSelectComponent called:", {
         categoryOrSlotName,
-        "partToSelect:",
-        partToSelect,
-        "sourceLocationState:",
-        sourceLocationState
-      );
+        partToSelect: partToSelect?.name,
+      });
 
       let actualCategoryName = categoryOrSlotName;
       let actualPartToSelect = partToSelect;
 
-      // If selection comes from navigation state (e.g., from Spec page or initial upgrade flow)
       if (
         sourceLocationState &&
         sourceLocationState.selectedComponent &&
@@ -245,38 +253,21 @@ export default function CustomBuildPage() {
       ) {
         actualCategoryName = sourceLocationState.categoryName;
         actualPartToSelect = sourceLocationState.selectedComponent;
-        console.log(
-          "[CustomBuildPage] Processing selection from navigation state:",
-          { actualCategoryName, actualPartToSelect }
-        );
 
-        // Clear the navigation state immediately after processing
+        // Clear navigation state
         requestAnimationFrame(() => {
           navigate(location.pathname, { replace: true, state: {} });
-          console.log("[CustomBuildPage] Navigation state cleared.");
         });
-      } else {
-        console.log(
-          "[CustomBuildPage] Processing selection from direct call (e.g., Quick Pick or Deep Link)."
-        );
       }
 
       if (!actualCategoryName || !actualPartToSelect) {
-        console.warn(
-          "[CustomBuildPage] Missing category or part for selection. Skipping."
-        );
+        console.warn("[CustomBuildPage] Missing category or part. Skipping.");
         return;
       }
 
-      // Perform the actual Zustand store update
       selectComponent(actualCategoryName, actualPartToSelect);
-      console.log(
-        `[CustomBuildPage] Selected component: ${actualPartToSelect.name} for ${actualCategoryName}`
-      );
 
-      // If in an upgrade context, update local data
       if (upgradeData) {
-        // upgradeData must be a dependency if used inside useCallback
         setUpgradeData((prev) => {
           if (!prev) return null;
           const newParts = prev.parts.map((p) => {
@@ -290,13 +281,11 @@ export default function CustomBuildPage() {
           });
           return { ...prev, parts: newParts };
         });
-        console.log("[CustomBuildPage] Updated upgradeData locally.");
       }
     },
-    [selectComponent, navigate, location.pathname, upgradeData] // Removed isProcessingSelection from dependencies
+    [selectComponent, navigate, location.pathname, upgradeData]
   );
 
-  // Wrapper for removing a component (no longer using isProcessingSelection)
   const handleUIRemoveComponent = useCallback(
     (categoryOrSlotName) => {
       storeRemoveComponent(categoryOrSlotName);
@@ -304,20 +293,28 @@ export default function CustomBuildPage() {
     [storeRemoveComponent]
   );
 
-  // --- Effects for Processing Selections from Navigation/URL ---
-
-  // Effect to handle initial upgrade suggestion from navigation state
+  // FIXED: Only process effects after initialization
+  // Effect: Handle upgrade suggestions from navigation
   useEffect(() => {
-    console.log("\n[CustomBuildPage] Upgrade suggestion useEffect triggered.");
+    if (!isInitialized) {
+      console.log("[CustomBuildPage] Not initialized, skipping upgrade effect");
+      return;
+    }
+
+    console.log("[CustomBuildPage] Upgrade suggestion effect running");
     const { upgradeSuggestion, fromUpgradeFlow } = location.state || {};
+
     if (fromUpgradeFlow && upgradeSuggestion?.parts) {
+      console.log("[CustomBuildPage] Processing upgrade suggestion");
       setUpgradeData(upgradeSuggestion);
       clearAllComponents();
+
       const newSelectionsToProcess = [];
 
       upgradeSuggestion.parts.forEach((partItem) => {
         const part = partItem.selectedPart;
         if (!part) return;
+
         if (part.category === "ram") {
           const nextSlotIndex =
             newSelectionsToProcess.filter((item) =>
@@ -339,48 +336,61 @@ export default function CustomBuildPage() {
           }
         }
       });
+
       newSelectionsToProcess.forEach(({ categoryName, partToSelect }) => {
-        handleSelectComponent(categoryName, partToSelect); // Call the consolidated handler
+        handleSelectComponent(categoryName, partToSelect);
       });
 
       setBuildName(upgradeSuggestion.buildName || "My Upgraded Build");
       setBuildDescription(upgradeSuggestion.reply || "AI Recommended Upgrade.");
-      navigate(location.pathname, { replace: true, state: {} }); // Clear state after processing
-    }
-  }, [location.state, navigate, clearAllComponents, handleSelectComponent]); // Added handleSelectComponent to dependencies
 
-  // Effect to handle single component selection from Spec page via navigation state
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [
+    isInitialized,
+    location.state,
+    navigate,
+    clearAllComponents,
+    handleSelectComponent,
+  ]);
+
+  // Effect: Handle single component selection from Spec page
   useEffect(() => {
-    console.log(
-      "\n[CustomBuildPage] Single component selection useEffect triggered."
-    );
-    // This effect runs after upgrade suggestion effect, clear location state could be an empty object.
-    // So only process if location.state actually contains selectedComponent AND it's not from an upgrade flow.
+    if (!isInitialized) {
+      console.log(
+        "[CustomBuildPage] Not initialized, skipping component selection effect"
+      );
+      return;
+    }
+
+    console.log("[CustomBuildPage] Component selection effect running");
     const { selectedComponent, categoryName, fromUpgradeFlow } =
       location.state || {};
-    if (!fromUpgradeFlow && selectedComponent && categoryName) {
-      console.log(
-        "[CustomBuildPage] Detected single component selection from navigation state."
-      );
-      handleSelectComponent(categoryName, selectedComponent, location.state); // Call consolidated handler, pass location.state
-    } else if (Object.keys(location.state || {}).length > 0) {
-      // If location.state is not empty but not a single component selection, log it
-      console.log(
-        "[CustomBuildPage] location.state contains data but not for single component selection, or already processed."
-      );
-    }
-  }, [location.state, handleSelectComponent]); // Added handleSelectComponent to dependencies, removed navigate/selectComponent as they're within handleSelectComponent
 
-  // Parse URL parameters for deep linking
+    if (!fromUpgradeFlow && selectedComponent && categoryName) {
+      console.log("[CustomBuildPage] Processing single component selection");
+      handleSelectComponent(categoryName, selectedComponent, location.state);
+    }
+  }, [isInitialized, location.state, handleSelectComponent]);
+
+  // Effect: Parse URL deep links
   useEffect(() => {
-    console.log("\n[CustomBuildPage] Deep link useEffect triggered.");
+    if (!isInitialized) {
+      console.log(
+        "[CustomBuildPage] Not initialized, skipping deep link effect"
+      );
+      return;
+    }
+
+    console.log("[CustomBuildPage] Deep link effect running");
     const handleDeepLink = async () => {
       try {
         const queryParams = new URLSearchParams(location.search);
         const partsParam = queryParams.get("parts");
 
         if (partsParam && hasFetchedInitialData && allProducts?.length > 0) {
-          setProcessingError(null); // This state is for errors, not processing flag
+          console.log("[CustomBuildPage] Processing deep link");
+          setProcessingError(null);
 
           const partIds = partsParam.split(",").filter(Boolean);
           await clearAllComponents();
@@ -408,15 +418,15 @@ export default function CustomBuildPage() {
           });
 
           for (const { part, categoryName } of otherComponents) {
-            handleSelectComponent(categoryName, part); // Use consolidated handler
+            handleSelectComponent(categoryName, part);
           }
 
           for (let i = 0; i < ramParts.length; i++) {
             const slotNumber = i + 1;
-            handleSelectComponent(`RAM Slot ${slotNumber}`, ramParts[i]); // Use consolidated handler
+            handleSelectComponent(`RAM Slot ${slotNumber}`, ramParts[i]);
           }
 
-          navigate(location.pathname, { replace: true }); // Clear URL parameters
+          navigate(location.pathname, { replace: true });
         }
       } catch (error) {
         console.error("Error processing deep link:", error);
@@ -425,36 +435,36 @@ export default function CustomBuildPage() {
     };
     handleDeepLink();
   }, [
+    isInitialized,
     location.search,
     hasFetchedInitialData,
     allProducts,
     clearAllComponents,
-    handleSelectComponent, // Dependency changed
-    navigate, // Dependency changed
+    handleSelectComponent,
+    navigate,
   ]);
 
-  // Removed old executeSave useCallback and its useEffect trigger.
-
-  // --- REPLACED: The Save Build button handler (with loading & toasts) ---
   const handleSaveBuild = async () => {
-    // Check for user sign-in before saving
     if (!isSignedIn) {
       toast.error("You must be signed in to save a build.");
-      openSignIn(); // Prompt user to sign in
+      openSignIn();
       return;
     }
 
-    if (isSaving) return; // Prevent double clicks
+    if (isSaving) return;
+
     if (!buildName.trim()) {
       toast.error("Please enter a name for your build.");
       return;
     }
+
     if (resolvedSelectedComponents.length === 0) {
       toast.error("Please select components for your build.");
       return;
     }
 
-    setIsSaving(true); // Set loading state
+    setIsSaving(true);
+
     const partRefs = resolvedSelectedComponents.map((part) => ({
       id: part.id,
       category: part.category,
@@ -500,7 +510,7 @@ export default function CustomBuildPage() {
     navigate("/build", { replace: true });
   }, [clearAllComponents, navigate]);
 
-  // Error display (if processingError state is used for errors)
+  // Error display
   if (processingError) {
     return (
       <div className="min-h-screen bg-[#100C16] text-red-400 flex justify-center items-center">
@@ -509,11 +519,15 @@ export default function CustomBuildPage() {
     );
   }
 
-  // Loading display - only show for initial load of all products
-  if (!hasFetchedInitialData || isLoadingStoreProducts) {
+  // FIXED: Better loading display
+  if (!isInitialized || isLoadingStoreProducts || !hasFetchedInitialData) {
     return (
-      <div className="min-h-screen bg-[#100C16] text-white flex justify-center items-center">
-        <p>Loading...</p>
+      <div className="min-h-screen bg-[#100C16] text-white">
+        <Navabar />
+        <div className="min-h-screen flex flex-col justify-center items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mb-4"></div>
+          <p className="text-xl">Loading components...</p>
+        </div>
       </div>
     );
   }
@@ -548,7 +562,7 @@ export default function CustomBuildPage() {
                     categoryKeyForSpecsPage={category.actualCategory}
                     status={upgradeInfoForCategory?.status}
                     alternativeParts={upgradeInfoForCategory?.alternativeParts}
-                    onSelectComponent={handleSelectComponent} // Use the single handler
+                    onSelectComponent={handleSelectComponent}
                     onRemoveSelected={handleUIRemoveComponent}
                     quickPickItems={quickPickData[category.name]}
                     showQuickPicksForThisCategory={category.hasQuickPicks}
