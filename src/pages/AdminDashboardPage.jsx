@@ -11,7 +11,7 @@ export default function AdminDashboardPage() {
       {/* <Navabar /> */}
       <div className="container mx-auto px-6 py-8 pt-24">
         <h1 className="text-4xl font-bold mb-8 text-purple-400">
-          Admin Dashboard
+          Admin Dashboard.
         </h1>
         <p className="text-lg text-gray-300">Welcome, Administrator!</p>
         <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
