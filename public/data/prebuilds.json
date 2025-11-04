@@ -1,0 +1,226 @@
+[
+  {
+    "id": "prebuilt-001",
+    "name": "Gaming Beast Pro",
+    "category": ["gaming", "high-end"],
+    "price": 634,
+    "rating": 4.5,
+    "imageUrl": "/images/prebuilt1.png",
+    "galleryImages": ["/images/prebuilt1.png"],
+    "description": "High-end gaming PC featuring AMD Ryzen 5 and RTX 3060 Ti. Perfect for AAA gaming at 1440p.",
+    "features": [
+      "Optimized for 1440p gaming",
+      "WiFi & Bluetooth enabled",
+      "Upgradeable storage and RAM",
+      "High airflow compact case"
+    ],
+    "parts": [
+      { "category": "cpu", "id": "cpu-006" },
+      { "category": "gpu", "id": "gpu-005" },
+      { "category": "motherboard", "id": "mobo-005" },
+      { "category": "ram", "id": "ram-stick-002" },
+      { "category": "ram", "id": "ram-stick-002" },
+      { "category": "storage", "id": "stor-001" },
+      { "category": "psu", "id": "psu-004" },
+      { "category": "case", "id": "case-004" }
+    ],
+    "createdBy": "admin",
+    "isOfficial": true
+  },
+  {
+    "id": "prebuilt-002",
+    "name": "Content Creator Studio",
+    "category": ["editing", "workstation", "creator"],
+    "price": 2259,
+    "rating": 4.8,
+    "imageUrl": "/images/prebuilt2.png",
+    "galleryImages": ["/images/prebuilt2.png"],
+    "description": "Professional workstation with Intel i9 and RTX 4090. Optimized for video editing, design, and rendering.",
+    "features": [
+      "Intel Core i9, RTX 4090",
+      "32GB DDR5 RAM (2×16GB)",
+      "Fast NVMe SSD storage",
+      "Quiet, efficient cooling"
+    ],
+    "parts": [
+      { "category": "cpu", "id": "cpu-001" },
+      { "category": "gpu", "id": "gpu-001" },
+      { "category": "motherboard", "id": "mobo-001" },
+      { "category": "ram", "id": "ram-stick-008" },
+      { "category": "ram", "id": "ram-stick-008" },
+      { "category": "storage", "id": "stor-001" },
+      { "category": "psu", "id": "psu-001" },
+      { "category": "case", "id": "case-002" }
+    ],
+    "createdBy": "admin",
+    "isOfficial": true
+  },
+  {
+    "id": "prebuilt-003",
+    "name": "Budget Champion",
+    "category": ["gaming", "budget"],
+    "price": 698,
+    "rating": 4.3,
+    "imageUrl": "/images/prebuilt3.png",
+    "galleryImages": ["/images/prebuilt3.png"],
+    "description": "Affordable gaming build with Intel Core i5 and RTX 4070 Ti SUPER. Reliable for 1080p gaming and daily use.",
+    "features": [
+      "Great for 1080p eSports titles",
+      "Low power consumption",
+      "Fast SSD boot drive",
+      "Compact and lightweight case"
+    ],
+    "parts": [
+      { "category": "cpu", "id": "cpu-003" },
+      { "category": "gpu", "id": "gpu-003" },
+      { "category": "motherboard", "id": "mobo-003" },
+      { "category": "ram", "id": "ram-stick-001" },
+      { "category": "ram", "id": "ram-stick-001" },
+      { "category": "storage", "id": "stor-002" },
+      { "category": "psu", "id": "psu-002" },
+      { "category": "case", "id": "case-001" }
+    ],
+    "createdBy": "admin",
+    "isOfficial": true
+  },
+  {
+    "id": "prebuilt-004",
+    "name": "Streaming Pro",
+    "category": ["streaming", "creator", "midrange"],
+    "price": 1099,
+    "rating": 4.6,
+    "imageUrl": "/images/prebuilt4.png",
+    "galleryImages": ["/images/prebuilt4.png"],
+    "description": "Streaming-ready midrange PC with Ryzen 7 and Radeon RX 6800 XT. Smooth multitasking for gamers and content creators.",
+    "features": [
+      "Excellent for multi-task streaming",
+      "Large SSD for game/library storage",
+      "Silent cooling",
+      "Upgradable for future-proofing"
+    ],
+    "parts": [
+      { "category": "cpu", "id": "cpu-004" },
+      { "category": "gpu", "id": "gpu-004" },
+      { "category": "motherboard", "id": "mobo-004" },
+      { "category": "ram", "id": "ram-stick-003" },
+      { "category": "ram", "id": "ram-stick-003" },
+      { "category": "storage", "id": "stor-003" },
+      { "category": "psu", "id": "psu-003" },
+      { "category": "case", "id": "case-003" }
+    ],
+    "createdBy": "admin",
+    "isOfficial": true
+  },
+  {
+    "id": "prebuilt-005",
+    "name": "Stealth Beast",
+    "category": ["gaming", "high-end"],
+    "price": 1309,
+    "rating": 4.7,
+    "imageUrl": "/images/prebuilt5.png",
+    "galleryImages": ["/images/prebuilt5.png"],
+    "description": "Ultimate gaming and streaming performance with Intel Core i7 and RTX 3060. Run any AAA title with smooth FPS.",
+    "features": [
+      "High FPS AAA gaming",
+      "32GB DDR5 RAM (2×16GB)",
+      "Fast 2TB SSD storage",
+      "Advanced cooling for overclocking"
+    ],
+    "parts": [
+      { "category": "cpu", "id": "cpu-005" },
+      { "category": "gpu", "id": "gpu-005" },
+      { "category": "motherboard", "id": "mobo-002" },
+      { "category": "ram", "id": "ram-stick-006" },
+      { "category": "ram", "id": "ram-stick-006" },
+      { "category": "storage", "id": "stor-003" },
+      { "category": "psu", "id": "psu-003" },
+      { "category": "case", "id": "case-003" }
+    ],
+    "createdBy": "admin",
+    "isOfficial": true
+  },
+  {
+    "id": "prebuilt-006",
+    "name": "Powerhouse Pro",
+    "category": ["workstation", "editing", "high-end"],
+    "price": 2259,
+    "rating": 4.9,
+    "imageUrl": "/images/prebuilt6.png",
+    "galleryImages": ["/images/prebuilt6.png"],
+    "description": "A true powerhouse: Ryzen 9, RTX 4070 Ti SUPER, and 32GB DDR5 RAM. Handles the toughest workloads and gaming alike.",
+    "features": [
+      "Ideal for video editing and CAD",
+      "RTX 4070 Ti SUPER GPU",
+      "Whisper-quiet operation",
+      "Expandable with extra drives"
+    ],
+    "parts": [
+      { "category": "cpu", "id": "cpu-002" },
+      { "category": "gpu", "id": "gpu-003" },
+      { "category": "motherboard", "id": "mobo-002" },
+      { "category": "ram", "id": "ram-stick-008" },
+      { "category": "ram", "id": "ram-stick-008" },
+      { "category": "storage", "id": "stor-004" },
+      { "category": "psu", "id": "psu-003" },
+      { "category": "case", "id": "case-003" }
+    ],
+    "createdBy": "admin",
+    "isOfficial": true
+  },
+  {
+    "id": "prebuilt-007",
+    "name": "Budget Hero",
+    "category": ["gaming", "budget"],
+    "price": 697,
+    "rating": 4.2,
+    "imageUrl": "/images/prebuilt7.png",
+    "galleryImages": ["/images/prebuilt7.png"],
+    "description": "Entry-level gaming system for eSports and schoolwork. Balanced performance at an affordable price.",
+    "features": [
+      "Great for school and eSports",
+      "Low noise cooling",
+      "Easy to upgrade",
+      "Energy efficient"
+    ],
+    "parts": [
+      { "category": "cpu", "id": "cpu-008" },
+      { "category": "gpu", "id": "gpu-006" },
+      { "category": "motherboard", "id": "mobo-005" },
+      { "category": "ram", "id": "ram-stick-002" },
+      { "category": "ram", "id": "ram-stick-002" },
+      { "category": "storage", "id": "stor-002" },
+      { "category": "psu", "id": "psu-004" },
+      { "category": "case", "id": "case-001" }
+    ],
+    "createdBy": "admin",
+    "isOfficial": true
+  },
+  {
+    "id": "prebuilt-008",
+    "name": "Ultimate Creator",
+    "category": ["creator", "editing", "workstation"],
+    "price": 2479,
+    "rating": 5.0,
+    "imageUrl": "/images/prebuilt8.png",
+    "galleryImages": ["/images/prebuilt8.png"],
+    "description": "Built for professionals: Ryzen 9, RTX 4090, 32GB DDR5, and ultra-fast SSD. The ultimate tool for creators and power users.",
+    "features": [
+      "Top-tier for 4K video, 3D, and VFX",
+      "High memory and storage capacity",
+      "Silent, high-performance case",
+      "Premium VR/AR ready"
+    ],
+    "parts": [
+      { "category": "cpu", "id": "cpu-002" },
+      { "category": "gpu", "id": "gpu-001" },
+      { "category": "motherboard", "id": "mobo-002" },
+      { "category": "ram", "id": "ram-stick-008" },
+      { "category": "ram", "id": "ram-stick-008" },
+      { "category": "storage", "id": "stor-003" },
+      { "category": "psu", "id": "psu-003" },
+      { "category": "case", "id": "case-002" }
+    ],
+    "createdBy": "admin",
+    "isOfficial": true
+  }
+]

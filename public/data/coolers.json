@@ -1,0 +1,192 @@
+[
+  {
+    "id": "cooler-001",
+    "name": "Noctua NH-D15",
+    "brand": "Noctua",
+    "price": 99.99,
+    "rating": { "rate": 4.9, "count": 1500 },
+    "category": "cooler",
+    "imageUrl": "/images/cooler/nh.png",
+    "specs": {
+      "type": "Air",
+      "fan_size": "140mm",
+      "socket_compatibility": ["LGA1700", "LGA1151", "AM4", "AM5"]
+    },
+    "description": "Flagship dual-tower air cooler with outstanding cooling and quiet operation, compatible with a wide range of sockets.",
+    "features": [
+      "Dual 140mm fans for superior cooling",
+      "SecuFirm2 mounting system",
+      "Award-winning performance",
+      "Six heatpipes, nickel-plated base",
+      "Compatible with latest Intel and AMD platforms"
+    ],
+    "galleryImages": ["/images/cooler/nh.png"],
+    "compatibleDevices": [
+      "cpu-001",
+      "cpu-002",
+      "cpu-003",
+      "cpu-004",
+      "cpu-005",
+      "cpu-006",
+      "cpu-007",
+      "cpu-008",
+      "mobo-001",
+      "mobo-002",
+      "mobo-003",
+      "mobo-004",
+      "mobo-005"
+    ]
+  },
+  {
+    "id": "cooler-002",
+    "name": "Cooler Master Hyper 212 EVO",
+    "brand": "Cooler Master",
+    "price": 39.99,
+    "rating": { "rate": 4.6, "count": 10000 },
+    "category": "cooler",
+    "imageUrl": "/images/cooler/cool.png",
+    "specs": {
+      "type": "Air",
+      "fan_size": "120mm",
+      "socket_compatibility": ["LGA1700", "LGA1151", "AM4", "AM5"]
+    },
+    "description": "Legendary Hyper 212 EVO is known for affordability, versatility, and reliable air cooling for all mainstream sockets.",
+    "features": [
+      "Four heatpipe design",
+      "Universal socket support",
+      "Easy mounting system",
+      "Compact for most cases",
+      "Widely reviewed and recommended"
+    ],
+    "galleryImages": ["/images/cooler/cool.png"],
+    "compatibleDevices": [
+      "cpu-001",
+      "cpu-002",
+      "cpu-003",
+      "cpu-004",
+      "cpu-005",
+      "cpu-006",
+      "cpu-007",
+      "cpu-008",
+      "mobo-001",
+      "mobo-002",
+      "mobo-003",
+      "mobo-004",
+      "mobo-005"
+    ]
+  },
+  {
+    "id": "cooler-003",
+    "name": "be quiet! Dark Rock Pro 4",
+    "brand": "be quiet!",
+    "price": 89.99,
+    "rating": { "rate": 4.8, "count": 2500 },
+    "category": "cooler",
+    "imageUrl": "/images/cooler/dark.png",
+    "specs": {
+      "type": "Air",
+      "fan_size": "135mm",
+      "socket_compatibility": ["LGA1700", "LGA1151", "AM4", "AM5", "TR4"]
+    },
+    "description": "Premium silent dual-tower cooler, engineered for overclocking and quiet operation, fits all modern platforms.",
+    "features": [
+      "Virtually silent operation",
+      "Massive cooling capacity",
+      "Dual Silent Wings PWM fans",
+      "Elegant black design",
+      "Simple installation"
+    ],
+    "galleryImages": ["/images/cooler/dark.png"],
+    "compatibleDevices": [
+      "cpu-001",
+      "cpu-002",
+      "cpu-003",
+      "cpu-004",
+      "cpu-005",
+      "cpu-006",
+      "cpu-007",
+      "cpu-008",
+      "mobo-001",
+      "mobo-002",
+      "mobo-003",
+      "mobo-004",
+      "mobo-005"
+    ]
+  },
+  {
+    "id": "cooler-004",
+    "name": "Corsair H100i RGB PLATINUM",
+    "brand": "Corsair",
+    "price": 129.99,
+    "rating": { "rate": 4.7, "count": 5000 },
+    "category": "cooler",
+    "imageUrl": "/images/cooler/crossair.png",
+    "specs": {
+      "type": "Liquid",
+      "fan_size": "120mm",
+      "socket_compatibility": ["LGA1700", "LGA1151", "AM4", "AM5"]
+    },
+    "description": "A 240mm RGB AIO liquid cooler, perfect for quiet and efficient cooling on new Intel and AMD CPUs.",
+    "features": [
+      "Addressable RGB pump and fans",
+      "Dual 120mm ML Series fans",
+      "Magnetic levitation bearings",
+      "High surface area radiator",
+      "Easy installation"
+    ],
+    "galleryImages": ["/images/cooler/crossair.png"],
+    "compatibleDevices": [
+      "cpu-001",
+      "cpu-002",
+      "cpu-003",
+      "cpu-004",
+      "cpu-005",
+      "cpu-006",
+      "cpu-007",
+      "cpu-008",
+      "mobo-001",
+      "mobo-002",
+      "mobo-003",
+      "mobo-004",
+      "mobo-005"
+    ]
+  },
+  {
+    "id": "cooler-005",
+    "name": "NZXT Kraken X63",
+    "brand": "NZXT",
+    "price": 149.99,
+    "rating": { "rate": 4.7, "count": 4500 },
+    "category": "cooler",
+    "imageUrl": "/images/cooler/kraken.png",
+    "specs": {
+      "type": "Liquid",
+      "fan_size": "140mm",
+      "socket_compatibility": ["LGA1700", "LGA1151", "AM4", "AM5"]
+    },
+    "description": "NZXT’s 280mm AIO liquid cooler brings stunning RGB visuals and powerful, quiet CPU cooling for next-gen builds.",
+    "features": [
+      "Infinity mirror RGB design",
+      "Large surface area radiator",
+      "CAM software control",
+      "High static pressure fans",
+      "Broad socket compatibility"
+    ],
+    "galleryImages": ["/images/cooler/kraken.png"],
+    "compatibleDevices": [
+      "cpu-001",
+      "cpu-002",
+      "cpu-003",
+      "cpu-004",
+      "cpu-005",
+      "cpu-006",
+      "cpu-007",
+      "cpu-008",
+      "mobo-001",
+      "mobo-002",
+      "mobo-003",
+      "mobo-004",
+      "mobo-005"
+    ]
+  }
+]
